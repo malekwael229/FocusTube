@@ -1,34 +1,65 @@
-# FocusTube 🎯
+# FocusTube 🛡️
 
-FocusTube is a browser extension designed to help students and professionals reclaim their attention span by blocking algorithmic distractions like YouTube Shorts, reels shelves, and sidebar suggestions.
+**Stop Doomscrolling. Reclaim Your Attention.**
 
-## Features
+FocusTube is a lightweight, aesthetic Chrome Extension designed to prevent you from getting sucked into the YouTube Shorts loophole. It cleans up the YouTube interface and offers flexible blocking modes to help you stay productive.
 
-- **Strict Mode:** Instantly redirects users away from Short-form content.
-- **Visual Cleaning:** Hides the "Shorts" shelf, sidebar buttons, and distracting chips without breaking the site layout.
-- **Customizable:** Toggle "Focus Mode" on/off or switch between Strict, Warning, and Passive modes.
-- **Privacy First:** Runs entirely on the client-side. No data collection.
+![FocusTube Banner](https://img.shields.io/badge/Focus-Tube-blue?style=for-the-badge&logo=youtube&logoColor=white) ![Version](https://img.shields.io/badge/Version-1.2-green?style=for-the-badge)
 
-## Installation
+## ✨ Features
 
-### For Developers (Unpacked)
-1. Clone or download this repository.
-2. Open Chrome or Edge and navigate to `chrome://extensions`.
-3. Enable **Developer Mode** (top right).
-4. Click **Load Unpacked**.
-5. Select the `FocusTube` directory.
+### 🚫 Smart Blocking Modes
+*   **Strict Mode:** Zero tolerance. If you try to open a Short, you are instantly redirected to the Homepage.
+*   **Soft Mode (Warn):** Displays a beautiful, Apple-style warning overlay ("Shorts & Distractions Blocked").
+    *   Stops video and audio autoplay immediately.
+    *   Gives you a conscious choice: "Go Back" or "Watch Anyway".
+*   **Passive Mode:** Disables protections temporarily without uninstalling.
 
-### Official Store
-(Pending verification for Microsoft Edge Add-ons)
+### 🧹 UI Cleanup
+*   **Hides Distractions:** Removes the "Shorts" tab from the sidebar, hides Shorts shelves from the homepage, and removes Shorts chips from search filters.
+*   **History Safe:** Intelligently detects the History page to prevent layout breakage.
 
-## Known Issues
-- **History Page Layout:** In previous versions, the extension could interfere with the layout of the YouTube history page. This issue has been resolved in version 1.1.
+### 🎨 Modern Design
+*   **New UI:** Clean, neumorphic popup interface.
+*   **Dark Mode:** Built-in Dark Mode support for both the settings popup and the warning overlay (Enabled by default).
+*   **Seamless Experience:** No flashing content or jarring transitions.
 
-## Contributing
-Contributions are welcome! If you have a feature request, bug report, or want to contribute to the code, please open an issue or submit a pull request on the project's GitHub repository.
+## 📥 Installation
 
-## Privacy
-FocusTube stores your preferences locally using the `chrome.storage` API. No browsing history or user data is sent to external servers.
+Since this extension is currently in development/source form:
 
-## License
-MIT
+1.  **Download/Clone** this repository to your computer.
+    ```bash
+    git clone https://github.com/malekwael229/FocusTube.git
+    ```
+2.  Open **Google Chrome** (or Edge/Brave).
+3.  Navigate to `chrome://extensions/`.
+4.  Toggle **Developer mode** in the top right corner.
+5.  Click **Load unpacked**.
+6.  Select the folder where you downloaded FocusTube.
+
+## ⚙️ Usage
+
+1.  Click the **FocusTube icon** in your browser toolbar.
+2.  **Main Toggle:** Turn the extension functionality On/Off.
+3.  **Mode Select:** Choose between **Strict** (Kick out) or **Soft** (Warning).
+4.  **Dark Mode:** Toggle the visual theme.
+
+## 🛠️ Tech Stack
+
+*   **Manifest V3:** Compliant with modern Chrome extension standards.
+*   **JavaScript:** Native ES6+, aggressive event interception for autoplay blocking.
+*   **CSS3:** Flexbox/Grid, CSS Variables, and Backdrop filters for the "glassmorphism" look.
+
+## 🤝 Contributing
+
+Contributions are welcome! If you find a bug or have a feature request:
+1.  Fork the repository.
+2.  Create a new branch (`git checkout -b feature/AmazingFeature`).
+3.  Commit your changes.
+4.  Open a Pull Request.
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+```
