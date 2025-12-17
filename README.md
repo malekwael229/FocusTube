@@ -1,8 +1,8 @@
-# FocusTube
+# FocusTube 🛡️
 
 A Chrome extension to stop the doomscrolling. It hides YouTube Shorts from the interface and blocks the player if you try to watch them.
 
-![FocusTube Banner](https://img.shields.io/badge/Focus-Tube-blue?style=for-the-badge&logo=youtube&logoColor=white)
+![FocusTube Banner](https://img.shields.io/badge/Focus-Tube-blue?style=for-the-badge&logo=youtube&logoColor=white) ![Version](https://img.shields.io/badge/Version-1.2-green?style=for-the-badge)
 
 ## What it does
 
