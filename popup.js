@@ -2,52 +2,48 @@ document.addEventListener('DOMContentLoaded', () => {
     const mainToggle = document.getElementById('mainToggle');
     const modeSelect = document.getElementById('modeSelect');
     const modeDesc = document.getElementById('modeDesc');
-    const passiveOption = modeSelect.querySelector('option[value="allow"]');
+    const shortsBlockedEl = document.getElementById('shortsBlocked');
+    const timeSavedEl = document.getElementById('timeSaved');
 
     const descriptions = {
-        strict: "Strict: If you open a Short, you will be instantly kicked out.",
-        warn: "Soft: You will see a warning screen before the video plays.",
-        allow: "Passive: Focus Mode is off. YouTube works normally (No hiding)."
+        strict: "Strict: Instantly redirects you to the homepage.",
+        warn: "Soft: Shows a warning before playing.",
+        allow: "Passive: Focus Mode is off."
     };
 
-    // Initialize state from storage
-    chrome.storage.local.get(['focusMode', 'shortsMode'], (result) => {
+    // Load Data
+    chrome.storage.local.get(['focusMode', 'shortsMode', 'blockedCount'], (result) => {
         const isEnabled = result.focusMode !== false;
         mainToggle.checked = isEnabled;
         
         const currentMode = result.shortsMode || 'strict';
         modeSelect.value = currentMode;
-        
-        updateUiState(isEnabled);
+        modeDesc.innerText = descriptions[currentMode];
+
+        // Stats Logic
+        const count = result.blockedCount || 0;
+        shortsBlockedEl.innerText = count;
+        timeSavedEl.innerText = formatTime(count); // 1 Short = 1 Minute saved
     });
 
-    // Event Listeners
+    // Toggle
     mainToggle.addEventListener('change', () => {
         const isEnabled = mainToggle.checked;
         chrome.storage.local.set({ focusMode: isEnabled });
-        updateUiState(isEnabled);
     });
 
+    // Select Mode
     modeSelect.addEventListener('change', () => {
         const mode = modeSelect.value;
         modeDesc.innerText = descriptions[mode];
         chrome.storage.local.set({ shortsMode: mode });
     });
 
-    function updateUiState(isEnabled) {
-        if (isEnabled) {
-            passiveOption.disabled = true;
-            passiveOption.innerText = "Passive (Turn off Focus Mode to enable)";
-            
-            // Force strict/warn if user enables focus mode while on passive
-            if (modeSelect.value === 'allow') {
-                modeSelect.value = 'warn';
-                chrome.storage.local.set({ shortsMode: 'warn' });
-            }
-        } else {
-            passiveOption.disabled = false;
-            passiveOption.innerText = "Passive: Let me watch";
-        }
-        modeDesc.innerText = descriptions[modeSelect.value];
+    // Helper: Convert Shorts count to Time String (1 Short = 1 Min)
+    function formatTime(minutes) {
+        if (minutes < 60) return `${minutes}m`;
+        const hrs = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        return `${hrs}h ${mins}m`;
     }
 });
