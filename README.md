@@ -1,64 +1,51 @@
-# FocusTube 🛡️
+# FocusTube
 
-**Stop Doomscrolling. Reclaim Your Attention.**
+A Chrome extension to stop the doomscrolling. It hides YouTube Shorts from the interface and blocks the player if you try to watch them.
 
-FocusTube is a lightweight, aesthetic Chrome Extension designed to prevent you from getting sucked into the YouTube Shorts loophole. It cleans up the YouTube interface and offers flexible blocking modes to help you stay productive.
+![FocusTube Banner](https://img.shields.io/badge/Focus-Tube-blue?style=for-the-badge&logo=youtube&logoColor=white)
 
-![FocusTube Banner](https://img.shields.io/badge/Focus-Tube-blue?style=for-the-badge&logo=youtube&logoColor=white) ![Version](https://img.shields.io/badge/Version-1.2-green?style=for-the-badge)
+## What it does
 
-## ✨ Features
+YouTube pushes Shorts everywhere. FocusTube removes them.
 
-### 🚫 Smart Blocking Modes
-*   **Strict Mode:** Zero tolerance. If you try to open a Short, you are instantly redirected to the Homepage.
-*   **Soft Mode (Warn):** Displays a beautiful, Apple-style warning overlay ("Shorts & Distractions Blocked").
-    *   Stops video and audio autoplay immediately.
-    *   Gives you a conscious choice: "Go Back" or "Watch Anyway".
-*   **Passive Mode:** Disables protections temporarily without uninstalling.
+*   **Hides the Clutter:** Removes the "Shorts" tab from the sidebar, the shelves on the homepage, and the chips in search results.
+*   **Blocks the Player:** If you click a direct link to a Short, it stops playback immediately.
+*   **Two Modes:**
+    *   **Strict:** Instantly redirects you back to the homepage.
+    *   **Soft (Warn):** Pauses the video and shows a warning overlay. You have to manually click "Watch Anyway" to proceed.
+*   **Dark Mode:** Comes with a native dark theme enabled by default.
 
-### 🧹 UI Cleanup
-*   **Hides Distractions:** Removes the "Shorts" tab from the sidebar, hides Shorts shelves from the homepage, and removes Shorts chips from search filters.
-*   **History Safe:** Intelligently detects the History page to prevent layout breakage.
+*Note: It is specifically built to play nice with YouTube's Single Page Application (SPA) navigation, so it won't break your History page or require page refreshes to work.*
 
-### 🎨 Modern Design
-*   **New UI:** Clean, neumorphic popup interface.
-*   **Dark Mode:** Built-in Dark Mode support for both the settings popup and the warning overlay (Enabled by default).
-*   **Seamless Experience:** No flashing content or jarring transitions.
+## Installation
 
-## 📥 Installation
+This isn't on the Chrome Web Store yet, so you'll need to load it manually:
 
-Since this extension is currently in development/source form:
-
-1.  **Download/Clone** this repository to your computer.
+1.  Clone or download this repo.
     ```bash
     git clone https://github.com/malekwael229/FocusTube.git
     ```
-2.  Open **Google Chrome** (or Edge/Brave).
-3.  Navigate to `chrome://extensions/`.
-4.  Toggle **Developer mode** in the top right corner.
-5.  Click **Load unpacked**.
-6.  Select the folder where you downloaded FocusTube.
+2.  Open Chrome and go to `chrome://extensions/`.
+3.  Toggle **Developer mode** (top right).
+4.  Click **Load unpacked**.
+5.  Select the `FocusTube` folder.
 
-## ⚙️ Usage
+## Usage
 
-1.  Click the **FocusTube icon** in your browser toolbar.
-2.  **Main Toggle:** Turn the extension functionality On/Off.
-3.  **Mode Select:** Choose between **Strict** (Kick out) or **Soft** (Warning).
-4.  **Dark Mode:** Toggle the visual theme.
+Click the extension icon to open the popup.
 
-## 🛠️ Tech Stack
+*   **Main Switch:** Toggles the entire extension on/off.
+*   **Blocking Style:** Switch between "Strict" (redirect) or "Soft" (warning overlay).
+*   **Dark Mode:** Toggles the theme for the popup and the warning screen.
 
-*   **Manifest V3:** Compliant with modern Chrome extension standards.
-*   **JavaScript:** Native ES6+, aggressive event interception for autoplay blocking.
-*   **CSS3:** Flexbox/Grid, CSS Variables, and Backdrop filters for the "glassmorphism" look.
+## Under the Hood
 
-## 🤝 Contributing
+Built with Manifest V3. It uses `MutationObserver` to handle YouTube's dynamic DOM and event capture to aggressively stop auto-play before the video creates a distraction.
 
-Contributions are welcome! If you find a bug or have a feature request:
-1.  Fork the repository.
-2.  Create a new branch (`git checkout -b feature/AmazingFeature`).
-3.  Commit your changes.
-4.  Open a Pull Request.
+## Contributing
 
-## 📄 License
+Feel free to open an issue or PR if YouTube changes their layout and breaks something.
 
-Distributed under the MIT License. See `LICENSE` for more information.
+## License
+
+MIT
