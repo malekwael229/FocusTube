@@ -1,47 +1,46 @@
 # FocusTube 🛡️
 
-A Chrome extension to stop the doomscrolling. It hides YouTube Shorts from the interface and blocks the player if you try to watch them.
+A Manifest V3 Chrome Extension that forces YouTube to be a productivity tool, not a slot machine. 
 
-![FocusTube Banner](https://img.shields.io/badge/Focus-Tube-blue?style=for-the-badge&logo=youtube&logoColor=white) ![Version](https://img.shields.io/badge/Version-1.2-green?style=for-the-badge)
+It aggressively blocks Shorts, hides algorithmic feeds, and prevents doomscrolling. Unlike basic element blockers, FocusTube handles YouTube's "Single Page App" navigation events to ensure blocks persist between page views.
 
-## What it does
+## Features
 
-YouTube pushes Shorts everywhere. FocusTube removes them.
+*   **Strict Mode:** Instantly redirects you to the homepage if you try to open a Short.
+*   **Soft Mode:** displays a warning overlay (with a "Watch Anyway" delay) instead of a hard redirect.
+*   **Feed Cleaning:** Hides the "Shorts" shelf, sidebar recommendations, and the main algorithmic feed.
+*   **Dark Mode Support:** Warning overlays respect your system/browser theme.
 
-*   **Hides the Clutter:** Removes the "Shorts" tab from the sidebar, the shelves on the homepage, and the chips in search results.
-*   **Blocks the Player:** If you click a direct link to a Short, it stops playback immediately.
-*   **Three Modes:**
-    *   **Strict:** Instantly redirects you back to the homepage.
-    *   **Soft (Warn):** Pauses the video and shows a warning overlay. You have to manually click "Watch Anyway" to proceed.
-    *   **Passive:** Disables restrictions temporarily. YouTube functions normally (Shorts are visible and playable) without needing to disable the extension.
-*   **Dark Mode:** Comes with a native dark theme enabled by default.
+## Installation (Developer Mode)
 
-## Installation
+The extension is currently not on the Chrome Web Store. To install it:
 
-This isn't on the Chrome Web Store yet, so you'll need to load it manually:
-
-1.  Clone or download this repo.
+1.  Clone the repository:
     ```bash
     git clone https://github.com/malekwael229/FocusTube.git
     ```
-2.  Open Chrome and go to `chrome://extensions/`.
-3.  Toggle **Developer mode** (top right).
+2.  Open Chrome and navigate to `chrome://extensions`.
+3.  Toggle **Developer mode** in the top right corner.
 4.  Click **Load unpacked**.
-5.  Select the `FocusTube` folder.
+5.  Select the folder containing `manifest.json`.
 
-## Usage
+## Configuration
 
-Click the extension icon to open the popup.
+Click the extension icon in your toolbar to access the control panel:
+*   **Toggle Master Switch:** Turn the extension on/off globally.
+*   **Shorts Behavior:** Switch between "Strict" (Kick out) and "Soft" (Warn).
+*   **Dark Mode:** Force the extension UI to dark mode.
 
-*   **Main Switch:** Toggles the entire extension on/off.
-*   **Blocking Style:** Switch between "Strict" (redirect) or "Soft" (warning overlay) or "Passive" (does nothing).
-*   **Dark Mode:** Toggles the theme for the popup and the warning screen.
+## Technical Details
 
+*   **Architecture:** built on Manifest V3.
+*   **Performance:** Uses `MutationObserver` and listens for YouTube's specific `yt-navigate-finish` events to minimize performance overhead.
+*   **Privacy:** No external tracking. All settings are saved to `chrome.storage.local`.
 
-## Contributing
+## Known Issues
 
-Feel free to open an issue or PR if YouTube changes their layout and breaks something.
+*   YouTube frequently changes their CSS class names (obfuscation). If the "Shorts" shelf reappears on the homepage, please open an issue with a screenshot so the selectors can be updated.
 
 ## License
 
-MIT
+[MIT](LICENSE)
