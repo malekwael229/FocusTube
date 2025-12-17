@@ -1,182 +1,223 @@
-let currentShortsId = null; 
-let userAcceptedWarning = false;
 let isFocusModeOn = true;
 let shortsMode = 'strict';
+let isDarkMode = true;
+let currentAllowedUrl = null;
 
-initialize();
+let isVideoLocked = false;
+let videoLockInterval = null;
 
-function initialize() {
-    chrome.storage.local.get(['focusMode', 'shortsMode'], (result) => {
+(function initialize() {
+    chrome.storage.local.get(['focusMode', 'shortsMode', 'darkMode'], (result) => {
         isFocusModeOn = result.focusMode !== false;
         shortsMode = result.shortsMode || 'strict';
         
-        // Wait for Body if it doesn't exist yet
-        if (document.body) {
-            applySettings();
-            startObservers();
-        } else {
-            document.addEventListener('DOMContentLoaded', () => {
-                applySettings();
-                startObservers();
-            });
-        }
+        isDarkMode = result.darkMode !== false; 
+        
+        runChecks();
     });
 
     chrome.storage.onChanged.addListener((changes) => {
-        if (changes.focusMode) {
-            isFocusModeOn = changes.focusMode.newValue;
+        if (changes.focusMode) isFocusModeOn = changes.focusMode.newValue;
+        if (changes.shortsMode) shortsMode = changes.shortsMode.newValue;
+        
+        if (changes.darkMode) {
+            isDarkMode = changes.darkMode.newValue;
+            updateWarningTheme(); 
         }
-        if (changes.shortsMode) {
-            shortsMode = changes.shortsMode.newValue;
-        }
-        applySettings();
+        
+        runChecks();
     });
+
+    setInterval(runChecks, 500);
+
+    window.addEventListener('yt-navigate-finish', runChecks);
+    window.addEventListener('popstate', runChecks);
+    
+    const mainObserver = new MutationObserver(() => {
+        if (isFocusModeOn) applyFocusMode();
+    });
+    mainObserver.observe(document.body, { childList: true, subtree: true });
+
+    // Intercept video play events in capture phase to prevent autoplay.
+    window.addEventListener('play', (e) => {
+        if (isVideoLocked) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.target.pause();
+            e.target.muted = true;
+        }
+    }, true);
+    
+    window.addEventListener('timeupdate', (e) => {
+        if (isVideoLocked && !e.target.paused) {
+            e.target.pause();
+        }
+    }, true);
+})();
+
+function runChecks() {
+    const currentUrl = window.location.href;
+
+    if (currentUrl.includes('/feed/history')) {
+        deactivateFocusMode();
+        return; 
+    }
+
+    if (isFocusModeOn) {
+        applyFocusMode();
+        
+        if (currentUrl.includes('/shorts/')) {
+            handleShortsBlocking(currentUrl);
+        } else {
+            unlockVideo();
+            removeWarning();
+        }
+    } else {
+        deactivateFocusMode();
+    }
 }
 
-function applySettings() {
-    // Apply Visual Settings
-    if (isFocusModeOn) {
+function applyFocusMode() {
+    if (!document.body.classList.contains('focus-mode-active')) {
         document.body.classList.add('focus-mode-active');
-        manualScan();
-    } else {
-        document.body.classList.remove('focus-mode-active');
-        
-        // Reset hidden elements
-        const hiddenElements = document.querySelectorAll('[data-focus-tube-hidden]');
-        hiddenElements.forEach(el => {
-            el.style.display = '';
-            el.removeAttribute('data-focus-tube-hidden');
-        });
-        
-        // Reset warnings
-        const overlay = document.querySelector('.focus-tube-warning');
-        if (overlay) overlay.remove();
-
-        const video = document.querySelector('video');
-        if (video) {
-            video.play().catch(e => { /* Ignore auto-play blocks */ });
-        }
     }
     
-    // Check blocking status
-    const id = getShortsId(location.href);
-    if (id) handleShortsAction(shortsMode);
-}
-
-function getShortsId(url) {
-    if (!url.includes('/shorts/')) return null;
-    try {
-        return url.split('/shorts/')[1].split('?')[0].split('&')[0];
-    } catch (e) { return null; }
-}
-
-function manualScan() {
-    if (!isFocusModeOn) return;
+    const selectors = [
+        "ytd-guide-entry-renderer[title='Shorts']",
+        "ytd-mini-guide-entry-renderer[aria-label='Shorts']",
+        "ytd-reel-shelf-renderer",
+        "ytd-rich-shelf-renderer[is-shorts]",
+        "yt-chip-cloud-chip-renderer a[href*='/shorts/']"
+    ];
     
-    // Selectors for elements that might contain Shorts
-    const targets = document.querySelectorAll(`
-        ytd-guide-entry-renderer, ytd-mini-guide-entry-renderer, 
-        yt-chip-cloud-chip-renderer, .ytChipShapeChip,
-        ytd-reel-shelf-renderer, ytd-rich-shelf-renderer, 
-        grid-shelf-view-model, ytd-rich-section-renderer,
-        ytd-grid-video-renderer, ytd-notification-renderer, #endpoint
-    `);
+    document.querySelectorAll(selectors.join(',')).forEach(hideElement);
 
-    targets.forEach(item => {
-        const text = (item.innerText || "").trim().toLowerCase();
-        const link = item.querySelector('a');
-        const title = (link ? link.title : "").toLowerCase();
-        const href = (link ? link.href : "").toLowerCase();
-        const isShortsAttr = item.getAttribute('is-shorts') !== null;
-
-        if (text === "shorts" || title === "shorts" || href.includes('/shorts') || isShortsAttr) {
-            if (item.tagName.toLowerCase() !== 'ytd-shorts') {
-                hideElement(item);
-            }
+    document.querySelectorAll('yt-chip-cloud-chip-renderer').forEach(chip => {
+        if (chip.innerText && chip.innerText.trim() === "Shorts") {
+            hideElement(chip);
         }
     });
+}
+
+function deactivateFocusMode() {
+    document.body.classList.remove('focus-mode-active');
+    unlockVideo();
+    removeWarning();
+    
+    document.querySelectorAll('[data-focus-tube-hidden]').forEach(el => {
+        el.style.display = '';
+        el.removeAttribute('data-focus-tube-hidden');
+    });
+}
+
+function handleShortsBlocking(url) {
+    if (url === currentAllowedUrl) return;
+
+    if (shortsMode === 'strict') {
+        window.location.replace("https://www.youtube.com");
+    } else if (shortsMode === 'warn') {
+        showWarning();
+    }
+}
+
+function updateWarningTheme() {
+    const overlay = document.getElementById('focus-tube-warning-overlay');
+    if (overlay) {
+        if (isDarkMode) {
+            overlay.classList.add('dark');
+        } else {
+            overlay.classList.remove('dark');
+        }
+    }
+}
+
+function showWarning() {
+    lockVideo();
+
+    if (document.getElementById('focus-tube-warning-overlay')) {
+        updateWarningTheme();
+        return;
+    }
+
+    const overlay = document.createElement('div');
+    overlay.id = 'focus-tube-warning-overlay';
+    overlay.className = 'focus-tube-warning';
+    
+    if (isDarkMode) {
+        overlay.classList.add('dark');
+    }
+    
+    overlay.innerHTML = `
+        <div class="focus-tube-card">
+            <div class="focus-tube-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+            </div>
+            <h1>Shorts & Distractions Blocked</h1>
+            <p>FocusTube is keeping you productive</p>
+            
+            <div class="focus-tube-btn-group">
+                <button id="ft-go-back" class="focus-tube-btn focus-tube-btn-primary">Go Back</button>
+                <button id="ft-watch" class="focus-tube-btn focus-tube-btn-secondary">Watch Anyway</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    document.getElementById('ft-go-back').addEventListener('click', () => {
+        window.location.href = "https://www.youtube.com";
+    });
+
+    document.getElementById('ft-watch').addEventListener('click', () => {
+        currentAllowedUrl = window.location.href;
+        removeWarning();
+        unlockVideo();
+        
+        const videos = document.querySelectorAll('video');
+        videos.forEach(vid => {
+            vid.muted = false;
+            vid.play().catch(() => {});
+        });
+    });
+}
+
+function removeWarning() {
+    const overlay = document.getElementById('focus-tube-warning-overlay');
+    if (overlay) overlay.remove();
+}
+
+function lockVideo() {
+    if (isVideoLocked) return;
+    isVideoLocked = true;
+
+    document.querySelectorAll('video').forEach(vid => {
+        vid.pause();
+        vid.muted = true;
+    });
+
+    videoLockInterval = setInterval(() => {
+        document.querySelectorAll('video').forEach(vid => {
+            if (!vid.paused || !vid.muted) {
+                vid.pause();
+                vid.muted = true;
+            }
+        });
+    }, 10);
+}
+
+function unlockVideo() {
+    isVideoLocked = false;
+    if (videoLockInterval) {
+        clearInterval(videoLockInterval);
+        videoLockInterval = null;
+    }
 }
 
 function hideElement(element) {
-    if (element.style.display !== 'none') {
+    if (element && element.style.display !== 'none') {
         element.style.display = 'none';
         element.setAttribute('data-focus-tube-hidden', 'true');
-    }
-}
-
-function startObservers() {
-    const observer = new MutationObserver(() => {
-        if (isFocusModeOn) manualScan();
-    });
-    
-    if (document.body) {
-        observer.observe(document.body, { childList: true, subtree: true });
-    }
-
-    // Main blocking loop
-    setInterval(() => {
-        // Enforce visual hiding if enabled
-        if (isFocusModeOn) manualScan();
-
-        const newId = getShortsId(location.href);
-
-        if (!newId) {
-            currentShortsId = null;
-            const overlay = document.querySelector('.focus-tube-warning');
-            if (overlay) overlay.remove();
-            return;
-        }
-
-        if (newId !== currentShortsId) {
-            currentShortsId = newId;
-            userAcceptedWarning = false;
-            const overlay = document.querySelector('.focus-tube-warning');
-            if (overlay) overlay.remove();
-        }
-
-        handleShortsAction(shortsMode);
-    }, 1000);
-}
-
-function handleShortsAction(mode) {
-    if (mode === 'allow') {
-        // Passive mode: ensure overlay is gone and video plays
-        const overlay = document.querySelector('.focus-tube-warning');
-        if (overlay) overlay.remove();
-        
-        const video = document.querySelector('video');
-        if (video && video.paused) video.play().catch(e => {});
-        return;
-    }
-
-    if (mode === 'strict') {
-        window.location.replace("https://www.youtube.com");
-        return;
-    }
-
-    if (mode === 'warn') {
-        if (userAcceptedWarning) return;
-        if (document.querySelector('.focus-tube-warning')) return;
-
-        const overlay = document.createElement('div');
-        overlay.className = 'focus-tube-warning';
-        overlay.innerHTML = `
-            <h1>Wait! You are in Focus Mode.</h1>
-            <p>Do you really need to watch this Short?</p>
-            <button class="focus-tube-btn" id="allowBtn">Yes, Let me watch</button>
-        `;
-
-        const player = document.querySelector('ytd-shorts') || document.body;
-        player.appendChild(overlay);
-
-        const video = document.querySelector('video');
-        if (video) video.pause();
-
-        document.getElementById('allowBtn').addEventListener('click', () => {
-            userAcceptedWarning = true;
-            overlay.remove();
-            const video = document.querySelector('video');
-            if (video) video.play().catch(e => {});
-        });
     }
 }

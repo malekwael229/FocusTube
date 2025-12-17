@@ -1,96 +1,430 @@
 /* FocusTube - Main Styles */
 
-/* --- Conditional Hiding (Only active when .focus-mode-active class is present) --- */
-
-/* Search Results Shelf */
-body.focus-mode-active grid-shelf-view-model:has(a[href^="/shorts"]) {
-    display: none !important;
+/* --- Popup Styles --- */
+.focustube-popup-body {
+    width: 280px;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: #fbfbfb;
+    color: #333;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Standard Shelves */
-body.focus-mode-active ytd-reel-shelf-renderer, 
-body.focus-mode-active ytd-rich-shelf-renderer[is-shorts] {
-    display: none !important;
+/* Prevents FOUC (Flash of Unstyled Content) */
+body.preload .header-row,
+body.preload .settings-box {
+    opacity: 0;
+    transition: none !important;
 }
 
-/* Individual Shorts in Search */
-body.focus-mode-active ytd-video-renderer:has(a[href^="/shorts"]) {
-    display: none !important;
+body.preload .slider,
+body.preload .mode-option,
+body.preload .checkmark {
+    transition: none !important;
 }
 
-/* Chip/Filter Buttons */
+
+.focustube-popup-body .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    transition: opacity 0.2s ease-out; 
+}
+
+.focustube-popup-body h2 {
+    margin: 0;
+    font-size: 18px;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+}
+
+/* Switch Component */
+.focustube-popup-body .switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+.focustube-popup-body .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.focustube-popup-body .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #e0e0e0;
+    transition: .3s;
+    border-radius: 34px;
+}
+.focustube-popup-body .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.focustube-popup-body input:checked + .slider {
+    background: linear-gradient(135deg, #2b86c5, #0d9488);
+}
+.focustube-popup-body input:checked + .slider:before {
+    transform: translateX(20px);
+}
+
+/* Small Switch for Dark Mode */
+.focustube-popup-body .small-switch {
+    width: 36px;
+    height: 20px;
+}
+.focustube-popup-body .small-switch .slider:before {
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+}
+.focustube-popup-body .small-switch input:checked + .slider:before {
+    transform: translateX(16px);
+}
+
+/* Settings Container */
+.focustube-popup-body .settings-box {
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    border: 1px solid rgba(0,0,0,0.04);
+    transition: background 0.3s ease, border-color 0.3s ease, opacity 0.2s ease-out;
+}
+
+.focustube-popup-body .section-label {
+    font-size: 13px;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 12px;
+    color: #555;
+}
+
+/* Divider & Settings Row */
+.focustube-popup-body .divider {
+    height: 1px;
+    background-color: #eee;
+    margin: 15px 0;
+    transition: background-color 0.3s ease;
+}
+
+.focustube-popup-body .setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: #555;
+    font-weight: 500;
+}
+
+/* --- Mode Options --- */
+.focustube-popup-body .mode-options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.focustube-popup-body .mode-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    color: #555;
+    border: 1px solid transparent;
+}
+
+.focustube-popup-body .mode-option:hover {
+    background: #f1f3f5;
+}
+
+.focustube-popup-body .mode-option.selected {
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-color: rgba(0,0,0,0.05);
+    color: #222;
+    font-weight: 600;
+}
+
+/* Checkmark */
+.focustube-popup-body .checkmark {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2b86c5, #0d9488);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.2s ease;
+}
+.focustube-popup-body .mode-option.selected .checkmark {
+    opacity: 1;
+    transform: scale(1);
+}
+.focustube-popup-body .checkmark::after {
+    content: '';
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    border-radius: 1px;
+    margin-bottom: 2px;
+}
+
+/* Disabled State */
+.focustube-popup-body .mode-option.disabled {
+    color: #ccc;
+    cursor: not-allowed;
+    background-color: #fafafa;
+}
+
+.focustube-popup-body .note {
+    font-size: 11px;
+    color: #888;
+    margin-top: 15px;
+    line-height: 1.4;
+    padding: 0 5px;
+    text-align: center;
+}
+
+
+/* Dark Mode: Popup */
+
+body.dark-mode {
+    background: #1c1c1e;
+    color: #fff;
+}
+
+body.dark-mode .settings-box {
+    background: #2c2c2e;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+body.dark-mode .section-label,
+body.dark-mode .setting-row {
+    color: #d1d1d6;
+}
+
+body.dark-mode .divider {
+    background-color: #3a3a3c;
+}
+
+body.dark-mode .mode-option {
+    background: #3a3a3c;
+    color: #d1d1d6;
+}
+
+body.dark-mode .mode-option:hover {
+    background: #48484a;
+}
+
+body.dark-mode .mode-option.selected {
+    background: #48484a;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+body.dark-mode .mode-option.disabled {
+    background: #262628;
+    color: #555;
+}
+
+body.dark-mode .slider {
+    background-color: #48484a;
+}
+body.dark-mode input:checked + .slider {
+    background: linear-gradient(135deg, #2b86c5, #0d9488);
+}
+
+
+/* Element Hiding */
+body.focus-mode-active ytd-reel-shelf-renderer,
+body.focus-mode-active ytd-rich-shelf-renderer[is-shorts],
+body.focus-mode-active ytd-video-renderer:has(a[href^="/shorts"]),
+body.focus-mode-active grid-shelf-view-model:has(a[href^="/shorts"]),
+body.focus-mode-active ytd-guide-entry-renderer:has(a[title="Shorts"]),
+body.focus-mode-active ytd-mini-guide-entry-renderer:has(a[title="Shorts"]),
 body.focus-mode-active yt-chip-cloud-chip-renderer:has(span[title="Shorts"]),
 body.focus-mode-active yt-chip-cloud-chip-renderer:has(yt-formatted-string[title="Shorts"]),
 body.focus-mode-active yt-chip-cloud-chip-renderer:has([aria-label="Shorts"]) {
     display: none !important;
 }
 
-/* Sidebar Navigation */
-body.focus-mode-active ytd-guide-entry-renderer:has(a[title="Shorts"]),
-body.focus-mode-active ytd-mini-guide-entry-renderer:has(a[title="Shorts"]) {
-    display: none !important;
-}
 
-/* Mobile/Tablet Bottom Bar */
-body.focus-mode-active ytd-pivot-bar-item-renderer:has(div:contains("Shorts")) {
-    display: none !important;
-}
+/* Warning Overlay */
 
-/* Red Logo cleanup */
-body.focus-mode-active .yt-shelf-header-layout__leading-image {
-    display: none !important;
-}
-
-
-/* --- Warning Overlay Styles --- */
 .focus-tube-warning {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: #000000;
-    opacity: 1;
-    z-index: 2147483647;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 2147483647 !important;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    color: white;
-    font-family: 'Roboto', 'Arial', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    animation: ft-fade-in 0.4s ease-out;
+    transition: background-color 0.3s ease;
+}
+
+@keyframes ft-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.focus-tube-card {
+    background: transparent;
     text-align: center;
+    max-width: 480px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    animation: ft-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.focus-tube-warning h1 {
-    font-size: 42px !important;
-    margin: 0 0 20px 0 !important;
-    color: #ff4444 !important;
-    font-weight: 700 !important;
-    letter-spacing: 1px;
+@keyframes ft-slide-up {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
-.focus-tube-warning p {
-    font-size: 20px !important;
-    margin-bottom: 40px !important;
-    color: #eeeeee !important;
+.focus-tube-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 32px;
+    box-shadow: 0 10px 25px rgba(79, 172, 254, 0.4);
+    transition: box-shadow 0.3s ease;
+}
+
+.focus-tube-icon svg {
+    width: 40px;
+    height: 40px;
+    color: white;
+    stroke-width: 2;
+}
+
+.focus-tube-card h1 {
+    font-size: 24px !important;
+    margin: 0 0 12px 0 !important;
+    font-weight: 600 !important;
+    color: #1d1d1f !important;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    transition: color 0.3s ease;
+}
+
+.focus-tube-card p {
+    font-size: 17px !important;
+    margin: 0 0 40px 0 !important;
+    color: #86868b !important;
+    line-height: 1.4;
+    font-weight: 400;
+    transition: color 0.3s ease;
+}
+
+.focus-tube-btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    align-items: center;
 }
 
 .focus-tube-btn {
-    padding: 18px 36px !important;
-    font-size: 18px !important;
-    font-weight: 600 !important;
-    border: 2px solid #ffffff !important;
-    background: transparent !important;
-    color: white !important;
+    padding: 12px 32px !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    border-radius: 99px !important;
     cursor: pointer !important;
-    border-radius: 8px !important;
-    transition: all 0.2s ease-in-out !important;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    transition: all 0.2s ease !important;
+    border: none !important;
+    font-family: inherit !important;
+    outline: none !important;
 }
 
-.focus-tube-btn:hover {
-    background: #ffffff !important;
-    color: #000000 !important;
-    transform: scale(1.05);
+.focus-tube-btn-primary {
+    background: #007aff !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+    min-width: 160px;
+}
+
+.focus-tube-btn-primary:hover {
+    background: #0062cc !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 122, 255, 0.3);
+}
+
+.focus-tube-btn-secondary {
+    background: transparent !important;
+    color: #86868b !important;
+    font-size: 14px !important;
+    padding: 8px 16px !important;
+    transition: color 0.3s ease;
+}
+
+.focus-tube-btn-secondary:hover {
+    color: #1d1d1f !important;
+    text-decoration: underline;
+}
+
+/* Dark Mode: Warning Overlay */
+
+.focus-tube-warning.dark {
+    background-color: rgba(0, 0, 0, 0.96) !important;
+}
+
+.focus-tube-warning.dark .focus-tube-card h1 {
+    color: #ffffff !important;
+}
+
+.focus-tube-warning.dark .focus-tube-card p {
+    color: #a0a0a0 !important;
+}
+
+.focus-tube-warning.dark .focus-tube-icon {
+    box-shadow: 0 0 30px rgba(79, 172, 254, 0.6);
+}
+
+.focus-tube-warning.dark .focus-tube-btn-secondary {
+    color: #888888 !important;
+}
+
+.focus-tube-warning.dark .focus-tube-btn-secondary:hover {
+    color: #ffffff !important;
 }
