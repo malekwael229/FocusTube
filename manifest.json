@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "FocusTube",
+  "version": "1.0",
+  "description": "Stop Doomscrolling. Block YouTube Shorts.",
+  "permissions": ["activeTab", "storage"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "css": ["styles.css"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "icons": {
+      "16": "icons/icon.png",
+      "48": "icons/icon.png",
+      "128": "icons/icon.png"
+  }
+}

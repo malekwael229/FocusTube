@@ -1,0 +1,96 @@
+/* FocusTube - Main Styles */
+
+/* --- Conditional Hiding (Only active when .focus-mode-active class is present) --- */
+
+/* Search Results Shelf */
+body.focus-mode-active grid-shelf-view-model:has(a[href^="/shorts"]) {
+    display: none !important;
+}
+
+/* Standard Shelves */
+body.focus-mode-active ytd-reel-shelf-renderer, 
+body.focus-mode-active ytd-rich-shelf-renderer[is-shorts] {
+    display: none !important;
+}
+
+/* Individual Shorts in Search */
+body.focus-mode-active ytd-video-renderer:has(a[href^="/shorts"]) {
+    display: none !important;
+}
+
+/* Chip/Filter Buttons */
+body.focus-mode-active yt-chip-cloud-chip-renderer:has(span[title="Shorts"]),
+body.focus-mode-active yt-chip-cloud-chip-renderer:has(yt-formatted-string[title="Shorts"]),
+body.focus-mode-active yt-chip-cloud-chip-renderer:has([aria-label="Shorts"]) {
+    display: none !important;
+}
+
+/* Sidebar Navigation */
+body.focus-mode-active ytd-guide-entry-renderer:has(a[title="Shorts"]),
+body.focus-mode-active ytd-mini-guide-entry-renderer:has(a[title="Shorts"]) {
+    display: none !important;
+}
+
+/* Mobile/Tablet Bottom Bar */
+body.focus-mode-active ytd-pivot-bar-item-renderer:has(div:contains("Shorts")) {
+    display: none !important;
+}
+
+/* Red Logo cleanup */
+body.focus-mode-active .yt-shelf-header-layout__leading-image {
+    display: none !important;
+}
+
+
+/* --- Warning Overlay Styles --- */
+.focus-tube-warning {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    opacity: 1;
+    z-index: 2147483647;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-family: 'Roboto', 'Arial', sans-serif;
+    text-align: center;
+}
+
+.focus-tube-warning h1 {
+    font-size: 42px !important;
+    margin: 0 0 20px 0 !important;
+    color: #ff4444 !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px;
+}
+
+.focus-tube-warning p {
+    font-size: 20px !important;
+    margin-bottom: 40px !important;
+    color: #eeeeee !important;
+}
+
+.focus-tube-btn {
+    padding: 18px 36px !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    border: 2px solid #ffffff !important;
+    background: transparent !important;
+    color: white !important;
+    cursor: pointer !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease-in-out !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.focus-tube-btn:hover {
+    background: #ffffff !important;
+    color: #000000 !important;
+    transform: scale(1.05);
+}

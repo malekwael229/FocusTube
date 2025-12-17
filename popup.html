@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { width: 280px; padding: 20px; font-family: 'Segoe UI', sans-serif; background: #f9f9f9; color: #333; }
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        h2 { margin: 0; color: #cc0000; font-size: 18px; }
+        
+        /* Switch Component */
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #cc0000; }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        /* Settings Container */
+        .settings-box { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        label { font-size: 13px; font-weight: 600; color: #666; display: block; margin-bottom: 8px; }
+        
+        select { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd; background: #fff; font-size: 14px; outline: none; cursor: pointer; }
+        select:focus { border-color: #cc0000; }
+
+        .note { font-size: 11px; color: #888; margin-top: 8px; line-height: 1.4; }
+    </style>
+</head>
+<body>
+    <div class="header-row">
+        <h2>FocusTube</h2>
+        <label class="switch">
+            <input type="checkbox" id="mainToggle">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="settings-box">
+        <label for="modeSelect">When I open a Short...</label>
+        <select id="modeSelect">
+            <option value="strict">Strict: Kick me out</option>
+            <option value="warn">Soft: Warn me first</option>
+            <option value="allow">Passive: Let me watch</option>
+        </select>
+        <p class="note" id="modeDesc">If you try to watch a Short, you will be instantly redirected to the Homepage.</p>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
