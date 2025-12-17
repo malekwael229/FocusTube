@@ -62,4 +62,3 @@ Contributions are welcome! If you find a bug or have a feature request:
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
-```
