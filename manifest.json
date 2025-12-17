@@ -4,6 +4,7 @@
   "version": "1.2",
   "description": "Stop Doomscrolling. Track Time Saved.",
   "permissions": ["activeTab", "storage"],
+  "host_permissions": ["https://raw.githubusercontent.com/"],
   "action": {
     "default_popup": "popup.html"
   },

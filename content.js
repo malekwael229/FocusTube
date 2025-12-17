@@ -38,7 +38,6 @@ let videoLockInterval = null;
     });
     mainObserver.observe(document.body, { childList: true, subtree: true });
 
-    // Intercept video play events in capture phase to prevent autoplay.
     window.addEventListener('play', (e) => {
         if (isVideoLocked) {
             e.preventDefault();
@@ -221,3 +220,82 @@ function hideElement(element) {
         element.setAttribute('data-focus-tube-hidden', 'true');
     }
 }
+
+(function checkForUpdates() {
+    const GITHUB_MANIFEST_URL = 'https://raw.githubusercontent.com/malekwael229/FocusTube/main/manifest.json';
+    
+    const localVersion = chrome.runtime.getManifest().version;
+
+    fetch(GITHUB_MANIFEST_URL)
+        .then(response => response.json())
+        .then(remoteManifest => {
+            if (compareVersions(localVersion, remoteManifest.version)) {
+                showUpdateNotification(remoteManifest.version);
+            }
+        })
+        .catch(err => console.log('FocusTube update check failed', err));
+})();
+
+function compareVersions(local, remote) {
+    const v1 = local.split('.').map(Number);
+    const v2 = remote.split('.').map(Number);
+    
+    for (let i = 0; i < Math.max(v1.length, v2.length); i++) {
+        const n1 = v1[i] || 0;
+        const n2 = v2[i] || 0;
+        if (n2 > n1) return true;
+        if (n1 > n2) return false;
+    }
+    return false;
+}
+
+function showUpdateNotification(newVersion) {
+    if (sessionStorage.getItem('ft_update_shown')) return;
+    
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #2b2b2b;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        z-index: 2147483647;
+        font-family: -apple-system, sans-serif;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        animation: slideIn 0.5s ease;
+        border: 1px solid #444;
+    `;
+    
+    notification.innerHTML = `
+        <div>
+            <div style="font-weight:bold; font-size:14px; margin-bottom:4px">FocusTube Update</div>
+            <div style="font-size:12px; color:#aaa">Version ${newVersion} is available.</div>
+        </div>
+        <a href="https://github.com/malekwael229/FocusTube" target="_blank" 
+           style="background:#007aff; color:white; padding:8px 16px; border-radius:20px; text-decoration:none; font-size:12px; font-weight:600;">
+           Get it
+        </a>
+        <button id="ft-close-update" style="background:none; border:none; color:#666; cursor:pointer; font-size:16px;">×</button>
+    `;
+
+    document.body.appendChild(notification);
+    sessionStorage.setItem('ft_update_shown', 'true');
+
+    document.getElementById('ft-close-update').addEventListener('click', () => {
+        notification.remove();
+    });
+}
+
+const style = document.createElement('style');
+style.innerHTML = `
+    @keyframes slideIn {
+        from { transform: translateY(100px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+`;
+document.head.appendChild(style);
