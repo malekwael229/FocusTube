@@ -2,30 +2,38 @@
 <html>
 <head>
     <style>
-        body { width: 280px; padding: 20px; font-family: 'Segoe UI', sans-serif; background: #f9f9f9; color: #333; }
-        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        h2 { margin: 0; color: #cc0000; font-size: 18px; }
+        /* DARK MODE / BLUEPRINT THEME */
+        body { width: 300px; padding: 0; margin: 0; font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; }
         
-        /* Switch Component */
-        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .header { padding: 20px; background: #1e293b; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
+        h2 { margin: 0; color: #38bdf8; font-size: 16px; letter-spacing: 1px; text-transform: uppercase; }
+
+        /* SWITCH */
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #cc0000; }
-        input:checked + .slider:before { transform: translateX(22px); }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #10b981; }
+        input:checked + .slider:before { transform: translateX(20px); }
 
-        /* Settings Container */
-        .settings-box { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        label { font-size: 13px; font-weight: 600; color: #666; display: block; margin-bottom: 8px; }
+        /* STATS GRID */
+        .stats-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px; }
+        .stat-card { background: #1e293b; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #334155; }
+        .stat-val { display: block; font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 5px; }
+        .stat-label { font-size: 10px; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px; }
         
-        select { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd; background: #fff; font-size: 14px; outline: none; cursor: pointer; }
-        select:focus { border-color: #cc0000; }
+        /* SETTINGS */
+        .settings-box { padding: 0 20px 20px 20px; }
+        label { font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 8px; text-transform: uppercase; }
+        
+        select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #020617; color: #fff; font-size: 13px; outline: none; cursor: pointer; }
+        select:focus { border-color: #38bdf8; }
 
-        .note { font-size: 11px; color: #888; margin-top: 8px; line-height: 1.4; }
+        .note { font-size: 10px; color: #64748b; margin-top: 8px; line-height: 1.4; }
     </style>
 </head>
 <body>
-    <div class="header-row">
+    <div class="header">
         <h2>FocusTube</h2>
         <label class="switch">
             <input type="checkbox" id="mainToggle">
@@ -33,14 +41,25 @@
         </label>
     </div>
 
+    <div class="stats-container">
+        <div class="stat-card">
+            <span class="stat-val" id="shortsBlocked">0</span>
+            <span class="stat-label">Shorts Blocked</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-val" id="timeSaved">0m</span>
+            <span class="stat-label">Time Saved</span>
+        </div>
+    </div>
+
     <div class="settings-box">
-        <label for="modeSelect">When I open a Short...</label>
+        <label for="modeSelect">Blocking Strategy</label>
         <select id="modeSelect">
-            <option value="strict">Strict: Kick me out</option>
-            <option value="warn">Soft: Warn me first</option>
-            <option value="allow">Passive: Let me watch</option>
+            <option value="strict">Strict (Redirect)</option>
+            <option value="warn">Soft (Warning)</option>
+            <option value="allow">Passive (Allow)</option>
         </select>
-        <p class="note" id="modeDesc">If you try to watch a Short, you will be instantly redirected to the Homepage.</p>
+        <p class="note" id="modeDesc">Strict: Instantly kicks you out.</p>
     </div>
 
     <script src="popup.js"></script>
