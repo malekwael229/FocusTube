@@ -343,4 +343,11 @@ style.innerHTML = `
         to { transform: translateY(0); opacity: 1; }
     }
 `;
-document.head.appendChild(style);
+// Safety check: Wait for head to exist
+if (document.head) {
+    document.head.appendChild(style);
+} else {
+    document.addEventListener('DOMContentLoaded', () => {
+        document.head.appendChild(style);
+    });
+}
