@@ -6,35 +6,54 @@ let currentAllowedUrl = null;
 let isVideoLocked = false;
 let videoLockInterval = null;
 
+
 (function initialize() {
+    
     chrome.storage.local.get(['focusMode', 'shortsMode', 'darkMode'], (result) => {
         isFocusModeOn = result.focusMode !== false;
         shortsMode = result.shortsMode || 'strict';
-        
         isDarkMode = result.darkMode !== false; 
         
-        runChecks();
+       
+        if (document.body) {
+            startApp();
+        } else {
+            document.addEventListener('DOMContentLoaded', startApp);
+        }
     });
 
+    
     chrome.storage.onChanged.addListener((changes) => {
         if (changes.focusMode) isFocusModeOn = changes.focusMode.newValue;
         if (changes.shortsMode) shortsMode = changes.shortsMode.newValue;
         
         if (changes.darkMode) {
             isDarkMode = changes.darkMode.newValue;
-            updateWarningTheme(); 
+            if (document.body) updateWarningTheme(); 
         }
         
-        runChecks();
+        if (document.body) runChecks();
     });
+    
+    
+    checkForUpdates();
+})();
 
+function startApp() {
+    
+    if (!document.body) {
+        setTimeout(startApp, 50); // 
+        return;
+    }
+
+   
+    runChecks();
     setInterval(runChecks, 500);
 
     window.addEventListener('yt-navigate-finish', runChecks);
     window.addEventListener('popstate', runChecks);
     
     const mainObserver = new MutationObserver(() => {
-        // Visuals strictly obey the toggle
         if (isFocusModeOn) applyFocusMode();
     });
     mainObserver.observe(document.body, { childList: true, subtree: true });
@@ -53,43 +72,42 @@ let videoLockInterval = null;
             e.target.pause();
         }
     }, true);
-})();
+}
 
 function runChecks() {
+    
+    if (!document.body) return;
+
     const currentUrl = window.location.href;
 
-    // Exception: Always disable everything on History page
     if (currentUrl.includes('/feed/history')) {
         resetAll();
         return; 
     }
 
-    // --- PART 1: VISUALS (Controlled by Toggle) ---
+    // Apply or remove visual focus mode
     if (isFocusModeOn) {
         applyFocusMode();
     } else {
         removeVisualFocus();
     }
 
-    // --- PART 2: BLOCKING (Independent of Toggle) ---
-    // If we are on a Short...
+    
     if (currentUrl.includes('/shorts/')) {
-        // AND the mode is not Passive...
         if (shortsMode !== 'allow') {
             handleShortsBlocking(currentUrl);
         } else {
-            // Mode is Passive: Let them watch
             unlockVideo();
             removeWarning();
         }
     } else {
-        // Not on a Short: Cleanup blocking artifacts
         unlockVideo();
         removeWarning();
     }
 }
 
 function applyFocusMode() {
+    if (!document.body) return;
     if (!document.body.classList.contains('focus-mode-active')) {
         document.body.classList.add('focus-mode-active');
     }
@@ -112,6 +130,7 @@ function applyFocusMode() {
 }
 
 function removeVisualFocus() {
+    if (!document.body) return;
     document.body.classList.remove('focus-mode-active');
     
     document.querySelectorAll('[data-focus-tube-hidden]').forEach(el => {
@@ -239,7 +258,7 @@ function hideElement(element) {
 }
 
 // Update Checker
-(function checkForUpdates() {
+function checkForUpdates() {
     const GITHUB_MANIFEST_URL = 'https://raw.githubusercontent.com/malekwael229/FocusTube/main/manifest.json';
     const localVersion = chrome.runtime.getManifest().version;
 
@@ -247,11 +266,18 @@ function hideElement(element) {
         .then(response => response.json())
         .then(remoteManifest => {
             if (compareVersions(localVersion, remoteManifest.version)) {
-                showUpdateNotification(remoteManifest.version);
+                // Ensure body exists before showing UI
+                if (document.body) {
+                    showUpdateNotification(remoteManifest.version);
+                } else {
+                    document.addEventListener('DOMContentLoaded', () => {
+                        showUpdateNotification(remoteManifest.version);
+                    });
+                }
             }
         })
         .catch(err => console.log('FocusTube update check failed', err));
-})();
+}
 
 function compareVersions(local, remote) {
     const v1 = local.split('.').map(Number);
@@ -268,6 +294,9 @@ function compareVersions(local, remote) {
 function showUpdateNotification(newVersion) {
     if (sessionStorage.getItem('ft_update_shown')) return;
     
+    // Safety check again
+    if (!document.body) return;
+
     const notification = document.createElement('div');
     notification.style.cssText = `
         position: fixed;
@@ -314,4 +343,10 @@ style.innerHTML = `
         to { transform: translateY(0); opacity: 1; }
     }
 `;
-document.head.appendChild(style);
+if (document.head) {
+    document.head.appendChild(style);
+} else {
+    document.addEventListener('DOMContentLoaded', () => {
+        document.head.appendChild(style);
+    });
+}
