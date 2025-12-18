@@ -34,6 +34,7 @@ let videoLockInterval = null;
     window.addEventListener('popstate', runChecks);
     
     const mainObserver = new MutationObserver(() => {
+        // Visuals strictly obey the toggle
         if (isFocusModeOn) applyFocusMode();
     });
     mainObserver.observe(document.body, { childList: true, subtree: true });
@@ -57,22 +58,34 @@ let videoLockInterval = null;
 function runChecks() {
     const currentUrl = window.location.href;
 
+    // Exception: Always disable everything on History page
     if (currentUrl.includes('/feed/history')) {
-        deactivateFocusMode();
+        resetAll();
         return; 
     }
 
+    // --- PART 1: VISUALS (Controlled by Toggle) ---
     if (isFocusModeOn) {
         applyFocusMode();
-        
-        if (currentUrl.includes('/shorts/')) {
+    } else {
+        removeVisualFocus();
+    }
+
+    // --- PART 2: BLOCKING (Independent of Toggle) ---
+    // If we are on a Short...
+    if (currentUrl.includes('/shorts/')) {
+        // AND the mode is not Passive...
+        if (shortsMode !== 'allow') {
             handleShortsBlocking(currentUrl);
         } else {
+            // Mode is Passive: Let them watch
             unlockVideo();
             removeWarning();
         }
     } else {
-        deactivateFocusMode();
+        // Not on a Short: Cleanup blocking artifacts
+        unlockVideo();
+        removeWarning();
     }
 }
 
@@ -98,15 +111,19 @@ function applyFocusMode() {
     });
 }
 
-function deactivateFocusMode() {
+function removeVisualFocus() {
     document.body.classList.remove('focus-mode-active');
-    unlockVideo();
-    removeWarning();
     
     document.querySelectorAll('[data-focus-tube-hidden]').forEach(el => {
         el.style.display = '';
         el.removeAttribute('data-focus-tube-hidden');
     });
+}
+
+function resetAll() {
+    removeVisualFocus();
+    unlockVideo();
+    removeWarning();
 }
 
 function handleShortsBlocking(url) {
@@ -221,9 +238,9 @@ function hideElement(element) {
     }
 }
 
+// Update Checker
 (function checkForUpdates() {
     const GITHUB_MANIFEST_URL = 'https://raw.githubusercontent.com/malekwael229/FocusTube/main/manifest.json';
-    
     const localVersion = chrome.runtime.getManifest().version;
 
     fetch(GITHUB_MANIFEST_URL)
@@ -239,7 +256,6 @@ function hideElement(element) {
 function compareVersions(local, remote) {
     const v1 = local.split('.').map(Number);
     const v2 = remote.split('.').map(Number);
-    
     for (let i = 0; i < Math.max(v1.length, v2.length); i++) {
         const n1 = v1[i] || 0;
         const n2 = v2[i] || 0;
