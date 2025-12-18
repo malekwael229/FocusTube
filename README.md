@@ -1,25 +1,30 @@
 # FocusTube 🛡️
 
-A Manifest V3 Chrome Extension that forces YouTube to be a productivity tool, not a slot machine. 
+A Manifest V3 browser extension that forces YouTube to be a productivity tool, not a slot machine. 
 
 It aggressively blocks Shorts, hides algorithmic feeds, and prevents doomscrolling. Unlike basic element blockers, FocusTube handles YouTube's "Single Page App" navigation events to ensure blocks persist between page views.
 
 ## Features
 
 *   **Strict Mode:** Instantly redirects you to the homepage if you try to open a Short.
-*   **Soft Mode:** displays a warning overlay (with a "Watch Anyway" delay) instead of a hard redirect.
-*   **Feed Cleaning:** Hides the "Shorts" shelf, sidebar recommendations, and the main algorithmic feed.
-*   **Dark Mode Support:** Warning overlays respect your system/browser theme.
+*   **Soft Mode:** Displays a full-screen warning overlay (with a "Watch Anyway" button) instead of a hard redirect.
+*   **Passive Mode:** Temporarily allows Shorts viewing without disabling the extension entirely.
+*   **Visual Cleaning:** Hides the "Shorts" shelf, sidebar recommendations, and filter chips.
+*   **Dark Mode:** Fully themed UI that respects your system preferences.
+*   **Auto-Updates:** (For manual installs) Automatically checks this repository for new versions and notifies you to update.
 
-## Installation (Developer Mode)
+## Installation
 
-The extension is currently not on the Chrome Web Store. To install it:
+### Official Stores
+*   **Microsoft Edge:** *[Pending Review - Link coming soon]*
+*   **Firefox Add-ons:** *[Pending Review - Link coming soon]*
 
-1.  Clone the repository:
+### Manual Installation (Developer Mode)
+1.  Clone or download this repository:
     ```bash
     git clone https://github.com/malekwael229/FocusTube.git
     ```
-2.  Open Chrome and navigate to `chrome://extensions`.
+2.  Open Chrome/Edge and navigate to `chrome://extensions`.
 3.  Toggle **Developer mode** in the top right corner.
 4.  Click **Load unpacked**.
 5.  Select the folder containing `manifest.json`.
@@ -27,14 +32,15 @@ The extension is currently not on the Chrome Web Store. To install it:
 ## Configuration
 
 Click the extension icon in your toolbar to access the control panel:
-*   **Toggle Master Switch:** Turn the extension on/off globally.
-*   **Shorts Behavior:** Switch between "Strict" (Kick out) and "Soft" (Warn).
-*   **Dark Mode:** Force the extension UI to dark mode.
+*   **Master Toggle:** Turn the visual hiding features on/off.
+*   **Action Modes:** Switch between "Strict" (Kick out), "Soft" (Warn), and "Passive" (Allow).
+*   **Dark Mode:** Toggle the extension popup theme.
 
 ## Technical Details
 
-*   **Architecture:** built on Manifest V3.
+*   **Architecture:** Built on Manifest V3.
 *   **Performance:** Uses `MutationObserver` and listens for YouTube's specific `yt-navigate-finish` events to minimize performance overhead.
+*   **Update Engine:** Includes a custom fetcher that checks `manifest.json` on GitHub to alert side-loaded users of updates.
 *   **Privacy:** No external tracking. All settings are saved to `chrome.storage.local`.
 
 ## Known Issues
