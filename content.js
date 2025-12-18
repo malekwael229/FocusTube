@@ -85,7 +85,7 @@ function runChecks() {
         return; 
     }
 
-    // Apply or remove visual focus mode
+    // --- PART 1: VISUALS (Controlled by Toggle) ---
     if (isFocusModeOn) {
         applyFocusMode();
     } else {
@@ -343,10 +343,4 @@ style.innerHTML = `
         to { transform: translateY(0); opacity: 1; }
     }
 `;
-if (document.head) {
-    document.head.appendChild(style);
-} else {
-    document.addEventListener('DOMContentLoaded', () => {
-        document.head.appendChild(style);
-    });
-}
+document.head.appendChild(style);
