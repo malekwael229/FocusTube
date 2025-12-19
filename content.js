@@ -85,7 +85,6 @@ function runChecks() {
         return; 
     }
 
-    // --- PART 1: VISUALS (Controlled by Toggle) ---
     if (isFocusModeOn) {
         applyFocusMode();
     } else {
@@ -266,7 +265,6 @@ function checkForUpdates() {
         .then(response => response.json())
         .then(remoteManifest => {
             if (compareVersions(localVersion, remoteManifest.version)) {
-                // Ensure body exists before showing UI
                 if (document.body) {
                     showUpdateNotification(remoteManifest.version);
                 } else {
@@ -294,7 +292,6 @@ function compareVersions(local, remote) {
 function showUpdateNotification(newVersion) {
     if (sessionStorage.getItem('ft_update_shown')) return;
     
-    // Safety check again
     if (!document.body) return;
 
     const notification = document.createElement('div');
@@ -343,7 +340,6 @@ style.innerHTML = `
         to { transform: translateY(0); opacity: 1; }
     }
 `;
-// Safety check: Wait for head to exist
 if (document.head) {
     document.head.appendChild(style);
 } else {
