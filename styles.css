@@ -131,7 +131,6 @@ body.preload .checkmark {
 .timer-btn.break { background: #10b981; }
 .timer-label { font-size: 10px; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px; }
 .timer-display { font-size: 28px; font-weight: 700; margin-bottom: 10px; font-variant-numeric: tabular-nums; }
-.debug-btn { margin-top: 8px; background: #666; font-size: 11px; padding: 5px; }
 .hidden { display: none; }
 .timer-note { font-size: 10px; color: #888; margin-top: 8px; }
 

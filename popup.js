@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const statShorts = document.getElementById('statShorts');
     const statTime = document.getElementById('statTime');
     const timerBtn = document.getElementById('timerBtn');
-    const skipTimer = document.getElementById('skipTimer');
     const timerDisplay = document.getElementById('timerDisplay');
     const timerLabel = document.getElementById('timerLabel');
 
@@ -85,10 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    skipTimer.addEventListener('click', () => {
-        chrome.storage.local.set({ ft_timer_end: Date.now() + 2000 });
-    });
-
     function startTimer(minutes, type) {
         const endTime = Date.now() + (minutes * 60 * 1000);
         chrome.storage.local.set({ ft_timer_end: endTime, ft_timer_type: type });
@@ -100,7 +95,6 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(timerInterval);
         timerDisplay.classList.add('hidden');
         timerLabel.classList.add('hidden');
-        skipTimer.classList.add('hidden');
         timerBtn.textContent = "Start Pomodoro Timer (25m)";
         timerBtn.classList.remove('active', 'break');
         unlockUiFromTimer();
@@ -169,7 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function startTimerDisplay(endTime, type) {
         timerBtn.textContent = "Stop Session";
         timerBtn.classList.add('active');
-        skipTimer.classList.remove('hidden');
         
         if (type === 'break') {
             timerBtn.classList.add('break');
