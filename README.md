@@ -18,7 +18,7 @@ It aggressively blocks Shorts, hides algorithmic feeds, and prevents doomscrolli
 ## Installation
 
 ### Official Stores
-*   **Microsoft Edge:** *[Pending Review - Link coming soon]*
+*   **Microsoft Edge:** *[Still on V1.0](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)* Will update soon.
 *   **Firefox Add-ons:** *[Pending Review - Link coming soon]*
 
 ### Manual Installation (Developer Mode)
