@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "FocusTube",
+  "name": "FocusTube: YouTube Shorts Blocker",
   "version": "1.3",
   "description": "Stop Doomscrolling. Track Time Saved.",
   "permissions": ["activeTab", "storage"],
@@ -31,4 +31,5 @@
     }
   }
 }
+
 
