@@ -1,4 +1,4 @@
-# FocusTube 🛡️
+# FocusTube: YouTube Shorts Blocker 🛡️
 
 A Manifest V3 browser extension that forces YouTube to be a productivity tool, not a slot machine. 
 
