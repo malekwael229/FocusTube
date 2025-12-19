@@ -1,3 +1,5 @@
+<img width="1400" height="560" alt="Untitled (440 x 280 px) (1)" src="https://github.com/user-attachments/assets/1e95b1ee-c4a4-4d4f-a898-f00dcef223c4" />
+
 # FocusTube: YouTube Shorts Blocker 🛡️
 
 A Manifest V3 browser extension that forces YouTube to be a productivity tool, not a slot machine. 
