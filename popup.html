@@ -5,27 +5,56 @@
 </head>
 <body class="focustube-popup-body dark-mode preload">
     <div class="header-row">
-        <h2>FocusTube</h2>
+        <div class="title-group">
+            <h2>FocusTube</h2>
+            <div id="githubBtn" class="icon-btn" title="Open Source Code">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                </svg>
+            </div>
+        </div>
         <label class="switch">
             <input type="checkbox" id="mainToggle" checked>
-            <span class="slider"></span>
+            <span class="slider no-anim"></span>
         </label>
     </div>
 
+    <div class="stats-container">
+        <div class="stat-box">
+            <span class="stat-value" id="statShorts">0</span>
+            <span class="stat-label">Blocked</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-box">
+            <span class="stat-value" id="statTime">0m</span>
+            <span class="stat-label">Saved</span>
+        </div>
+    </div>
+
     <div class="settings-box">
-        <label class="section-label">When I open a Short...</label>
+        <div class="timer-section">
+            <div id="timerDisplay" class="timer-display hidden">00:00</div>
+            <div id="timerLabel" class="timer-label hidden">POMODORO ACTIVE</div>
+            <button id="timerBtn" class="timer-btn">Start Pomodoro Timer (25m)</button>
+            <button id="skipTimer" class="timer-btn hidden debug-btn">Skip to end (Debug)</button>
+            <p id="timerNote" class="timer-note">Strict Mode is enforced while timer is active.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <label class="section-label">Default Behavior</label>
         
         <div class="mode-options-container" id="modeOptions">
             <div class="mode-option selected" data-value="strict">
                 <span class="mode-option-text">Strict: Kick me out</span>
                 <div class="checkmark"></div>
             </div>
-            <div class="mode-option" data-value="warn">
+            <div class="mode-option" data-value="warn" id="warnOption">
                 <span class="mode-option-text">Soft: Warn me first</span>
                 <div class="checkmark"></div>
             </div>
-            <div class="mode-option disabled" data-value="allow" id="passiveOption">
-                <span class="mode-option-text">Passive (Turn off Focus Mode)</span>
+            <div class="mode-option" data-value="allow" id="passiveOption">
+                <span class="mode-option-text">Passive: Let me watch</span>
                 <div class="checkmark"></div>
             </div>
         </div>
@@ -36,10 +65,9 @@
             <span class="setting-label">Dark Mode</span>
             <label class="switch small-switch">
                 <input type="checkbox" id="darkModeToggle" checked>
-                <span class="slider"></span>
+                <span class="slider no-anim"></span>
             </label>
         </div>
-
         <p class="note" id="modeDesc">If you try to watch a Short, you will be instantly redirected to the Homepage.</p>
     </div>
 
