@@ -6,15 +6,12 @@ let currentAllowedUrl = null;
 let isVideoLocked = false;
 let videoLockInterval = null;
 
-
 (function initialize() {
-    
     chrome.storage.local.get(['focusMode', 'shortsMode', 'darkMode'], (result) => {
         isFocusModeOn = result.focusMode !== false;
         shortsMode = result.shortsMode || 'strict';
         isDarkMode = result.darkMode !== false; 
         
-       
         if (document.body) {
             startApp();
         } else {
@@ -22,7 +19,6 @@ let videoLockInterval = null;
         }
     });
 
-    
     chrome.storage.onChanged.addListener((changes) => {
         if (changes.focusMode) isFocusModeOn = changes.focusMode.newValue;
         if (changes.shortsMode) shortsMode = changes.shortsMode.newValue;
@@ -35,26 +31,28 @@ let videoLockInterval = null;
         if (document.body) runChecks();
     });
     
-    
     checkForUpdates();
 })();
 
 function startApp() {
-    
     if (!document.body) {
-        setTimeout(startApp, 50); // 
+        setTimeout(startApp, 50); 
         return;
     }
 
-   
     runChecks();
     setInterval(runChecks, 500);
 
     window.addEventListener('yt-navigate-finish', runChecks);
     window.addEventListener('popstate', runChecks);
     
+    // --- FIXED OBSERVER LOGIC ---
     const mainObserver = new MutationObserver(() => {
-        if (isFocusModeOn) applyFocusMode();
+        // Only apply focus mode if ON AND NOT on history page
+        // This stops the "Fight" that causes flickering
+        if (isFocusModeOn && !window.location.href.includes('/feed/history')) {
+            applyFocusMode();
+        }
     });
     mainObserver.observe(document.body, { childList: true, subtree: true });
 
@@ -75,23 +73,24 @@ function startApp() {
 }
 
 function runChecks() {
-    
     if (!document.body) return;
 
     const currentUrl = window.location.href;
 
+    // Priority Check: History Page
     if (currentUrl.includes('/feed/history')) {
         resetAll();
         return; 
     }
 
+    // --- PART 1: VISUALS ---
     if (isFocusModeOn) {
         applyFocusMode();
     } else {
         removeVisualFocus();
     }
 
-    
+    // --- PART 2: BLOCKING ---
     if (currentUrl.includes('/shorts/')) {
         if (shortsMode !== 'allow') {
             handleShortsBlocking(currentUrl);
@@ -291,7 +290,6 @@ function compareVersions(local, remote) {
 
 function showUpdateNotification(newVersion) {
     if (sessionStorage.getItem('ft_update_shown')) return;
-    
     if (!document.body) return;
 
     const notification = document.createElement('div');
