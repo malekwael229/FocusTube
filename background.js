@@ -15,21 +15,22 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === 'focusTubeTimer') {
         chrome.storage.local.get(['ft_timer_type'], (res) => {
             const isWork = res.ft_timer_type === 'work';
-            const title = isWork ? "Focus Session Complete! 🎉" : "Break Over! ⏰";
-            const msg = isWork ? "Time for a 5-minute break." : "Back to work. Shorts are blocked.";
+            const title = isWork ? "Pomodoro Complete! 🎉" : "Break Over! ⏰";
+            const msg = isWork ? "Time for a 5-minute break." : "Back to work. Distractions blocked.";
 
-            chrome.tabs.query({ url: "*://*.youtube.com/*", active: true, lastFocusedWindow: true }, (tabs) => {
+            chrome.tabs.query({}, (tabs) => {
+                let sent = false;
+                for (const tab of tabs) {
+                    if (tab.url && (tab.url.includes('youtube.com') || tab.url.includes('instagram.com') || tab.url.includes('tiktok.com'))) {
+                         chrome.tabs.sendMessage(tab.id, {
+                            action: "TIMER_COMPLETE",
+                            type: isWork ? "work" : "break"
+                        }).catch(() => {});
+                        sent = true;
+                    }
+                }
                 
-                if (tabs && tabs.length > 0) {
-                    chrome.tabs.sendMessage(tabs[0].id, {
-                        action: "TIMER_COMPLETE",
-                        type: isWork ? "work" : "break"
-                    }, (response) => {
-                        if (chrome.runtime.lastError || !response || response.status !== 'received') {
-                            showSystemNotification(title, msg);
-                        }
-                    });
-                } else {
+                if (!sent) {
                     showSystemNotification(title, msg);
                 }
 
