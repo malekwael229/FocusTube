@@ -1,66 +1,72 @@
 <img width="1400" height="560" alt="FocusTube Banner" src="https://github.com/user-attachments/assets/1e95b1ee-c4a4-4d4f-a898-f00dcef223c4" />
 
-# FocusTube: YouTube Shorts Blocker 🛡️
+# FocusTube: Distraction Blocker for YouTube, Instagram & TikTok 🛡️
 
-A Manifest V3 browser extension that forces YouTube to be a productivity tool, not a slot machine. 
+A Manifest V3 browser extension that helps you reclaim your focus by blocking distracting content on today's most addictive platforms.
 
-It aggressively blocks Shorts, hides algorithmic feeds, and prevents doomscrolling. Unlike basic element blockers, FocusTube handles YouTube's "Single Page App" navigation events to ensure blocks persist between page views without needing a page refresh.
+It aggressively blocks YouTube Shorts, Instagram Reels, and the TikTok feed, hiding algorithmic traps to prevent doomscrolling. Unlike basic element blockers, FocusTube is built to handle modern "Single Page App" navigation, ensuring blocks persist without needing a page refresh.
 
-## New in v1.4 🚀
+## New in v1.5 🚀
+*   **Cross-Platform Blocking:** FocusTube now blocks distracting content on YouTube, Instagram, and TikTok.
 *   **Pomodoro Timer:** Built-in 25/5 interval timer. When active, it locks the extension into **Strict Mode** and disables the "Passive" option to ensure you stay focused.
-*   **Gamified Stats:** A real-time dashboard that tracks how many Shorts you've blocked and calculates the estimated time saved.
-*   **Smart Notification Handshake:** Integrated "Toast" notifications and beeps inside YouTube. If YouTube is closed or in the background, it automatically falls back to system-level notifications.
-*   **UI Overhaul:** A completely redesigned interface with a modern dark-mode aesthetic, gradient accents, and a custom smooth-scroll system.
+*   **Gamified Stats:** A real-time dashboard that tracks how many Shorts/Reels you've blocked and calculates the estimated time saved.
+*   **UI Overhaul:** A completely redesigned interface with a modern dark-mode aesthetic, gradient accents, and platform-specific controls.
 
 ## Features
 
 ### 🧠 Behavioral Intervention
-*   **Strict Mode:** Instantly redirects you to the homepage if you try to open a Short. Uses `window.location.replace` to prevent back-button loops.
+*   **Strict Mode:**
+    *   **YouTube:** Instantly redirects you to the homepage if you try to open a Short.
+    *   **Instagram & TikTok:** Displays a full-screen overlay, blocking access to Reels and the feed.
 *   **Soft Mode:** Displays a full-screen warning overlay that pauses and mutes the video, requiring a conscious decision to "Watch Anyway."
 *   **Passive Mode:** Disables active blocking while keeping visual cleaning active (unless toggled off).
 
 ### 🧹 Visual Cleaning
-*   Hides the **"Shorts" shelf** from the Homepage.
-*   Hides **Shorts** from Sidebar recommendations.
-*   Hides **Shorts** filter chips and navigation buttons across the site.
+*   **YouTube:**
+    *   Hides the **"Shorts" shelf** from the Homepage.
+    *   Hides **Shorts** from Sidebar recommendations.
+    *   Hides **Shorts** filter chips and navigation buttons across the site.
+*   **Instagram:**
+    *   Hides the **"Reels" tab** from the main navigation.
+    *   Hides the **"Explore" tab**.
+*   **TikTok:**
+    *   Hides the **"For You"**, **"Following"**, and **"LIVE"** feeds.
 
 ## Installation
 
 ### Official Stores
-*   **Microsoft Edge:** *[Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)* STILL ON V1.0 DIDNT UPDATE YET
+*   **Microsoft Edge:** *[Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)* NOT UPDATED
 *   **Firefox Add-ons:** *[Pending Review]*
+*   **Chrome Web Store:** *[Pending Review]*
 
 ### 🛠️ Manual Installation (Developer Mode)
 
-Because Chrome/Edge and Firefox handle Manifest V3 differently, you must pick the correct manifest file for your browser before loading the extension.
-
 1.  **Clone or Download** this repository to your computer.
-2.  **Select your browser's manifest:**
-    *   **For Chrome or Edge:** Rename `chrome-manifest.json` to `manifest.json`.
-    *   **For Firefox:** Rename `firefox-manifest.json` to `manifest.json`.
-    
-    *(Note: The extension will not load unless the file is named exactly `manifest.json`)*
-
+2.  **Rename the correct manifest file:**
+    *   For **Chrome** or **Edge**, rename `chrome-manifest.json` to `manifest.json`.
+    *   For **Firefox**, rename `firefox-manifest.json` to `manifest.json`.
 3.  **Load the extension:**
     *   **Chrome/Edge:** Go to `chrome://extensions`, enable **Developer mode**, and click **Load unpacked**. Select the FocusTube folder.
-    *   **Firefox:** Go to `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on...**, and select the `manifest.json` you just renamed.
+    *   **Firefox:** Go to `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on...**, and select the `manifest.json` file.
 
 ## Configuration
 
 Click the extension icon in your toolbar to access the control panel:
-*   **Master Toggle:** Turn the visual hiding features on/off independently of the blocking logic.
-*   **Action Modes:** Switch between "Strict" (Kick out), "Soft" (Warn), and "Passive" (Allow).
-*   **Timer Phase:** During "Break Time," the extension automatically switches to Passive mode to allow entertainment, then locks back into Strict mode when the work session begins.
+*   **Master Toggle:** Turn the visual hiding features on/off.
+*   **Platform Tabs:** Switch between YouTube, Instagram, and TikTok to configure each platform independently.
+*   **Action Modes:** Switch between "Strict", "Soft", and "Passive" modes.
+*   **Pomodoro Timer:** Start a 25-minute focus session. During the timer, all platforms are locked into "Strict" mode.
 
 ## Technical Details
 
 *   **Architecture:** Built on **Manifest V3**. Uses a Background Service Worker (Chrome/Edge) or Background Script (Firefox) to maintain timer state across all tabs.
+*   **Permissions:** Uses `host_permissions` to run on `youtube.com`, `instagram.com`, and `tiktok.com`.
 *   **Performance:** Uses `MutationObserver` optimized with layout-shift prevention to ensure zero lag while scrolling.
 *   **Privacy:** **100% Local.** FocusTube does not use external servers, tracking, or analytics. All data stays in your browser's `chrome.storage.local`.
 
 ## Known Issues
 
-*   **CSS Obfuscation:** YouTube frequently changes their CSS class names. If the "Shorts" shelf reappears on the homepage, please open an issue with a screenshot so the selectors can be updated.
+*   **CSS Obfuscation:** Social media sites frequently change their CSS class names. If you notice a feed or button is no longer hidden, please open an issue with a screenshot so the selectors can be updated.
 
 ## License
 
