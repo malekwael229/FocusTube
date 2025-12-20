@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "FocusTube: YouTube Shorts Blocker",
+  "name": "FocusTube: Distraction Blocker",
   "version": "1.5",
   "description": "Stop Doomscrolling. Block YouTube Shorts, Instagram Reels, and TikTok.",
   "permissions": [
