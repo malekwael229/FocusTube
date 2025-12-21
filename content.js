@@ -1,15 +1,17 @@
+const Site = {
+    isYT: () => location.hostname.includes('youtube.com'),
+    isIG: () => location.hostname.includes('instagram.com'),
+    isTT: () => location.hostname.includes('tiktok.com')
+};
+
 const CONFIG = {
     isFocusMode: true,
     platformSettings: { yt: 'strict', ig: 'strict', tt: 'strict' },
     isDarkMode: true,
     timer: { end: null, type: 'work' },
-    site: {
-        yt: window.location.hostname.includes('youtube.com'),
-        tt: window.location.hostname.includes('tiktok.com'),
-        ig: window.location.hostname.includes('instagram.com')
-    },
     session: {
         allowedCount: 0,
+        allowUntil: 0,
         platform: null
     }
 };
@@ -52,6 +54,10 @@ const Utils = {
     lockVideo: function () {
         if (this.videoLockInterval) clearInterval(this.videoLockInterval);
         const performLock = () => {
+            if (!document.getElementById(UI.overlayId)) {
+                Utils.unlockVideo();
+                return;
+            }
             let found = false;
             document.querySelectorAll('video, audio').forEach(el => {
                 found = true;
@@ -59,11 +65,9 @@ const Utils = {
                     el.pause(); el.muted = true; el.volume = 0; el.currentTime = 0;
                 }
             });
-            if (!found && this.videoLockInterval) {
-            }
         };
         performLock();
-        this.videoLockInterval = setInterval(performLock, 200);
+        this.videoLockInterval = setInterval(performLock, 350);
     },
 
     unlockVideo: function () {
@@ -72,25 +76,21 @@ const Utils = {
             this.videoLockInterval = null;
             document.querySelectorAll('video, audio').forEach(el => {
                 el.volume = 1;
-                if (CONFIG.site.ig) el.play().catch(() => { });
+                if (Site.isIG()) el.play().catch(() => { });
             });
         }
     },
 
     checkForUpdates: function () {
-        const GITHUB_MANIFEST_URL = 'https://raw.githubusercontent.com/malekwael229/FocusTube/main/chrome-manifest.json';
         const localVersion = chrome.runtime.getManifest().version;
         if (sessionStorage.getItem('ft_update_checked')) return;
 
-        fetch(GITHUB_MANIFEST_URL, { cache: 'no-cache' })
-            .then(r => r.json())
-            .then(remote => {
+        chrome.storage.local.get(['ft_latest_version'], (res) => {
+            if (res.ft_latest_version && res.ft_latest_version !== localVersion && !document.getElementById('ft-update-notification')) {
                 sessionStorage.setItem('ft_update_checked', 'true');
-                if (remote.version !== localVersion && !document.getElementById('ft-update-notification')) {
-                    this.showUpdateNotification(remote.version);
-                }
-            })
-            .catch(() => { });
+                this.showUpdateNotification(res.ft_latest_version);
+            }
+        });
     },
 
     showUpdateNotification: function (newVersion) {
@@ -98,9 +98,34 @@ const Utils = {
         const n = document.createElement('div');
         n.id = 'ft-update-notification';
         n.style.cssText = `position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, #2b86c5, #0d9488); color: white; padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 2147483647; font-family: sans-serif; display: flex; align-items: center; gap: 15px; animation: ftFadeIn 0.5s ease; border: 1px solid rgba(255,255,255,0.2); max-width: 320px;`;
-        n.innerHTML = `<div><div style="font-weight:bold; font-size:14px; margin-bottom:4px">FocusTube Update Available</div><div style="font-size:12px; opacity:0.9">Version ${newVersion} is ready.</div></div><a href="https://github.com/malekwael229/FocusTube" target="_blank" style="background:white; color:#2b86c5; padding:6px 14px; border-radius:20px; text-decoration:none; font-size:12px; font-weight:600; white-space:nowrap;">View</a><button onclick="this.parentElement.remove()" style="background:none; border:none; color:white; cursor:pointer; font-size:20px;">×</button>`;
+
+        const contentDiv = document.createElement('div');
+        const titleDiv = document.createElement('div');
+        titleDiv.style.cssText = "font-weight:bold; font-size:14px; margin-bottom:4px";
+        titleDiv.textContent = "FocusTube Update Available";
+        const msgDiv = document.createElement('div');
+        msgDiv.style.cssText = "font-size:12px; opacity:0.9";
+        msgDiv.textContent = `Version ${newVersion} is ready.`;
+        contentDiv.appendChild(titleDiv);
+        contentDiv.appendChild(msgDiv);
+
+        const link = document.createElement('a');
+        link.href = "https://github.com/malekwael229/FocusTube";
+        link.target = "_blank";
+        link.style.cssText = "background:white; color:#2b86c5; padding:6px 14px; border-radius:20px; text-decoration:none; font-size:12px; font-weight:600; white-space:nowrap;";
+        link.textContent = "View";
+
+        const closeBtn = document.createElement('button');
+        closeBtn.onclick = () => n.remove();
+        closeBtn.style.cssText = "background:none; border:none; color:white; cursor:pointer; font-size:20px;";
+        closeBtn.textContent = "×";
+
+        n.appendChild(contentDiv);
+        n.appendChild(link);
+        n.appendChild(closeBtn);
+
         document.body.appendChild(n);
-        setTimeout(() => { if (n.parentElement) n.parentElement.remove(); }, 15000);
+        setTimeout(() => { if (n.parentElement) n.remove(); }, 15000);
     },
 
     playBeep: function () {
@@ -162,32 +187,27 @@ const UI = {
             watchBtn.textContent = 'Watch Anyway';
             watchBtn.onclick = () => {
                 this.remove();
-                CONFIG.session.allowedCount = 999;
+                CONFIG.session.allowUntil = Date.now() + (5 * 60 * 1000);
                 CONFIG.session.platform = platform;
                 onAllow();
             };
             btnGroup.appendChild(watchBtn);
         }
 
-        if (CONFIG.site.tt) {
+        if (Site.isTT()) {
             const msgBtn = document.createElement('button');
             msgBtn.className = 'focus-tube-btn focus-tube-btn-secondary';
             msgBtn.textContent = 'Go to Messages';
-            msgBtn.onclick = () => { if (CONFIG.site.tt) window.location.href = "https://www.tiktok.com/messages"; };
+            msgBtn.onclick = () => { if (Site.isTT()) window.location.href = "https://www.tiktok.com/messages"; };
             btnGroup.appendChild(msgBtn);
         }
 
         card.append(img, h1, p, btnGroup);
         overlay.appendChild(card);
 
-        if (CONFIG.site.ig) {
-            document.body.appendChild(overlay);
-            try { overlay.showModal(); } catch (e) { overlay.open = true; }
-        } else {
-            document.documentElement.appendChild(overlay);
-        }
+        document.documentElement.appendChild(overlay);
 
-        if (!CONFIG.site.ig) {
+        if (!Site.isIG()) {
             document.body.classList.add('ft-scroll-lock');
             document.documentElement.classList.add('ft-scroll-lock');
         }
@@ -198,7 +218,7 @@ const UI = {
         this.persistenceInterval = setInterval(() => {
             if (!this.isOverlayNeeded) { clearInterval(this.persistenceInterval); return; }
             if (!document.getElementById(this.overlayId)) this.create(type, platform, onAllow, onBack);
-            if (CONFIG.site.tt || type === 'warn') Utils.lockVideo();
+            if (Site.isTT() || type === 'warn') Utils.lockVideo();
         }, 500);
     },
 
@@ -264,7 +284,7 @@ const YouTube = {
         if (this.isRedirecting || !document.body) return;
         const currentUrl = window.location.href;
         if (currentUrl.includes('/feed/history')) {
-            if (CONFIG.session.allowedCount > 0 && CONFIG.session.platform === 'yt') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+            if (CONFIG.session.allowUntil && CONFIG.session.allowUntil > Date.now() && CONFIG.session.platform === 'yt') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
             this.removeVisualFocus(); UI.remove(); return;
         }
         this.checkActiveBlocking(currentUrl);
@@ -275,7 +295,7 @@ const YouTube = {
 
     checkActiveBlocking: function (url) {
         const ts = Utils.getTimerState();
-        if (CONFIG.platformSettings.yt === 'strict' && this.currentMode !== 'strict') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+        if (CONFIG.platformSettings.yt === 'strict' && this.currentMode !== 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
         this.currentMode = CONFIG.platformSettings.yt;
 
         if (url.includes('/shorts/')) {
@@ -284,13 +304,13 @@ const YouTube = {
             else if (CONFIG.platformSettings.yt !== 'allow') this.handleShortsBlocking(url, false);
             else UI.remove();
         } else {
-            if (CONFIG.session.allowedCount > 0 && CONFIG.session.platform === 'yt') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+            if (CONFIG.session.allowUntil && CONFIG.session.allowUntil > Date.now() && CONFIG.session.platform === 'yt') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
             UI.remove();
         }
     },
 
     handleShortsBlocking: function (url, isForced) {
-        if (!isForced && CONFIG.session.allowedCount > 0 && CONFIG.session.platform === 'yt') return;
+        if (!isForced && CONFIG.session.allowUntil && CONFIG.session.allowUntil > Date.now() && CONFIG.session.platform === 'yt') return;
         const id = url.split('/shorts/')[1]?.split('?')[0]?.split('&')[0];
         if (id) Utils.logStat(id);
         const mode = isForced ? 'strict' : CONFIG.platformSettings.yt;
@@ -299,8 +319,8 @@ const YouTube = {
             sessionStorage.setItem('ft_kicked', 'true');
             window.location.replace("https://www.youtube.com");
         } else if (mode === 'warn') {
-            Utils.lockVideo();
             UI.create('warn', 'yt', () => Utils.unlockVideo(), () => window.location.href = "https://www.youtube.com");
+            Utils.lockVideo();
         }
     },
 
@@ -337,7 +357,7 @@ const Instagram = {
         this.observer = new MutationObserver(() => this.handleMutation());
         this.observer.observe(document, { subtree: true, childList: true, attributes: true, attributeFilter: ['href', 'style', 'class', 'role'] });
 
-        Utils.setSafeInterval(() => this.rapidKick(), 50);
+        Utils.setSafeInterval(() => this.rapidKick(), 200);
     },
 
     rapidKick: function () {
@@ -353,6 +373,7 @@ const Instagram = {
 
                 this.isRedirecting = true;
                 sessionStorage.setItem('ft_kicked', 'true');
+                Utils.logStat('ig_block');
                 window.location.replace('/');
 
                 setTimeout(() => { this.isRedirecting = false; }, 2000);
@@ -405,23 +426,27 @@ const Instagram = {
 const TikTok = {
     currentMode: 'strict',
     run: function (isUpdate) {
-        if (!isUpdate) { Utils.setSafeInterval(() => this.check(), 100); }
+        if (!isUpdate) { Utils.setSafeInterval(() => this.check(), 250); }
         this.check();
     },
     check: function () {
         const path = window.location.pathname;
         const ts = Utils.getTimerState();
-        if (CONFIG.platformSettings.tt === 'strict' && this.currentMode !== 'strict') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+        if (CONFIG.platformSettings.tt === 'strict' && this.currentMode !== 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
         this.currentMode = CONFIG.platformSettings.tt;
 
-        const isSafePage = (path.startsWith('/@') && !path.includes('/video/') && !path.includes('/photo/') && !path.endsWith('/live')) ||
-            path.startsWith('/messages') || path.startsWith('/upload') || path.startsWith('/setting') || path.startsWith('/feedback') || path.startsWith('/coin');
+        const isSafePage =
+            path.startsWith('/messages') ||
+            path.startsWith('/upload') ||
+            path.startsWith('/settings') ||
+            path.startsWith('/feedback') ||
+            path.startsWith('/coin');
         if (isSafePage) {
-            if (CONFIG.session.allowedCount > 0 && CONFIG.session.platform === 'tt') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+            if (CONFIG.session.allowUntil && CONFIG.session.allowUntil > Date.now() && CONFIG.session.platform === 'tt') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
             UI.remove(); return;
         }
 
-        if (CONFIG.session.allowedCount > 0 && CONFIG.session.platform === 'tt' && !ts.isWork) { UI.remove(); return; }
+        if (CONFIG.session.allowUntil && CONFIG.session.allowUntil > Date.now() && CONFIG.session.platform === 'tt' && !ts.isWork) { UI.remove(); return; }
 
         let shouldBlock = false;
         if (path === '/' || path.startsWith('/foryou') || path.startsWith('/following') || path.startsWith('/friends') ||
@@ -436,10 +461,11 @@ const TikTok = {
         } else UI.remove();
     },
     block: function (isForced) {
-        if (!isForced && CONFIG.session.allowedCount > 0 && CONFIG.session.platform === 'tt') return;
+        if (!isForced && CONFIG.session.allowUntil && CONFIG.session.allowUntil > Date.now() && CONFIG.session.platform === 'tt') return;
         const mode = isForced ? 'strict' : CONFIG.platformSettings.tt;
+        Utils.logStat('tt_block');
         UI.create(mode, 'tt', () => {
-            CONFIG.session.allowedCount = 999; CONFIG.session.platform = 'tt'; Utils.unlockVideo();
+            CONFIG.session.allowUntil = Date.now() + (5 * 60 * 1000); CONFIG.session.platform = 'tt'; Utils.unlockVideo();
         }, () => window.location.href = "https://www.tiktok.com/messages");
     }
 };
@@ -453,32 +479,32 @@ const TikTok = {
         CONFIG.timer.end = res.ft_timer_end;
         CONFIG.timer.type = res.ft_timer_type;
 
-        if (CONFIG.site.yt) YouTube.init();
-        else if (CONFIG.site.ig) Instagram.run();
-        else if (CONFIG.site.tt) TikTok.run();
+        if (Site.isYT()) YouTube.init();
+        else if (Site.isIG()) Instagram.run();
+        else if (Site.isTT()) TikTok.run();
 
         setTimeout(() => Utils.checkForUpdates(), 5000);
     });
 
     document.addEventListener('visibilitychange', () => {
-        if (document.hidden && CONFIG.session.allowedCount > 0) { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+        if (document.hidden && CONFIG.session.allowUntil && CONFIG.session.allowUntil > Date.now()) { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
     });
 
     chrome.storage.onChanged.addListener((changes) => {
         if (changes.focusMode) CONFIG.isFocusMode = changes.focusMode.newValue;
         if (changes.platformSettings) {
             CONFIG.platformSettings = changes.platformSettings.newValue;
-            if (CONFIG.site.yt && changes.platformSettings.newValue.yt === 'strict') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
-            if (CONFIG.site.ig && changes.platformSettings.newValue.ig === 'strict') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
-            if (CONFIG.site.tt && changes.platformSettings.newValue.tt === 'strict') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+            if (Site.isYT() && changes.platformSettings.newValue.yt === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
+            if (Site.isIG() && changes.platformSettings.newValue.ig === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
+            if (Site.isTT() && changes.platformSettings.newValue.tt === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
         }
         if (changes.darkMode) { CONFIG.isDarkMode = changes.darkMode.newValue; UI.updateTheme(); }
         if (changes.ft_timer_end) CONFIG.timer.end = changes.ft_timer_end.newValue;
         if (changes.ft_timer_type) CONFIG.timer.type = changes.ft_timer_type.newValue;
 
-        if (CONFIG.site.yt) YouTube.runChecks();
-        else if (CONFIG.site.ig) Instagram.handleMutation();
-        else if (CONFIG.site.tt) TikTok.check();
+        if (Site.isYT()) YouTube.runChecks();
+        else if (Site.isIG()) Instagram.handleMutation();
+        else if (Site.isTT()) TikTok.check();
     });
 
     chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -487,6 +513,18 @@ const TikTok = {
             Utils.playBeep();
             if (msg.type === "work") UI.showToast("Focus Session Complete! 🎉", "Great job! Take a 5-minute break.");
             else UI.showToast("Break Over! ⏰", "Time to get back to work.");
+        }
+        if (msg.action === "TIMER_COMPLETE") {
+            sendResponse({ status: 'received' });
+            Utils.playBeep();
+            if (msg.type === "work") UI.showToast("Focus Session Complete! 🎉", "Great job! Take a 5-minute break.");
+            else UI.showToast("Break Over! ⏰", "Time to get back to work.");
+        }
+    });
+
+    chrome.storage.onChanged.addListener((changes, area) => {
+        if (area === 'local' && changes.ft_latest_version) {
+            Utils.checkForUpdates();
         }
     });
 })();

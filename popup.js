@@ -30,17 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateTabUI();
             }
         } else {
-            chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                if (tabs && tabs[0] && tabs[0].url) {
-                    if (tabs[0].url.includes('instagram.com')) activePlatform = 'ig';
-                    else if (tabs[0].url.includes('tiktok.com')) activePlatform = 'tt';
-                    else if (tabs[0].url.includes('youtube.com')) activePlatform = 'yt';
-
-                    localStorage.setItem('ft_last_tab', activePlatform);
-                    updateTabUI();
-                    updateUiState(isEnabled);
-                }
-            });
+            activePlatform = (localStorage.getItem('ft_last_tab') || 'yt');
+            updateTabUI();
         }
 
         const isDarkMode = result.darkMode !== false;
@@ -212,6 +203,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         if (modeDesc) modeDesc.innerText = "Pomodoro Timer is active: Strict Mode locked on all apps.";
+
+        if (mainToggle) {
+            mainToggle.checked = true;
+            mainToggle.disabled = true;
+            mainToggle.parentElement.classList.add('disabled-wrapper');
+        }
+        chrome.storage.local.set({ focusMode: true });
+        updateUiState(true); // Ensure UI reflects ON state
     }
 
     function unlockUiFromTimer() {
@@ -231,6 +230,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (val === 'allow') textEl.innerText = "Passive: Let me watch";
         });
+
+        if (mainToggle) {
+            mainToggle.disabled = false;
+        }
+
         updateSelectedOptionVisuals(settings[activePlatform]);
         updateUiState(mainToggle.checked);
     }
@@ -277,32 +281,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function checkForUpdates() {
-        fetch('https://raw.githubusercontent.com/malekwael229/FocusTube/main/chrome-manifest.json')
-            .then(r => r.json())
-            .then(data => {
-                const latest = data.version;
-                const current = chrome.runtime.getManifest().version;
+        chrome.storage.local.get(['ft_latest_version'], (res) => {
+            const latest = res.ft_latest_version;
+            const current = chrome.runtime.getManifest().version;
 
-                if (latest && latest !== current) {
-                    const banner = document.getElementById('updateBanner');
+            if (latest && latest !== current) {
+                const banner = document.getElementById('updateBanner');
 
-                    if (banner) {
-                        banner.classList.remove('hidden');
-                        banner.innerHTML = `UPDATE: Version <b>${latest}</b> Available! <a href="#" id="updateLink">Get it here</a>`;
+                if (banner) {
+                    banner.classList.remove('hidden');
+                    banner.textContent = "";
+                    const span = document.createElement('span');
+                    span.textContent = "🚀 Update Available! ";
 
-                        setTimeout(() => {
-                            const newLink = document.getElementById('updateLink');
-                            if (newLink) {
-                                newLink.addEventListener('click', (e) => {
-                                    e.preventDefault();
-                                    chrome.tabs.create({ url: 'https://github.com/malekwael229/FocusTube' });
-                                });
-                            }
-                        }, 0);
-                    }
+                    const versionBold = document.createElement('b');
+                    versionBold.textContent = latest + " ";
+                    span.appendChild(versionBold);
+
+                    const link = document.createElement('a');
+                    link.href = "#";
+                    link.id = "updateLink";
+                    link.textContent = "Get it here";
+
+                    banner.appendChild(span);
+                    banner.appendChild(link);
+
+                    setTimeout(() => {
+                        const newLink = document.getElementById('updateLink');
+                        if (newLink) {
+                            newLink.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                chrome.tabs.create({ url: 'https://github.com/malekwael229/FocusTube' });
+                            });
+                        }
+                    }, 0);
                 }
-            })
-            .catch(() => { });
+            }
+        });
     }
 
     checkForUpdates();
@@ -311,10 +326,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!passiveOption) return;
         const text = passiveOption.querySelector('.mode-option-text');
 
+        const isTimerWork = timerBtn.classList.contains('active') && !timerBtn.classList.contains('break');
+
         if (isEnabled) {
-            if (activePlatform === 'yt') {
+            if (activePlatform === 'yt' || isTimerWork) {
                 passiveOption.classList.add('disabled');
-                if (text) text.innerText = "Passive (Turn off Focus Mode)";
+                if (text) text.innerText = isTimerWork ? "Passive: Locked (Timer Active)" : "Passive (Turn off Focus Mode)";
 
                 if (settings[activePlatform] === 'allow') {
                     settings[activePlatform] = 'warn';

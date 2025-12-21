@@ -1,3 +1,11 @@
+const UPDATE_ALARM_NAME = 'ft_update_check';
+const TIMER_ALARM_NAME = 'focusTubeTimer';
+
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.alarms.create(UPDATE_ALARM_NAME, { periodInMinutes: 360 });
+    checkForUpdates();
+});
+
 chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'local' && changes.ft_timer_end) {
         handleTimerUpdate(changes.ft_timer_end.newValue);
@@ -5,29 +13,29 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 
 function handleTimerUpdate(endTime) {
-    chrome.alarms.clearAll();
+    chrome.alarms.clear(TIMER_ALARM_NAME);
     if (endTime && endTime > Date.now()) {
-        chrome.alarms.create('focusTubeTimer', { when: endTime });
+        chrome.alarms.create(TIMER_ALARM_NAME, { when: endTime });
     }
 }
 
 chrome.alarms.onAlarm.addListener((alarm) => {
-    if (alarm.name === 'focusTubeTimer') {
+    if (alarm.name === UPDATE_ALARM_NAME) {
+        checkForUpdates();
+    } else if (alarm.name === TIMER_ALARM_NAME) {
         chrome.storage.local.get(['ft_timer_type'], (res) => {
             const isWork = res.ft_timer_type === 'work';
             const title = isWork ? "Pomodoro Complete! 🎉" : "Break Over! ⏰";
             const msg = isWork ? "Time for a 5-minute break." : "Back to work. Distractions blocked.";
 
-            chrome.tabs.query({}, (tabs) => {
+            chrome.tabs.query({ url: ["*://*.youtube.com/*", "*://*.instagram.com/*", "*://*.tiktok.com/*"] }, (tabs) => {
                 let sent = false;
                 for (const tab of tabs) {
-                    if (tab.url && (tab.url.includes('youtube.com') || tab.url.includes('instagram.com') || tab.url.includes('tiktok.com'))) {
-                        chrome.tabs.sendMessage(tab.id, {
-                            action: "TIMER_COMPLETE",
-                            type: isWork ? "work" : "break"
-                        }).catch(() => { });
-                        sent = true;
-                    }
+                    chrome.tabs.sendMessage(tab.id, {
+                        action: "TIMER_COMPLETE",
+                        type: isWork ? "work" : "break"
+                    }).catch(() => { });
+                    sent = true;
                 }
 
                 if (!sent) {
@@ -47,13 +55,38 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     }
 });
 
+function checkForUpdates() {
+    const GITHUB_MANIFEST_URL = 'https://raw.githubusercontent.com/malekwael229/FocusTube/main/chrome-manifest.json';
+    fetch(GITHUB_MANIFEST_URL, { cache: 'no-cache' })
+        .then(r => r.json())
+        .then(remote => {
+            if (remote && remote.version) {
+                chrome.storage.local.set({ ft_latest_version: remote.version });
+            }
+        })
+        .catch(() => { });
+}
+
 function showSystemNotification(title, msg) {
-    chrome.notifications.create({
-        type: 'basic',
-        iconUrl: 'icons/icon128.png',
-        title: title,
-        message: msg,
-        priority: 2,
-        requireInteraction: true
-    });
+    try {
+        if (!chrome.notifications || !chrome.notifications.create) {
+            console.log('[FocusTube]', title + ':', msg);
+            return;
+        }
+        chrome.notifications.create({
+            type: 'basic',
+            iconUrl: 'icons/icon128.png',
+            title: title,
+            message: msg,
+            priority: 2,
+            requireInteraction: true
+        }, () => {
+            // If the permission is missing, browsers may set lastError.
+            if (chrome.runtime && chrome.runtime.lastError) {
+                console.log('[FocusTube]', title + ':', msg);
+            }
+        });
+    } catch (e) {
+        console.log('[FocusTube]', title + ':', msg);
+    }
 }
