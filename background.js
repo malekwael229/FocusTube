@@ -48,12 +48,25 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 });
 
 function showSystemNotification(title, msg) {
-    chrome.notifications.create({
-        type: 'basic',
-        iconUrl: 'icons/icon128.png',
-        title: title,
-        message: msg,
-        priority: 2,
-        requireInteraction: true
-    });
+    try {
+        if (!chrome.notifications || !chrome.notifications.create) {
+            console.log('[FocusTube]', title + ':', msg);
+            return;
+        }
+        chrome.notifications.create({
+            type: 'basic',
+            iconUrl: 'icons/icon128.png',
+            title: title,
+            message: msg,
+            priority: 2,
+            requireInteraction: true
+        }, () => {
+            // If the permission is missing, browsers may set lastError.
+            if (chrome.runtime && chrome.runtime.lastError) {
+                console.log('[FocusTube]', title + ':', msg);
+            }
+        });
+    } catch (e) {
+        console.log('[FocusTube]', title + ':', msg);
+    }
 }

@@ -30,17 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateTabUI();
             }
         } else {
-            chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                if (tabs && tabs[0] && tabs[0].url) {
-                    if (tabs[0].url.includes('instagram.com')) activePlatform = 'ig';
-                    else if (tabs[0].url.includes('tiktok.com')) activePlatform = 'tt';
-                    else if (tabs[0].url.includes('youtube.com')) activePlatform = 'yt';
-
-                    localStorage.setItem('ft_last_tab', activePlatform);
-                    updateTabUI();
-                    updateUiState(isEnabled);
-                }
-            });
+            // No tab URL access needed; default to the last saved tab or YouTube.
+            activePlatform = (localStorage.getItem('ft_last_tab') || 'yt');
+            updateTabUI();
         }
 
         const isDarkMode = result.darkMode !== false;

@@ -9,7 +9,8 @@ const CONFIG = {
         ig: window.location.hostname.includes('instagram.com')
     },
     session: {
-        allowedCount: 0,
+        allowedCount: 0, // legacy (kept for backward compatibility)
+        allowUntil: 0,
         platform: null
     }
 };
@@ -59,11 +60,9 @@ const Utils = {
                     el.pause(); el.muted = true; el.volume = 0; el.currentTime = 0;
                 }
             });
-            if (!found && this.videoLockInterval) {
-            }
         };
         performLock();
-        this.videoLockInterval = setInterval(performLock, 200);
+        this.videoLockInterval = setInterval(performLock, 350);
     },
 
     unlockVideo: function () {
@@ -162,7 +161,7 @@ const UI = {
             watchBtn.textContent = 'Watch Anyway';
             watchBtn.onclick = () => {
                 this.remove();
-                CONFIG.session.allowedCount = 999;
+                CONFIG.session.allowUntil = Date.now() + (5 * 60 * 1000);
                 CONFIG.session.platform = platform;
                 onAllow();
             };
@@ -180,12 +179,7 @@ const UI = {
         card.append(img, h1, p, btnGroup);
         overlay.appendChild(card);
 
-        if (CONFIG.site.ig) {
-            document.body.appendChild(overlay);
-            try { overlay.showModal(); } catch (e) { overlay.open = true; }
-        } else {
-            document.documentElement.appendChild(overlay);
-        }
+        document.documentElement.appendChild(overlay);
 
         if (!CONFIG.site.ig) {
             document.body.classList.add('ft-scroll-lock');
@@ -264,7 +258,7 @@ const YouTube = {
         if (this.isRedirecting || !document.body) return;
         const currentUrl = window.location.href;
         if (currentUrl.includes('/feed/history')) {
-            if (CONFIG.session.allowedCount > 0 && CONFIG.session.platform === 'yt') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+            if (CONFIG.session.allowUntil && CONFIG.session.allowUntil > Date.now() && CONFIG.session.platform === 'yt') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
             this.removeVisualFocus(); UI.remove(); return;
         }
         this.checkActiveBlocking(currentUrl);
@@ -275,7 +269,7 @@ const YouTube = {
 
     checkActiveBlocking: function (url) {
         const ts = Utils.getTimerState();
-        if (CONFIG.platformSettings.yt === 'strict' && this.currentMode !== 'strict') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+        if (CONFIG.platformSettings.yt === 'strict' && this.currentMode !== 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
         this.currentMode = CONFIG.platformSettings.yt;
 
         if (url.includes('/shorts/')) {
@@ -284,13 +278,13 @@ const YouTube = {
             else if (CONFIG.platformSettings.yt !== 'allow') this.handleShortsBlocking(url, false);
             else UI.remove();
         } else {
-            if (CONFIG.session.allowedCount > 0 && CONFIG.session.platform === 'yt') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+            if (CONFIG.session.allowUntil && CONFIG.session.allowUntil > Date.now() && CONFIG.session.platform === 'yt') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
             UI.remove();
         }
     },
 
     handleShortsBlocking: function (url, isForced) {
-        if (!isForced && CONFIG.session.allowedCount > 0 && CONFIG.session.platform === 'yt') return;
+        if (!isForced && CONFIG.session.allowUntil && CONFIG.session.allowUntil > Date.now() && CONFIG.session.platform === 'yt') return;
         const id = url.split('/shorts/')[1]?.split('?')[0]?.split('&')[0];
         if (id) Utils.logStat(id);
         const mode = isForced ? 'strict' : CONFIG.platformSettings.yt;
@@ -337,7 +331,7 @@ const Instagram = {
         this.observer = new MutationObserver(() => this.handleMutation());
         this.observer.observe(document, { subtree: true, childList: true, attributes: true, attributeFilter: ['href', 'style', 'class', 'role'] });
 
-        Utils.setSafeInterval(() => this.rapidKick(), 50);
+        Utils.setSafeInterval(() => this.rapidKick(), 200);
     },
 
     rapidKick: function () {
@@ -353,6 +347,7 @@ const Instagram = {
 
                 this.isRedirecting = true;
                 sessionStorage.setItem('ft_kicked', 'true');
+                Utils.logStat('ig_block');
                 window.location.replace('/');
 
                 setTimeout(() => { this.isRedirecting = false; }, 2000);
@@ -405,23 +400,23 @@ const Instagram = {
 const TikTok = {
     currentMode: 'strict',
     run: function (isUpdate) {
-        if (!isUpdate) { Utils.setSafeInterval(() => this.check(), 100); }
+        if (!isUpdate) { Utils.setSafeInterval(() => this.check(), 250); }
         this.check();
     },
     check: function () {
         const path = window.location.pathname;
         const ts = Utils.getTimerState();
-        if (CONFIG.platformSettings.tt === 'strict' && this.currentMode !== 'strict') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+        if (CONFIG.platformSettings.tt === 'strict' && this.currentMode !== 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
         this.currentMode = CONFIG.platformSettings.tt;
 
         const isSafePage = (path.startsWith('/@') && !path.includes('/video/') && !path.includes('/photo/') && !path.endsWith('/live')) ||
-            path.startsWith('/messages') || path.startsWith('/upload') || path.startsWith('/setting') || path.startsWith('/feedback') || path.startsWith('/coin');
+            path.startsWith('/messages') || path.startsWith('/upload') || path.startsWith('/settings') || path.startsWith('/feedback') || path.startsWith('/coin');
         if (isSafePage) {
-            if (CONFIG.session.allowedCount > 0 && CONFIG.session.platform === 'tt') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+            if (CONFIG.session.allowUntil && CONFIG.session.allowUntil > Date.now() && CONFIG.session.platform === 'tt') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
             UI.remove(); return;
         }
 
-        if (CONFIG.session.allowedCount > 0 && CONFIG.session.platform === 'tt' && !ts.isWork) { UI.remove(); return; }
+        if (CONFIG.session.allowUntil && CONFIG.session.allowUntil > Date.now() && CONFIG.session.platform === 'tt' && !ts.isWork) { UI.remove(); return; }
 
         let shouldBlock = false;
         if (path === '/' || path.startsWith('/foryou') || path.startsWith('/following') || path.startsWith('/friends') ||
@@ -436,10 +431,11 @@ const TikTok = {
         } else UI.remove();
     },
     block: function (isForced) {
-        if (!isForced && CONFIG.session.allowedCount > 0 && CONFIG.session.platform === 'tt') return;
+        if (!isForced && CONFIG.session.allowUntil && CONFIG.session.allowUntil > Date.now() && CONFIG.session.platform === 'tt') return;
         const mode = isForced ? 'strict' : CONFIG.platformSettings.tt;
+        Utils.logStat('tt_block');
         UI.create(mode, 'tt', () => {
-            CONFIG.session.allowedCount = 999; CONFIG.session.platform = 'tt'; Utils.unlockVideo();
+            CONFIG.session.allowUntil = Date.now() + (5 * 60 * 1000); CONFIG.session.platform = 'tt'; Utils.unlockVideo();
         }, () => window.location.href = "https://www.tiktok.com/messages");
     }
 };
@@ -461,16 +457,16 @@ const TikTok = {
     });
 
     document.addEventListener('visibilitychange', () => {
-        if (document.hidden && CONFIG.session.allowedCount > 0) { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+        if (document.hidden && CONFIG.session.allowUntil && CONFIG.session.allowUntil > Date.now()) { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
     });
 
     chrome.storage.onChanged.addListener((changes) => {
         if (changes.focusMode) CONFIG.isFocusMode = changes.focusMode.newValue;
         if (changes.platformSettings) {
             CONFIG.platformSettings = changes.platformSettings.newValue;
-            if (CONFIG.site.yt && changes.platformSettings.newValue.yt === 'strict') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
-            if (CONFIG.site.ig && changes.platformSettings.newValue.ig === 'strict') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
-            if (CONFIG.site.tt && changes.platformSettings.newValue.tt === 'strict') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+            if (CONFIG.site.yt && changes.platformSettings.newValue.yt === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
+            if (CONFIG.site.ig && changes.platformSettings.newValue.ig === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
+            if (CONFIG.site.tt && changes.platformSettings.newValue.tt === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
         }
         if (changes.darkMode) { CONFIG.isDarkMode = changes.darkMode.newValue; UI.updateTheme(); }
         if (changes.ft_timer_end) CONFIG.timer.end = changes.ft_timer_end.newValue;
