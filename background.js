@@ -22,22 +22,22 @@ chrome.alarms.onAlarm.addListener((alarm) => {
                 let sent = false;
                 for (const tab of tabs) {
                     if (tab.url && (tab.url.includes('youtube.com') || tab.url.includes('instagram.com') || tab.url.includes('tiktok.com'))) {
-                         chrome.tabs.sendMessage(tab.id, {
+                        chrome.tabs.sendMessage(tab.id, {
                             action: "TIMER_COMPLETE",
                             type: isWork ? "work" : "break"
-                        }).catch(() => {});
+                        }).catch(() => { });
                         sent = true;
                     }
                 }
-                
+
                 if (!sent) {
                     showSystemNotification(title, msg);
                 }
 
                 if (isWork) {
-                    chrome.storage.local.set({ 
-                        ft_timer_end: Date.now() + (5 * 60 * 1000), 
-                        ft_timer_type: 'break' 
+                    chrome.storage.local.set({
+                        ft_timer_end: Date.now() + (5 * 60 * 1000),
+                        ft_timer_type: 'break'
                     });
                 } else {
                     chrome.storage.local.remove(['ft_timer_end', 'ft_timer_type']);

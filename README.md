@@ -6,8 +6,9 @@ A Manifest V3 browser extension that helps you reclaim your focus by blocking di
 
 It aggressively blocks YouTube Shorts, Instagram Reels, and the TikTok feed, hiding algorithmic traps to prevent doomscrolling. Unlike basic element blockers, FocusTube is built to handle modern "Single Page App" navigation, ensuring blocks persist without needing a page refresh.
 
-## New in v1.5 🚀
-*   **Cross-Platform Blocking:** FocusTube now blocks distracting content on YouTube, Instagram, and TikTok.
+## New in v1.6 🚀
+*   **Enhanced Instagram Protection:** Smart visibility logic now dynamically hides/shows the Reels and Explore buttons based on your Focus Mode status.
+*   **Instant Kick:** Optimized strict mode now redirects you immediately (within ~50ms) when accessing blocked URLs on Instagram and YouTube, preventing the page from even loading.
 *   **Pomodoro Timer:** Built-in 25/5 interval timer. When active, it locks the extension into **Strict Mode** and disables the "Passive" option to ensure you stay focused.
 *   **Gamified Stats:** A real-time dashboard that tracks how many Shorts/Reels you've blocked and calculates the estimated time saved.
 *   **UI Overhaul:** A completely redesigned interface with a modern dark-mode aesthetic, gradient accents, and platform-specific controls.
@@ -16,8 +17,8 @@ It aggressively blocks YouTube Shorts, Instagram Reels, and the TikTok feed, hid
 
 ### 🧠 Behavioral Intervention
 *   **Strict Mode:**
-    *   **YouTube:** Instantly redirects you to the homepage if you try to open a Short.
-    *   **Instagram & TikTok:** Displays a full-screen overlay, blocking access to Reels and the feed.
+    *   **YouTube & Instagram:** Instantly redirects you to the homepage if you try to open a Short/Reel.
+    *   **TikTok:** Displays a full-screen overlay, preventing access to the feed.
 *   **Soft Mode:** Displays a full-screen warning overlay that pauses and mutes the video, requiring a conscious decision to "Watch Anyway."
 *   **Passive Mode:** Disables active blocking while keeping visual cleaning active (unless toggled off).
 
@@ -29,13 +30,11 @@ It aggressively blocks YouTube Shorts, Instagram Reels, and the TikTok feed, hid
 *   **Instagram:**
     *   Hides the **"Reels" tab** from the main navigation.
     *   Hides the **"Explore" tab**.
-*   **TikTok:**
-    *   Hides the **"For You"**, **"Following"**, and **"LIVE"** feeds.
 
 ## Installation
 
 ### Official Stores
-*   **Microsoft Edge:** *[Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)* NOT UPDATED
+*   **Microsoft Edge:** *[Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)* (v1.6 Pending) NOT UPDATED YET
 *   **Firefox Add-ons:** *[Pending Review]*
 *   **Chrome Web Store:** *[Pending Review]*
 

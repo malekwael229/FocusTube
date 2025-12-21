@@ -1,66 +1,66 @@
 {
-  "manifest_version": 3,
-  "name": "FocusTube: Distraction Blocker",
-  "version": "1.5",
-  "description": "Stop Doomscrolling. Block YouTube Shorts, Instagram Reels, and TikTok.",
-  "permissions": [
-    "activeTab",
-    "storage",
-    "notifications",
-    "alarms"
-  ],
-  "host_permissions": [
-    "https://raw.githubusercontent.com/",
-    "*://*.youtube.com/*",
-    "*://*.instagram.com/*",
-    "*://*.tiktok.com/*"
-  ],
-  "action": {
-    "default_popup": "popup.html"
-  },
-  "background": {
-    "service_worker": "background.js"
-  },
-  "content_scripts": [
-    {
-      "matches": [
+    "manifest_version": 3,
+    "name": "FocusTube: Distraction Blocker",
+    "version": "1.6",
+    "description": "Stop Doomscrolling. Block YouTube Shorts, Instagram Reels, and TikTok.",
+    "permissions": [
+        "activeTab",
+        "storage",
+        "notifications",
+        "alarms"
+    ],
+    "host_permissions": [
+        "https://raw.githubusercontent.com/",
         "*://*.youtube.com/*",
         "*://*.instagram.com/*",
         "*://*.tiktok.com/*"
-      ],
-      "css": [
-        "styles.css"
-      ],
-      "js": [
-        "content.js"
-      ],
-      "run_at": "document_start"
+    ],
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.youtube.com/*",
+                "*://*.instagram.com/*",
+                "*://*.tiktok.com/*"
+            ],
+            "css": [
+                "styles.css"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "run_at": "document_start"
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "icons/*.png"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ],
+    "icons": {
+        "16": "icons/icon128.png",
+        "48": "icons/icon128.png",
+        "128": "icons/icon128.png"
+    },
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "focustube@malekwael.com",
+            "strict_min_version": "109.0",
+            "data_collection_permissions": {
+                "required": [
+                    "none"
+                ]
+            }
+        }
     }
-  ],
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "icons/*.png"
-      ],
-      "matches": [
-        "<all_urls>"
-      ]
-    }
-  ],
-  "icons": {
-    "16": "icons/icon128.png",
-    "48": "icons/icon128.png",
-    "128": "icons/icon128.png"
-  },
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "focustube@malekwael.com",
-      "strict_min_version": "109.0",
-      "data_collection_permissions": {
-        "required": [
-          "none"
-        ]
-      }
-    }
-  }
 }

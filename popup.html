@@ -1,15 +1,23 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body class="focustube-popup-body dark-mode preload">
+    <div id="updateBanner" class="update-banner hidden">
+        <span>🚀 Update Available! <a href="#" id="updateLink">Click here</a></span>
+    </div>
     <div class="header-row">
         <div class="title-group">
             <h2>FocusTube</h2>
             <div id="githubBtn" class="icon-btn" title="Open Source Code">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+                    </path>
                 </svg>
             </div>
         </div>
@@ -42,13 +50,13 @@
         <div class="divider"></div>
 
         <div class="platform-tabs">
-            <button class="tab-btn active" data-target="yt">YouTube</button>
+            <button class="tab-btn" data-target="yt">YouTube</button>
             <button class="tab-btn" data-target="ig">Instagram</button>
             <button class="tab-btn" data-target="tt">TikTok</button>
         </div>
 
         <label class="section-label" id="behaviorLabel">When I open a Short...</label>
-        
+
         <div class="mode-options-container" id="modeOptions">
             <div class="mode-option selected" data-value="strict">
                 <span class="mode-option-text">Strict: Kick me out</span>
@@ -78,4 +86,5 @@
 
     <script src="popup.js"></script>
 </body>
+
 </html>

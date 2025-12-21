@@ -1,403 +1,492 @@
-let isFocusModeOn = true;
-let platformSettings = { yt: 'strict', ig: 'strict', tt: 'strict' };
-let currentMode = 'strict';
-let isDarkMode = true;
-let currentAllowedId = null;
-let timerEndTime = null;
-let timerType = 'work';
-let isVideoLocked = false;
-let videoLockInterval = null;
-
-let isTikTokSessionAllowed = false;
-
-const SITE = {
-    YT: window.location.hostname.includes('youtube.com'),
-    IG: window.location.hostname.includes('instagram.com'),
-    TT: window.location.hostname.includes('tiktok.com')
+const CONFIG = {
+    isFocusMode: true,
+    platformSettings: { yt: 'strict', ig: 'strict', tt: 'strict' },
+    isDarkMode: true,
+    timer: { end: null, type: 'work' },
+    site: {
+        yt: window.location.hostname.includes('youtube.com'),
+        tt: window.location.hostname.includes('tiktok.com'),
+        ig: window.location.hostname.includes('instagram.com')
+    },
+    session: {
+        allowedCount: 0,
+        platform: null
+    }
 };
 
-(function initialize() {
-    chrome.storage.local.get(['focusMode', 'platformSettings', 'darkMode', 'ft_timer_end', 'ft_timer_type'], (result) => {
-        isFocusModeOn = result.focusMode !== false;
-        if (result.platformSettings) platformSettings = result.platformSettings;
-        updateCurrentMode();
-        isDarkMode = result.darkMode !== false; 
-        timerEndTime = result.ft_timer_end || null;
-        timerType = result.ft_timer_type || 'work';
-        
-        if (document.body) startApp();
-        else document.addEventListener('DOMContentLoaded', startApp);
-    });
+const Utils = {
+    intervals: [],
+    videoLockInterval: null,
 
-    chrome.storage.onChanged.addListener((changes) => {
-        if (changes.focusMode) isFocusModeOn = changes.focusMode.newValue;
-        if (changes.platformSettings) {
-            platformSettings = changes.platformSettings.newValue;
-            updateCurrentMode();
-        }
-        if (changes.ft_timer_end) timerEndTime = changes.ft_timer_end.newValue;
-        if (changes.ft_timer_type) timerType = changes.ft_timer_type.newValue;
-        if (changes.darkMode) {
-            isDarkMode = changes.darkMode.newValue;
-            if (document.body) updateWarningTheme(); 
-        }
-        if (document.body) runChecks();
-    });
-    
-    checkForUpdates();
-})();
-
-function updateCurrentMode() {
-    if (SITE.YT) currentMode = platformSettings.yt || 'strict';
-    else if (SITE.IG) currentMode = platformSettings.ig || 'strict';
-    else if (SITE.TT) currentMode = platformSettings.tt || 'strict';
-}
-
-function debounce(func, wait) {
-    let timeout;
-    return function(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
-    };
-}
-
-function startApp() {
-    if (!document.body) return;
-    setTimeout(checkKickFlag, 200);
-    runChecks();
-    
-    setInterval(runChecks, 800); 
-    
-    if (SITE.YT) {
-        window.addEventListener('yt-navigate-finish', runChecks);
-    }
-    window.addEventListener('popstate', runChecks);
-    
-    const debouncedApply = debounce(() => {
-        if (SITE.YT && window.location.href.includes('/feed/history')) return;
-        const isTimerActive = timerEndTime && timerEndTime > Date.now() && timerType === 'work';
-        if (isFocusModeOn || isTimerActive) applyFocusMode();
-    }, 50);
-
-    const mainObserver = new MutationObserver(debouncedApply);
-    mainObserver.observe(document.body, { childList: true, subtree: true });
-
-    window.addEventListener('play', (e) => {
-        if (isVideoLocked) { e.preventDefault(); e.stopPropagation(); e.target.pause(); e.target.muted = true; }
-    }, true);
-    window.addEventListener('timeupdate', (e) => {
-        if (isVideoLocked && !e.target.paused) e.target.pause();
-    }, true);
-}
-
-function runChecks() {
-    if (!document.body) return;
-    
-    const currentUrl = window.location.href;
-    const path = window.location.pathname;
-
-    if (SITE.TT) {
-        if (isTikTokSessionAllowed) {
-            unlockVideo();
-            removeWarning();
-            if (isFocusModeOn) applyFocusMode(); 
-            else removeVisualFocus();
-            return;
-        }
-
-        if (path.startsWith('/upload') || 
-            path.startsWith('/coin') || 
-            path.startsWith('/setting') || 
-            path.startsWith('/legal') || 
-            path.startsWith('/business') ||
-            path.startsWith('/messages')) {
-            
-            unlockVideo(); 
-            removeWarning(); 
-            return;
-        }
-
-        if (path.startsWith('/@') && 
-            !path.includes('/video/') && 
-            !path.includes('/photo/') && 
-            !path.endsWith('/live')) { 
-            
-            unlockVideo(); 
-            removeWarning(); 
-            return;
-        }
-
-        let shouldBlockTT = false;
-
-        if (path === '/' || 
-            path.startsWith('/foryou') || 
-            path.startsWith('/following') || 
-            path.startsWith('/friends') || 
-            path.startsWith('/explore') || 
-            path.startsWith('/live') || 
-            path.endsWith('/live') ||
-            path.startsWith('/search') ||
-            path.includes('/video/') || 
-            path.includes('/photo/')) {
-            
-            shouldBlockTT = true;
-        }
-
-        if (shouldBlockTT) {
-            const isTimerActive = timerEndTime && timerEndTime > Date.now() && timerType === 'work';
-            const isBreakActive = timerEndTime && timerEndTime > Date.now() && timerType === 'break';
-
-            if (isBreakActive) {
-                unlockVideo(); removeWarning();
-            } else if (isTimerActive) {
-                handleBlocking(currentUrl, true);
-            } else if (currentMode !== 'allow') {
-                handleBlocking(currentUrl, false);
-            } else {
-                unlockVideo(); removeWarning();
+    setSafeInterval: function (callback, ms) {
+        const id = setInterval(() => {
+            if (!chrome.runtime?.id) {
+                clearInterval(id);
+                return;
             }
-        } else {
-            unlockVideo(); removeWarning();
-        }
-        return; 
-    }
+            callback();
+        }, ms);
+        this.intervals.push(id);
+        return id;
+    },
 
-    if (SITE.YT && currentUrl.includes('/feed/history')) {
-        removeVisualFocus(); unlockVideo(); removeWarning(); return; 
-    }
+    getTimerState: function () {
+        const now = Date.now();
+        const isActive = CONFIG.timer.end && CONFIG.timer.end > now;
+        return {
+            isWork: isActive && CONFIG.timer.type === 'work',
+            isBreak: isActive && CONFIG.timer.type === 'break'
+        };
+    },
 
-    const isTimerActive = timerEndTime && timerEndTime > Date.now() && timerType === 'work';
-    const isBreakActive = timerEndTime && timerEndTime > Date.now() && timerType === 'break';
-    
-    if (isTimerActive || (isFocusModeOn && !isBreakActive)) applyFocusMode();
-    else removeVisualFocus();
-
-    let shouldBlock = false;
-    let contentId = currentUrl; 
-
-    if (SITE.YT && currentUrl.includes('/shorts/')) {
-        shouldBlock = true;
-        contentId = currentUrl.split('/shorts/')[1]?.split('?')[0] || currentUrl;
-    }
-    
-    if (SITE.IG && (currentUrl.includes('/reels/') || currentUrl.includes('/reel/') || currentUrl.includes('/explore/'))) {
-        shouldBlock = true;
-        const match = currentUrl.match(/\/reel\/([a-zA-Z0-9_-]+)/);
-        if (match) contentId = match[1];
-    }
-
-    if (shouldBlock) {
-        if (isBreakActive) { unlockVideo(); removeWarning(); }
-        else if (isTimerActive) handleBlocking(contentId, true);
-        else if (currentMode !== 'allow') handleBlocking(contentId, false);
-        else { unlockVideo(); removeWarning(); }
-    } else { 
-        unlockVideo(); removeWarning(); 
-    }
-}
-
-function handleBlocking(id, isForced) {
-    if (!SITE.TT && id === currentAllowedId && !isForced) return;
-    
-    if (!SITE.TT && id !== currentAllowedId) {
+    logStat: function (id) {
+        if (!id || sessionStorage.getItem('ft_block_' + id)) return;
+        sessionStorage.setItem('ft_block_' + id, 'true');
         chrome.storage.local.get(['ft_stats_blocked'], (res) => {
+            if (chrome.runtime.lastError) return;
             const newCount = (res.ft_stats_blocked || 0) + 1;
             chrome.storage.local.set({ ft_stats_blocked: newCount });
         });
-        currentAllowedId = id;
+    },
+
+    lockVideo: function () {
+        if (this.videoLockInterval) clearInterval(this.videoLockInterval);
+        const performLock = () => {
+            let found = false;
+            document.querySelectorAll('video, audio').forEach(el => {
+                found = true;
+                if (!el.paused || el.volume > 0 || !el.muted) {
+                    el.pause(); el.muted = true; el.volume = 0; el.currentTime = 0;
+                }
+            });
+            if (!found && this.videoLockInterval) {
+            }
+        };
+        performLock();
+        this.videoLockInterval = setInterval(performLock, 200);
+    },
+
+    unlockVideo: function () {
+        if (this.videoLockInterval) {
+            clearInterval(this.videoLockInterval);
+            this.videoLockInterval = null;
+            document.querySelectorAll('video, audio').forEach(el => {
+                el.volume = 1;
+                if (CONFIG.site.ig) el.play().catch(() => { });
+            });
+        }
+    },
+
+    checkForUpdates: function () {
+        const GITHUB_MANIFEST_URL = 'https://raw.githubusercontent.com/malekwael229/FocusTube/main/chrome-manifest.json';
+        const localVersion = chrome.runtime.getManifest().version;
+        if (sessionStorage.getItem('ft_update_checked')) return;
+
+        fetch(GITHUB_MANIFEST_URL, { cache: 'no-cache' })
+            .then(r => r.json())
+            .then(remote => {
+                sessionStorage.setItem('ft_update_checked', 'true');
+                if (remote.version !== localVersion && !document.getElementById('ft-update-notification')) {
+                    this.showUpdateNotification(remote.version);
+                }
+            })
+            .catch(() => { });
+    },
+
+    showUpdateNotification: function (newVersion) {
+        if (!document.body) return;
+        const n = document.createElement('div');
+        n.id = 'ft-update-notification';
+        n.style.cssText = `position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, #2b86c5, #0d9488); color: white; padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 2147483647; font-family: sans-serif; display: flex; align-items: center; gap: 15px; animation: ftFadeIn 0.5s ease; border: 1px solid rgba(255,255,255,0.2); max-width: 320px;`;
+        n.innerHTML = `<div><div style="font-weight:bold; font-size:14px; margin-bottom:4px">FocusTube Update Available</div><div style="font-size:12px; opacity:0.9">Version ${newVersion} is ready.</div></div><a href="https://github.com/malekwael229/FocusTube" target="_blank" style="background:white; color:#2b86c5; padding:6px 14px; border-radius:20px; text-decoration:none; font-size:12px; font-weight:600; white-space:nowrap;">View</a><button onclick="this.parentElement.remove()" style="background:none; border:none; color:white; cursor:pointer; font-size:20px;">×</button>`;
+        document.body.appendChild(n);
+        setTimeout(() => { if (n.parentElement) n.parentElement.remove(); }, 15000);
+    },
+
+    playBeep: function () {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+            const ctx = new AudioContext();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.type = 'sine'; osc.frequency.value = 880;
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.6);
+            osc.start(); osc.stop(ctx.currentTime + 0.6);
+        } catch (e) { }
     }
+};
 
-    const mode = isForced ? 'strict' : currentMode;
+const UI = {
+    overlayId: 'focus-tube-warning-overlay',
+    persistenceInterval: null,
+    isOverlayNeeded: false,
 
-    if (mode === 'strict') {
-        if (SITE.TT || SITE.IG) {
-            showStrictOverlay();
+    create: function (type, platform, onAllow, onBack) {
+        if (document.getElementById(this.overlayId)) {
+            this.updateTheme();
+            if (!this.persistenceInterval) this.startPersistence(type, platform, onAllow, onBack);
+            return;
+        }
+
+        this.isOverlayNeeded = true;
+        this.startPersistence(type, platform, onAllow, onBack);
+
+        const overlay = document.createElement('div');
+        overlay.id = this.overlayId;
+        overlay.className = 'focus-tube-warning';
+        if (CONFIG.isDarkMode) overlay.classList.add('dark');
+        overlay.style.cssText = "position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0,0,0,0.96) !important; display: flex !important; justify-content: center !important; align-items: center !important; z-index: 2147483647 !important; isolation: isolate !important;";
+
+        const card = document.createElement('div'); card.className = 'focus-tube-card';
+        const img = document.createElement('img'); img.src = chrome.runtime.getURL('icons/icon128.png'); img.className = 'focus-tube-icon-img';
+
+        let headerText = type === 'strict' ? 'Strict Mode Active' : 'Distraction Blocked';
+        let bodyText = 'FocusTube is keeping you productive.';
+
+        const h1 = document.createElement('h1'); h1.textContent = headerText;
+        const p = document.createElement('p'); p.textContent = bodyText;
+        const btnGroup = document.createElement('div'); btnGroup.className = 'focus-tube-btn-group';
+
+        const backBtn = document.createElement('button');
+        backBtn.className = 'focus-tube-btn focus-tube-btn-primary';
+        backBtn.textContent = 'Go Back';
+        backBtn.onclick = onBack;
+        btnGroup.appendChild(backBtn);
+
+        if (type === 'warn') {
+            const watchBtn = document.createElement('button');
+            watchBtn.className = 'focus-tube-btn focus-tube-btn-secondary';
+            watchBtn.textContent = 'Watch Anyway';
+            watchBtn.onclick = () => {
+                this.remove();
+                CONFIG.session.allowedCount = 999;
+                CONFIG.session.platform = platform;
+                onAllow();
+            };
+            btnGroup.appendChild(watchBtn);
+        }
+
+        if (CONFIG.site.tt) {
+            const msgBtn = document.createElement('button');
+            msgBtn.className = 'focus-tube-btn focus-tube-btn-secondary';
+            msgBtn.textContent = 'Go to Messages';
+            msgBtn.onclick = () => { if (CONFIG.site.tt) window.location.href = "https://www.tiktok.com/messages"; };
+            btnGroup.appendChild(msgBtn);
+        }
+
+        card.append(img, h1, p, btnGroup);
+        overlay.appendChild(card);
+
+        if (CONFIG.site.ig) {
+            document.body.appendChild(overlay);
+            try { overlay.showModal(); } catch (e) { overlay.open = true; }
         } else {
+            document.documentElement.appendChild(overlay);
+        }
+
+        if (!CONFIG.site.ig) {
+            document.body.classList.add('ft-scroll-lock');
+            document.documentElement.classList.add('ft-scroll-lock');
+        }
+    },
+
+    startPersistence: function (type, platform, onAllow, onBack) {
+        if (this.persistenceInterval) clearInterval(this.persistenceInterval);
+        this.persistenceInterval = setInterval(() => {
+            if (!this.isOverlayNeeded) { clearInterval(this.persistenceInterval); return; }
+            if (!document.getElementById(this.overlayId)) this.create(type, platform, onAllow, onBack);
+            if (CONFIG.site.tt || type === 'warn') Utils.lockVideo();
+        }, 500);
+    },
+
+    remove: function () {
+        if (this.persistenceInterval) clearInterval(this.persistenceInterval);
+        this.isOverlayNeeded = false;
+        const overlay = document.getElementById(this.overlayId);
+        if (overlay) overlay.remove();
+        document.body.classList.remove('ft-scroll-lock');
+        document.documentElement.classList.remove('ft-scroll-lock');
+        document.body.style.overflow = '';
+        Utils.unlockVideo();
+    },
+
+    updateTheme: function () {
+        const el = document.getElementById(this.overlayId);
+        if (el) {
+            if (CONFIG.isDarkMode) el.classList.add('dark');
+            else el.classList.remove('dark');
+        }
+    },
+
+    showToast: function (title, msg) {
+        if (!document.body) return;
+        const exist = document.getElementById('ft-toast'); if (exist) exist.remove();
+        const toast = document.createElement('div'); toast.id = 'ft-toast';
+        toast.style.cssText = `position: fixed; top: 24px; right: 24px; background: #1f1f1f; color: #fff; padding: 16px 24px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); z-index: 2147483647; font-family: sans-serif; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 15px; opacity: 0; transform: translateY(-20px); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); min-width: 300px;`;
+        toast.innerHTML = `<img src="${chrome.runtime.getURL("icons/icon128.png")}" style="width:32px;height:32px;border-radius:8px;"><div><div style="font-weight:700;font-size:15px;margin-bottom:4px;color:#fff;">${title}</div><div style="font-size:13px;color:#aaa;line-height:1.4;">${msg}</div></div>`;
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => { toast.style.opacity = '1'; toast.style.transform = 'translateY(0)'; });
+        setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-20px)'; setTimeout(() => toast.remove(), 400); }, 5000);
+    },
+
+    showKickNotification: function () {
+        const n = document.createElement('div');
+        n.style.cssText = `position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #222; color: #fff; padding: 16px 28px; border-radius: 50px; z-index: 2147483647; font-family: sans-serif; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);`;
+        n.innerHTML = `<img src="${chrome.runtime.getURL("icons/icon128.png")}" style="width:22px;height:22px;">Strict Mode prevented access.`;
+        document.documentElement.appendChild(n);
+        setTimeout(() => { n.remove(); }, 4000);
+    }
+};
+
+const YouTube = {
+    isRedirecting: false,
+    observer: null,
+    lastCheckTime: 0,
+    currentMode: 'strict',
+
+    init: function () {
+        if (!document.body) { setTimeout(() => this.init(), 100); return; }
+        this.isRedirecting = false;
+        document.addEventListener('yt-navigate-finish', () => { this.isRedirecting = false; setTimeout(() => this.runChecks(), 300); });
+        window.addEventListener('popstate', () => setTimeout(() => this.runChecks(), 300));
+        this.observer = new MutationObserver(() => {
+            if (Date.now() - this.lastCheckTime > 1000) { this.lastCheckTime = Date.now(); this.runChecks(); }
+        });
+        this.observer.observe(document.body, { childList: true, subtree: true });
+        this.runChecks();
+        setTimeout(() => this.checkKick(), 500);
+    },
+
+    runChecks: function () {
+        if (this.isRedirecting || !document.body) return;
+        const currentUrl = window.location.href;
+        if (currentUrl.includes('/feed/history')) {
+            if (CONFIG.session.allowedCount > 0 && CONFIG.session.platform === 'yt') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+            this.removeVisualFocus(); UI.remove(); return;
+        }
+        this.checkActiveBlocking(currentUrl);
+        const ts = Utils.getTimerState();
+        if (ts.isWork || (CONFIG.isFocusMode && !ts.isBreak)) this.applyFocusMode();
+        else this.removeVisualFocus();
+    },
+
+    checkActiveBlocking: function (url) {
+        const ts = Utils.getTimerState();
+        if (CONFIG.platformSettings.yt === 'strict' && this.currentMode !== 'strict') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+        this.currentMode = CONFIG.platformSettings.yt;
+
+        if (url.includes('/shorts/')) {
+            if (ts.isBreak) { UI.remove(); return; }
+            if (ts.isWork) this.handleShortsBlocking(url, true);
+            else if (CONFIG.platformSettings.yt !== 'allow') this.handleShortsBlocking(url, false);
+            else UI.remove();
+        } else {
+            if (CONFIG.session.allowedCount > 0 && CONFIG.session.platform === 'yt') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+            UI.remove();
+        }
+    },
+
+    handleShortsBlocking: function (url, isForced) {
+        if (!isForced && CONFIG.session.allowedCount > 0 && CONFIG.session.platform === 'yt') return;
+        const id = url.split('/shorts/')[1]?.split('?')[0]?.split('&')[0];
+        if (id) Utils.logStat(id);
+        const mode = isForced ? 'strict' : CONFIG.platformSettings.yt;
+        if (mode === 'strict') {
+            this.isRedirecting = true;
             sessionStorage.setItem('ft_kicked', 'true');
             window.location.replace("https://www.youtube.com");
+        } else if (mode === 'warn') {
+            Utils.lockVideo();
+            UI.create('warn', 'yt', () => Utils.unlockVideo(), () => window.location.href = "https://www.youtube.com");
         }
-    } else if (mode === 'warn') {
-        showWarning(id);
-    }
-}
+    },
 
-function showStrictOverlay() {
-    lockVideo();
-    if (document.getElementById('focus-tube-warning-overlay')) { updateWarningTheme(); return; }
-    
-    const overlay = document.createElement('div');
-    overlay.id = 'focus-tube-warning-overlay';
-    overlay.className = 'focus-tube-warning';
-    if (isDarkMode) overlay.classList.add('dark');
-    
-    let msgButtonHtml = '';
-    if (SITE.IG || SITE.TT) {
-        msgButtonHtml = `<button id="ft-messages-strict" class="focus-tube-btn focus-tube-btn-secondary">Go to Messages</button>`;
+    applyFocusMode: function () { if (document.body) document.body.classList.add('focus-mode-active'); },
+    removeVisualFocus: function () { if (document.body) document.body.classList.remove('focus-mode-active'); },
+    checkKick: function () {
+        if (sessionStorage.getItem('ft_kicked')) { sessionStorage.removeItem('ft_kicked'); UI.showKickNotification(); }
     }
-    
-    overlay.innerHTML = `
-        <div class="focus-tube-card">
-            <img src="${chrome.runtime.getURL('icons/icon128.png')}" class="focus-tube-icon-img">
-            <h1>Strict Mode Active</h1>
-            <p>FocusTube has blocked this content.</p>
-            <div class="focus-tube-btn-group">
-                <button id="ft-go-back" class="focus-tube-btn focus-tube-btn-primary">Go Back</button>
-                ${msgButtonHtml}
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(overlay);
-    
-    document.getElementById('ft-go-back').addEventListener('click', () => { 
-        if (window.history.length > 1) window.history.back();
-        else window.location.href = "https://www.google.com";
+};
+
+const Instagram = {
+    igSelectors: {
+        nav: {
+            explore: "a[href*='/explore/']",
+            reels: "a[href*='/reels/']",
+        }
+    },
+
+    observer: null,
+    isRedirecting: false,
+
+    run: function (isUpdate) {
+        if (!isUpdate) {
+            this.initObserver();
+            Utils.setSafeInterval(() => this.handleMutation(), 800);
+        }
+        this.rapidKick();
+        this.handleMutation();
+    },
+
+    initObserver: function () {
+        if (this.observer) return;
+        this.isRedirecting = false;
+        this.observer = new MutationObserver(() => this.handleMutation());
+        this.observer.observe(document, { subtree: true, childList: true, attributes: true, attributeFilter: ['href', 'style', 'class', 'role'] });
+
+        Utils.setSafeInterval(() => this.rapidKick(), 50);
+    },
+
+    rapidKick: function () {
+        if (this.isRedirecting) return;
+
+        const path = window.location.pathname;
+        if (path.startsWith('/reels/') || path.startsWith('/reel/') || path.startsWith('/explore/')) {
+            const ts = Utils.getTimerState();
+            const shouldBlock = CONFIG.isFocusMode || ts.isWork || CONFIG.platformSettings.ig === 'strict';
+
+            if (shouldBlock) {
+                if (sessionStorage.getItem('ft_kicked') === 'true' && path === '/') return;
+
+                this.isRedirecting = true;
+                sessionStorage.setItem('ft_kicked', 'true');
+                window.location.replace('/');
+
+                setTimeout(() => { this.isRedirecting = false; }, 2000);
+            }
+        }
+    },
+
+    applyHidden: function (elements) {
+        if (!elements) return;
+        if (elements instanceof NodeList) elements.forEach(el => el.style.setProperty('display', 'none', 'important'));
+        else elements.style.setProperty('display', 'none', 'important');
+    },
+
+    applyVisible: function (elements) {
+        if (!elements) return;
+        if (elements instanceof NodeList) elements.forEach(el => el.style.removeProperty('display'));
+        else elements.style.removeProperty('display');
+    },
+
+    handleMutation: function () {
+        if (!document.body) return;
+
+        const path = window.location.pathname;
+        const ts = Utils.getTimerState();
+
+        const isFocusActive = CONFIG.isFocusMode || ts.isWork;
+
+        if (isFocusActive) {
+            this.applyHidden(document.body.querySelectorAll(this.igSelectors.nav.reels));
+            this.applyHidden(document.body.querySelectorAll(this.igSelectors.nav.explore));
+        } else {
+            this.applyVisible(document.body.querySelectorAll(this.igSelectors.nav.reels));
+            this.applyVisible(document.body.querySelectorAll(this.igSelectors.nav.explore));
+        }
+
+        if (!path.startsWith('/reels/') && !path.startsWith('/reel/') && !path.startsWith('/explore/')) {
+            if (sessionStorage.getItem('ft_kicked')) {
+                sessionStorage.removeItem('ft_kicked');
+                UI.showKickNotification();
+            }
+        } else {
+            const shouldBlock = isFocusActive || CONFIG.platformSettings.ig === 'strict';
+            if (shouldBlock && !this.isRedirecting) {
+                this.rapidKick();
+            }
+        }
+    }
+};
+
+const TikTok = {
+    currentMode: 'strict',
+    run: function (isUpdate) {
+        if (!isUpdate) { Utils.setSafeInterval(() => this.check(), 100); }
+        this.check();
+    },
+    check: function () {
+        const path = window.location.pathname;
+        const ts = Utils.getTimerState();
+        if (CONFIG.platformSettings.tt === 'strict' && this.currentMode !== 'strict') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+        this.currentMode = CONFIG.platformSettings.tt;
+
+        const isSafePage = (path.startsWith('/@') && !path.includes('/video/') && !path.includes('/photo/') && !path.endsWith('/live')) ||
+            path.startsWith('/messages') || path.startsWith('/upload') || path.startsWith('/setting') || path.startsWith('/feedback') || path.startsWith('/coin');
+        if (isSafePage) {
+            if (CONFIG.session.allowedCount > 0 && CONFIG.session.platform === 'tt') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+            UI.remove(); return;
+        }
+
+        if (CONFIG.session.allowedCount > 0 && CONFIG.session.platform === 'tt' && !ts.isWork) { UI.remove(); return; }
+
+        let shouldBlock = false;
+        if (path === '/' || path.startsWith('/foryou') || path.startsWith('/following') || path.startsWith('/friends') ||
+            path.startsWith('/explore') || path.includes('/live') || path.startsWith('/search') ||
+            path.includes('/video/') || path.includes('/photo/')) { shouldBlock = true; }
+
+        if (shouldBlock) {
+            if (ts.isBreak) UI.remove();
+            else if (ts.isWork) this.block(true);
+            else if (CONFIG.platformSettings.tt !== 'allow') this.block(false);
+            else UI.remove();
+        } else UI.remove();
+    },
+    block: function (isForced) {
+        if (!isForced && CONFIG.session.allowedCount > 0 && CONFIG.session.platform === 'tt') return;
+        const mode = isForced ? 'strict' : CONFIG.platformSettings.tt;
+        UI.create(mode, 'tt', () => {
+            CONFIG.session.allowedCount = 999; CONFIG.session.platform = 'tt'; Utils.unlockVideo();
+        }, () => window.location.href = "https://www.tiktok.com/messages");
+    }
+};
+
+(function () {
+    chrome.storage.local.get(['focusMode', 'platformSettings', 'darkMode', 'ft_timer_end', 'ft_timer_type'], (res) => {
+        if (chrome.runtime.lastError) return;
+        CONFIG.isFocusMode = res.focusMode !== false;
+        if (res.platformSettings) CONFIG.platformSettings = res.platformSettings;
+        CONFIG.isDarkMode = res.darkMode !== false;
+        CONFIG.timer.end = res.ft_timer_end;
+        CONFIG.timer.type = res.ft_timer_type;
+
+        if (CONFIG.site.yt) YouTube.init();
+        else if (CONFIG.site.ig) Instagram.run();
+        else if (CONFIG.site.tt) TikTok.run();
+
+        setTimeout(() => Utils.checkForUpdates(), 5000);
     });
 
-    if (document.getElementById('ft-messages-strict')) {
-        document.getElementById('ft-messages-strict').addEventListener('click', () => {
-            if (SITE.IG) window.location.href = "https://www.instagram.com/direct/inbox/";
-            if (SITE.TT) window.location.href = "https://www.tiktok.com/messages";
-        });
-    }
-}
-
-function applyFocusMode() {
-    if (!document.body) return;
-    if (!document.body.classList.contains('focus-mode-active')) document.body.classList.add('focus-mode-active');
-    
-    let selectors = [];
-    if (SITE.YT) {
-        selectors = [ 
-            "ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts])", 
-            "ytd-reel-shelf-renderer", 
-            "ytd-guide-entry-renderer[title='Shorts']", 
-            "ytd-mini-guide-entry-renderer[aria-label='Shorts']", 
-            "yt-chip-cloud-chip-renderer a[href*='/shorts/']" 
-        ];
-    } else if (SITE.IG) {
-        selectors = [ 
-            "a[href*='/reels/']", 
-            "a[href*='/reel/']", 
-            "a[href='/explore/']", 
-            "a[href*='reels_tab']", 
-            "div[role='button']:has(svg[aria-label='Reels'])", 
-            "div[role='button']:has(svg[aria-label='Explore'])"
-        ];
-    } 
-    
-    if (selectors.length > 0) document.querySelectorAll(selectors.join(',')).forEach(hideElement);
-}
-
-function removeVisualFocus() {
-    if (!document.body) return;
-    document.body.classList.remove('focus-mode-active');
-    document.querySelectorAll('[data-focus-tube-hidden]').forEach(el => {
-        el.style.display = '';
-        el.removeAttribute('data-focus-tube-hidden');
-    });
-}
-
-function checkKickFlag() {
-    const kickMsg = sessionStorage.getItem('ft_kicked');
-    if (kickMsg) {
-        sessionStorage.removeItem('ft_kicked');
-        showKickNotification();
-    }
-}
-
-function showKickNotification() {
-    if (!document.body) return;
-    const notification = document.createElement('div');
-    notification.style.cssText = `position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: #222; color: #fff; padding: 12px 24px; border-radius: 50px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 2147483647; font-family: Roboto, Arial, sans-serif; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 12px; opacity: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); border: 1px solid rgba(255,255,255,0.1);`;
-    const img = document.createElement('img');
-    img.src = chrome.runtime.getURL("icons/icon128.png");
-    img.style.width = "20px";
-    img.style.height = "20px";
-    notification.appendChild(img);
-    const text = document.createElement('span');
-    text.innerText = 'Strict Mode prevented access.';
-    notification.appendChild(text);
-    document.body.appendChild(notification);
-    setTimeout(() => {
-        notification.style.opacity = '1';
-        notification.style.transform = 'translateX(-50%) translateY(0)';
-    }, 20);
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateX(-50%) translateY(10px)';
-        setTimeout(() => notification.remove(), 400);
-    }, 4000);
-}
-
-function updateWarningTheme() {
-    const overlay = document.getElementById('focus-tube-warning-overlay');
-    if (overlay) {
-        if (isDarkMode) overlay.classList.add('dark');
-        else overlay.classList.remove('dark');
-    }
-}
-
-function showWarning(id) {
-    lockVideo();
-    if (document.getElementById('focus-tube-warning-overlay')) { updateWarningTheme(); return; }
-    const overlay = document.createElement('div');
-    overlay.id = 'focus-tube-warning-overlay';
-    overlay.className = 'focus-tube-warning';
-    if (isDarkMode) overlay.classList.add('dark');
-    
-    let msgButtonHtml = '';
-    if (SITE.IG || SITE.TT) {
-        msgButtonHtml = `<button id="ft-messages" class="focus-tube-btn focus-tube-btn-secondary">Go to Messages</button>`;
-    }
-    
-    overlay.innerHTML = `
-        <div class="focus-tube-card">
-            <img src="${chrome.runtime.getURL('icons/icon128.png')}" class="focus-tube-icon-img">
-            <h1>Distraction Blocked</h1>
-            <p>FocusTube is keeping you productive</p>
-            <div class="focus-tube-btn-group">
-                <button id="ft-go-back" class="focus-tube-btn focus-tube-btn-primary">Go Back</button>
-                <button id="ft-watch" class="focus-tube-btn focus-tube-btn-secondary">Watch Anyway</button>
-                ${msgButtonHtml}
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(overlay);
-    
-    let backUrl = "https://www.youtube.com";
-    if (SITE.IG) backUrl = "https://www.google.com";
-    if (SITE.TT) backUrl = "https://www.tiktok.com"; 
-
-    document.getElementById('ft-go-back').addEventListener('click', () => { window.location.href = backUrl; });
-    document.getElementById('ft-watch').addEventListener('click', () => { 
-        if (SITE.TT) isTikTokSessionAllowed = true;
-        else currentAllowedId = id;
-        
-        removeWarning(); 
-        unlockVideo(); 
-        document.querySelectorAll('video').forEach(vid => { vid.muted = false; vid.play().catch(() => {}); }); 
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden && CONFIG.session.allowedCount > 0) { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
     });
 
-    if (document.getElementById('ft-messages')) {
-        document.getElementById('ft-messages').addEventListener('click', () => {
-            if (SITE.IG) window.location.href = "https://www.instagram.com/direct/inbox/";
-            if (SITE.TT) window.location.href = "https://www.tiktok.com/messages";
-        });
-    }
-}
+    chrome.storage.onChanged.addListener((changes) => {
+        if (changes.focusMode) CONFIG.isFocusMode = changes.focusMode.newValue;
+        if (changes.platformSettings) {
+            CONFIG.platformSettings = changes.platformSettings.newValue;
+            if (CONFIG.site.yt && changes.platformSettings.newValue.yt === 'strict') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+            if (CONFIG.site.ig && changes.platformSettings.newValue.ig === 'strict') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+            if (CONFIG.site.tt && changes.platformSettings.newValue.tt === 'strict') { CONFIG.session.allowedCount = 0; CONFIG.session.platform = null; }
+        }
+        if (changes.darkMode) { CONFIG.isDarkMode = changes.darkMode.newValue; UI.updateTheme(); }
+        if (changes.ft_timer_end) CONFIG.timer.end = changes.ft_timer_end.newValue;
+        if (changes.ft_timer_type) CONFIG.timer.type = changes.ft_timer_type.newValue;
 
-function removeWarning() { const overlay = document.getElementById('focus-tube-warning-overlay'); if (overlay) overlay.remove(); }
-function lockVideo() { if (isVideoLocked) return; isVideoLocked = true; document.querySelectorAll('video').forEach(vid => { vid.pause(); vid.muted = true; }); videoLockInterval = setInterval(() => { document.querySelectorAll('video').forEach(vid => { if (!vid.paused || !vid.muted) { vid.pause(); vid.muted = true; } }); }, 200); }
-function unlockVideo() { isVideoLocked = false; if (videoLockInterval) { clearInterval(videoLockInterval); videoLockInterval = null; } }
-function hideElement(element) { if (element && element.style.display !== 'none') { element.style.display = 'none'; element.setAttribute('data-focus-tube-hidden', 'true'); } }
+        if (CONFIG.site.yt) YouTube.runChecks();
+        else if (CONFIG.site.ig) Instagram.handleMutation();
+        else if (CONFIG.site.tt) TikTok.check();
+    });
 
-function checkForUpdates() {
-    const GITHUB_MANIFEST_URL = 'https://raw.githubusercontent.com/malekwael229/FocusTube/main/manifest.json';
-    const localVersion = chrome.runtime.getManifest().version;
-    fetch(GITHUB_MANIFEST_URL).then(r => r.json()).then(remote => { if (compareVersions(localVersion, remote.version)) { if (document.body) showUpdateNotification(remote.version); else document.addEventListener('DOMContentLoaded', () => showUpdateNotification(remote.version)); } }).catch(err => {});
-}
-function compareVersions(local, remote) { const v1 = local.split('.').map(Number); const v2 = remote.split('.').map(Number); for (let i = 0; i < Math.max(v1.length, v2.length); i++) { const n1 = v1[i] || 0; const n2 = v2[i] || 0; if (n2 > n1) return true; if (n1 > n2) return false; } return false; }
-function showUpdateNotification(newVersion) { if (sessionStorage.getItem('ft_update_shown') || !document.body) return; const n = document.createElement('div'); n.style.cssText = `position: fixed; bottom: 20px; right: 20px; background: #2b2b2b; color: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 2147483647; font-family: -apple-system, sans-serif; display: flex; align-items: center; gap: 15px; animation: ftFadeIn 0.5s ease; border: 1px solid #444;`; n.innerHTML = `<div><div style="font-weight:bold; font-size:14px; margin-bottom:4px">FocusTube Update</div><div style="font-size:12px; color:#aaa">Version ${newVersion} is available.</div></div><a href="https://github.com/malekwael229/FocusTube" target="_blank" style="background:#007aff; color:white; padding:8px 16px; border-radius:20px; text-decoration:none; font-size:12px; font-weight:600;">Get it</a><button id="ft-close-update" style="background:none; border:none; color:#666; cursor:pointer; font-size:16px;">×</button>`; document.body.appendChild(n); sessionStorage.setItem('ft_update_shown', 'true'); document.getElementById('ft-close-update').addEventListener('click', () => n.remove()); }
-const style = document.createElement('style'); style.innerHTML = `@keyframes ftFadeIn { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`; if (document.head) document.head.appendChild(style); else document.addEventListener('DOMContentLoaded', () => document.head.appendChild(style));
+    chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+        if (msg.action === "TIMER_COMPLETE") {
+            sendResponse({ status: 'received' });
+            Utils.playBeep();
+            if (msg.type === "work") UI.showToast("Focus Session Complete! 🎉", "Great job! Take a 5-minute break.");
+            else UI.showToast("Break Over! ⏰", "Time to get back to work.");
+        }
+    });
+})();

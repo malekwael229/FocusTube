@@ -14,31 +14,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabBtns = document.querySelectorAll('.tab-btn');
     const behaviorLabel = document.getElementById('behaviorLabel');
 
-    let activePlatform = 'yt';
+    let activePlatform = localStorage.getItem('ft_last_tab') || 'yt';
     let settings = { yt: 'strict', ig: 'strict', tt: 'strict' };
     let timerInterval = null;
+
+    updateTabUI();
 
     chrome.storage.local.get(['focusMode', 'platformSettings', 'darkMode', 'ft_stats_blocked', 'ft_timer_end', 'ft_timer_type', 'lastActiveTab'], (result) => {
         const isEnabled = result.focusMode !== false;
         mainToggle.checked = isEnabled;
-        
-        const isDarkMode = result.darkMode !== false;
-        darkModeToggle.checked = isDarkMode;
-        applyDarkMode(isDarkMode);
-        
-        if (result.platformSettings) settings = result.platformSettings;
 
         if (result.lastActiveTab && ['yt', 'ig', 'tt'].includes(result.lastActiveTab)) {
-            activePlatform = result.lastActiveTab;
+            if (!localStorage.getItem('ft_last_tab')) {
+                activePlatform = result.lastActiveTab;
+                updateTabUI();
+            }
         } else {
-             chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+            chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                 if (tabs && tabs[0] && tabs[0].url) {
                     if (tabs[0].url.includes('instagram.com')) activePlatform = 'ig';
                     else if (tabs[0].url.includes('tiktok.com')) activePlatform = 'tt';
+                    else if (tabs[0].url.includes('youtube.com')) activePlatform = 'yt';
+
+                    localStorage.setItem('ft_last_tab', activePlatform);
+                    updateTabUI();
+                    updateUiState(isEnabled);
                 }
-                updateTabUI();
             });
         }
+
+        const isDarkMode = result.darkMode !== false;
+        darkModeToggle.checked = isDarkMode;
+        applyDarkMode(isDarkMode);
+
+        if (result.platformSettings) settings = result.platformSettings;
 
         updateTabUI();
         updateStats(result.ft_stats_blocked || 0);
@@ -49,11 +58,35 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             updateUiState(isEnabled);
         }
+    });
 
-        setTimeout(() => {
-            document.querySelectorAll('.no-anim').forEach(el => el.classList.remove('no-anim'));
-            document.body.classList.remove('preload');
-        }, 50);
+
+    chrome.storage.onChanged.addListener((changes, area) => {
+        if (area !== 'local') return;
+
+        if (changes.ft_timer_end || changes.ft_timer_type) {
+            chrome.storage.local.get(['ft_timer_end', 'ft_timer_type'], (res) => {
+                const endTime = res.ft_timer_end;
+                const type = res.ft_timer_type;
+                if (endTime && endTime > Date.now()) {
+                    startTimerDisplay(endTime, type || 'work');
+                    if (type === 'work') lockUiForTimer();
+                    else unlockUiFromTimer();
+                } else {
+                    stopTimer();
+                }
+            });
+        }
+
+        if (changes.focusMode) {
+            mainToggle.checked = changes.focusMode.newValue;
+            updateUiState(changes.focusMode.newValue);
+        }
+
+        if (changes.platformSettings) {
+            settings = changes.platformSettings.newValue;
+            updateSelectedOptionVisuals(settings[activePlatform]);
+        }
     });
 
     function updateTabUI() {
@@ -66,10 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             activePlatform = btn.getAttribute('data-target');
+            localStorage.setItem('ft_last_tab', activePlatform);
             chrome.storage.local.set({ lastActiveTab: activePlatform });
             updateTabUI();
-            
-            // Only update toggle state if timer isn't locking it
+
             if (!timerBtn.classList.contains('active') || timerBtn.classList.contains('break')) {
                 updateUiState(mainToggle.checked);
             }
@@ -81,11 +114,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (platform === 'yt') behaviorLabel.innerText = "When I open a Short...";
         if (platform === 'ig') behaviorLabel.innerText = "When I open a Reel...";
         if (platform === 'tt') behaviorLabel.innerText = "When I open TikTok...";
-        
+
+        const warnOption = document.getElementById('warnOption');
+        const warnText = warnOption.querySelector('.mode-option-text');
+
+        if (!warnOption.classList.contains('timer-locked')) {
+            if (platform === 'ig') {
+                warnOption.classList.add('disabled');
+                warnText.innerText = "Soft: Coming Soon";
+            } else {
+                warnOption.classList.remove('disabled');
+                warnText.innerText = "Soft: Warn me first";
+            }
+        }
+
         if (timerBtn.classList.contains('active') && !timerBtn.classList.contains('break')) {
-             lockUiForTimer();
+            lockUiForTimer();
         } else {
-             updateSelectedOptionVisuals(mode);
+            updateSelectedOptionVisuals(mode);
         }
     }
 
@@ -105,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     modeOptions.forEach(option => {
-        option.addEventListener('click', function() {
+        option.addEventListener('click', function () {
             if (this.classList.contains('disabled') || this.classList.contains('timer-locked')) return;
             const value = this.getAttribute('data-value');
             settings[activePlatform] = value;
@@ -134,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const endTime = Date.now() + (minutes * 60 * 1000);
         chrome.storage.local.set({ ft_timer_end: endTime, ft_timer_type: type });
         startTimerDisplay(endTime, type);
-        
+
         if (type === 'work') lockUiForTimer();
         else unlockUiFromTimer();
     }
@@ -159,7 +205,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 opt.classList.remove('selected');
                 opt.classList.add('disabled', 'timer-locked');
-                if (val === 'warn') textEl.innerText = "Soft: Locked (Timer Active)";
+                if (val === 'warn') {
+                    textEl.innerText = "Soft: Locked (Timer Active)";
+                }
                 if (val === 'allow') textEl.innerText = "Passive: Locked (Timer Active)";
             }
         });
@@ -168,10 +216,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function unlockUiFromTimer() {
         modeOptions.forEach(opt => {
-            opt.classList.remove('disabled', 'timer-locked');
+            const val = opt.getAttribute('data-value');
             const textEl = opt.querySelector('.mode-option-text');
-            if (opt.getAttribute('data-value') === 'warn') textEl.innerText = "Soft: Warn me first";
-            if (opt.getAttribute('data-value') === 'allow') textEl.innerText = "Passive: Let me watch";
+
+            opt.classList.remove('disabled', 'timer-locked');
+
+            if (val === 'warn') {
+                if (activePlatform === 'ig') {
+                    opt.classList.add('disabled');
+                    textEl.innerText = "Soft: Coming Soon";
+                } else {
+                    textEl.innerText = "Soft: Warn me first";
+                }
+            }
+            if (val === 'allow') textEl.innerText = "Passive: Let me watch";
         });
         updateSelectedOptionVisuals(settings[activePlatform]);
         updateUiState(mainToggle.checked);
@@ -193,24 +251,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateTimerUI(endTime, type) {
         const remaining = endTime - Date.now();
         if (remaining <= 0) {
-            clearInterval(timerInterval);
-            if (type === 'work') {
-                chrome.notifications.create({
-                    type: 'basic',
-                    iconUrl: 'icons/icon128.png',
-                    title: 'Pomodoro Complete!',
-                    message: 'Time for a 5 minute break. Shorts are unlocked.'
-                });
-                startTimer(5, 'break');
-            } else {
-                chrome.notifications.create({
-                    type: 'basic',
-                    iconUrl: 'icons/icon128.png',
-                    title: 'Break Over',
-                    message: 'Ready to start focusing again?'
-                });
-                stopTimer();
-            }
             return;
         }
         const mins = Math.floor(remaining / 60000);
@@ -220,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateStats(count) {
         if (statShorts) statShorts.innerText = count;
-        if (statTime) statTime.innerText = count + "m"; 
+        if (statTime) statTime.innerText = count + "m";
     }
 
     function applyDarkMode(isDark) {
@@ -236,15 +276,46 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modeDesc) modeDesc.innerText = getDescription(value);
     }
 
+    function checkForUpdates() {
+        fetch('https://raw.githubusercontent.com/malekwael229/FocusTube/main/chrome-manifest.json')
+            .then(r => r.json())
+            .then(data => {
+                const latest = data.version;
+                const current = chrome.runtime.getManifest().version;
+
+                if (latest && latest !== current) {
+                    const banner = document.getElementById('updateBanner');
+
+                    if (banner) {
+                        banner.classList.remove('hidden');
+                        banner.innerHTML = `UPDATE: Version <b>${latest}</b> Available! <a href="#" id="updateLink">Get it here</a>`;
+
+                        setTimeout(() => {
+                            const newLink = document.getElementById('updateLink');
+                            if (newLink) {
+                                newLink.addEventListener('click', (e) => {
+                                    e.preventDefault();
+                                    chrome.tabs.create({ url: 'https://github.com/malekwael229/FocusTube' });
+                                });
+                            }
+                        }, 0);
+                    }
+                }
+            })
+            .catch(() => { });
+    }
+
+    checkForUpdates();
+
     function updateUiState(isEnabled) {
         if (!passiveOption) return;
         const text = passiveOption.querySelector('.mode-option-text');
-        
+
         if (isEnabled) {
             if (activePlatform === 'yt') {
                 passiveOption.classList.add('disabled');
                 if (text) text.innerText = "Passive (Turn off Focus Mode)";
-                
+
                 if (settings[activePlatform] === 'allow') {
                     settings[activePlatform] = 'warn';
                     chrome.storage.local.set({ platformSettings: settings });
