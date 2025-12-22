@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateTabUI();
             }
         } else {
+
             activePlatform = (localStorage.getItem('ft_last_tab') || 'yt');
             updateTabUI();
         }

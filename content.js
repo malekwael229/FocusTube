@@ -11,6 +11,7 @@ const CONFIG = {
     timer: { end: null, type: 'work' },
     session: {
         allowedCount: 0,
+
         allowUntil: 0,
         platform: null
     }
@@ -514,12 +515,7 @@ const TikTok = {
             if (msg.type === "work") UI.showToast("Focus Session Complete! 🎉", "Great job! Take a 5-minute break.");
             else UI.showToast("Break Over! ⏰", "Time to get back to work.");
         }
-        if (msg.action === "TIMER_COMPLETE") {
-            sendResponse({ status: 'received' });
-            Utils.playBeep();
-            if (msg.type === "work") UI.showToast("Focus Session Complete! 🎉", "Great job! Take a 5-minute break.");
-            else UI.showToast("Break Over! ⏰", "Time to get back to work.");
-        }
+
     });
 
     chrome.storage.onChanged.addListener((changes, area) => {
