@@ -1,71 +1,86 @@
-<img width="1400" height="560" alt="FocusTube Banner" src="https://github.com/user-attachments/assets/1e95b1ee-c4a4-4d4f-a898-f00dcef223c4" />
+<div align="center">
+  <img width="1400" height="560" alt="FocusTube Banner" src="https://github.com/user-attachments/assets/1e95b1ee-c4a4-4d4f-a898-f00dcef223c4" />
 
-# FocusTube: Distraction Blocker for YouTube, Instagram & TikTok 🛡️
+  # FocusTube: Distraction Blocker
+  
+  **Reclaim your focus. Block YouTube Shorts, Instagram Reels, and the TikTok Feed.**
 
-A Manifest V3 browser extension that helps you reclaim your focus by blocking distracting content on today's most addictive platforms.
+  [Installation](#installation) • [Features](#features) • [Configuration](#configuration) • [Technical Details](#technical-details)
+  
+  ![License](https://img.shields.io/badge/license-MIT-blue.svg)
+  ![Version](https://img.shields.io/badge/version-1.6-green.svg)
+  
+</div>
 
-It aggressively blocks YouTube Shorts, Instagram Reels, and the TikTok feed, hiding algorithmic traps to prevent doomscrolling. Unlike basic element blockers, FocusTube is built to handle modern "Single Page App" navigation, ensuring blocks persist without needing a page refresh.
+---
 
-## New in v1.6 🚀
-*   **Enhanced Instagram Protection:** Smart visibility logic now dynamically hides/shows the Reels and Explore buttons based on your Focus Mode status.
-*   **Instant Kick:** Optimized strict mode now redirects you immediately (within ~50ms) when accessing blocked URLs on Instagram and YouTube, preventing the page from even loading.
-*   **Pomodoro Timer:** Built-in 25/5 interval timer. When active, it locks the extension into **Strict Mode** and disables the "Passive" option to ensure you stay focused.
-*   **Gamified Stats:** A real-time dashboard that tracks how many Shorts/Reels you've blocked and calculates the estimated time saved.
-*   **UI Overhaul:** A completely redesigned interface with a modern dark-mode aesthetic, gradient accents, and platform-specific controls.
+**FocusTube** is a Manifest V3 browser extension designed to stop doomscrolling in its tracks. Unlike basic element blockers, it uses advanced observation logic to handle modern Single Page Applications (SPAs), ensuring that distractions remain blocked even as you navigate.
+
+## New in v1.6
+
+*   **Enhanced Instagram Protection:** Smart visibility logic dynamically hides Reels/Explore buttons based on your Focus Mode.
+*   **Instant Kick:** Optimized strict mode redirects within ~50ms, preventing distraction pages from even loading.
+*   **Pomodoro Timer:** Built-in 25/5 interval timer. **Locks** the extension into Strict Mode while active.
+*   **Gamified Stats:** Real-time dashboard tracking blocked distractions and blocked time saved.
+*   **UI Overhaul:** Modern dark-mode interface with gradient accents.
+
+---
 
 ## Features
 
-### 🧠 Behavioral Intervention
+### Behavioral Intervention
 *   **Strict Mode:**
-    *   **YouTube & Instagram:** Instantly redirects you to the homepage if you try to open a Short/Reel.
-    *   **TikTok:** Displays a full-screen overlay, preventing access to the feed.
-*   **Soft Mode:** Displays a full-screen warning overlay that pauses and mutes the video, requiring a conscious decision to "Watch Anyway."
-*   **Passive Mode:** Disables active blocking while keeping visual cleaning active (unless toggled off).
+    *   **YouTube & Instagram:** Instantly redirects you to safe pages if you attempt to access Shorts/Reels.
+    *   **TikTok:** Blocks the feed entirely with a full-screen overlay.
+*   **Soft Mode:** Presents a "Warning" overlay. You must consciously click "Watch Anyway" to proceed (5-minute timeout).
+*   **Passive Mode:** No active blocking, but visual clutter (like the Shorts shelf) remains hidden.
 
-### 🧹 Visual Cleaning
-*   **YouTube:**
-    *   Hides the **"Shorts" shelf** from the Homepage.
-    *   Hides **Shorts** from Sidebar recommendations.
-    *   Hides **Shorts** filter chips and navigation buttons across the site.
-*   **Instagram:**
-    *   Hides the **"Reels" tab** from the main navigation.
-    *   Hides the **"Explore" tab**.
+### Visual Cleaning
+*   **YouTube:** Removes Shorts shelf, Sidebar recommendations, and formatting chips.
+*   **Instagram:** Hides "Reels" and "Explore" tabs from navigation.
+
+---
 
 ## Installation
 
 ### Official Stores
-*   **Microsoft Edge:** *[Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)* (v1.6 Pending) NOT UPDATED YET
+*   **Microsoft Edge:** *[Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)* (v1.6 Pending)
 *   **Firefox Add-ons:** *[Pending Review]*
 *   **Chrome Web Store:** *[Pending Review]*
 
-### 🛠️ Manual Installation (Developer Mode)
+### Manual Installation (Developer Mode)
 
-1.  **Clone or Download** this repository to your computer.
-2.  **Rename the correct manifest file:**
-    *   For **Chrome** or **Edge**, rename `chrome-manifest.json` to `manifest.json`.
-    *   For **Firefox**, rename `firefox-manifest.json` to `manifest.json`.
-3.  **Load the extension:**
-    *   **Chrome/Edge:** Go to `chrome://extensions`, enable **Developer mode**, and click **Load unpacked**. Select the FocusTube folder.
-    *   **Firefox:** Go to `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on...**, and select the `manifest.json` file.
+1.  **Clone or Download** this repository.
+2.  **Rename Manifest:**
+    *   **Chrome/Edge:** Rename `chrome-manifest.json` to `manifest.json`.
+    *   **Firefox:** Rename `firefox-manifest.json` to `manifest.json`.
+3.  **Load Extension:**
+    *   **Chrome/Edge:** `chrome://extensions` -> Enable Developer Mode -> **Load unpacked** -> Select folder.
+    *   **Firefox:** `about:debugging#/runtime/this-firefox` -> **Load Temporary Add-on...** -> Select `manifest.json`.
+
+---
 
 ## Configuration
 
-Click the extension icon in your toolbar to access the control panel:
-*   **Master Toggle:** Turn the visual hiding features on/off.
-*   **Platform Tabs:** Switch between YouTube, Instagram, and TikTok to configure each platform independently.
-*   **Action Modes:** Switch between "Strict", "Soft", and "Passive" modes.
-*   **Pomodoro Timer:** Start a 25-minute focus session. During the timer, all platforms are locked into "Strict" mode.
+Click the extension icon to access:
+*   **Master Toggle:** Global on/off switch.
+*   **Platform Tabs:** Configure YouTube, Instagram, and TikTok independently.
+*   **Pomodoro Timer:** Start a focus session (locks settings).
+
+---
+
+## Known Limitations
+
+*   **Logged Out State:** Some platforms (especially Instagram and TikTok) serve content differently when you are not logged in. While blocking usually works, some visual hiding elements may not persist if the layout changes drastically.
+*   **CSS Class Changes:** Social media sites frequently update their code. If a blocker stops working, it likely needs a selector update. Please report these issues!
+
+---
 
 ## Technical Details
 
-*   **Architecture:** Built on **Manifest V3**. Uses a Background Service Worker (Chrome/Edge) or Background Script (Firefox) to maintain timer state across all tabs.
-*   **Permissions:** Uses `host_permissions` to run on `youtube.com`, `instagram.com`, and `tiktok.com`.
-*   **Performance:** Uses `MutationObserver` optimized with layout-shift prevention to ensure zero lag while scrolling.
-*   **Privacy:** **100% Local.** FocusTube does not use external servers, tracking, or analytics. All data stays in your browser's `chrome.storage.local`.
-
-## Known Issues
-
-*   **CSS Obfuscation:** Social media sites frequently change their CSS class names. If you notice a feed or button is no longer hidden, please open an issue with a screenshot so the selectors can be updated.
+*   **Architecture:** **Manifest V3** with Background Service Workers.
+*   **Performance:** Uses `MutationObserver` and `requestAnimationFrame` for zero-lag performance.
+*   **Privacy:** **100% Local.** No analytics, no tracking, no external servers.
 
 ## License
 
