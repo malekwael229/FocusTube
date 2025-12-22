@@ -6,6 +6,8 @@
   "permissions": [
     "storage",
     "alarms",
+    "notifications",
+    "https://raw.githubusercontent.com/",
     "*://*.youtube.com/*",
     "*://*.instagram.com/*",
     "*://*.tiktok.com/*"

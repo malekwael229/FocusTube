@@ -30,16 +30,28 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 
             chrome.tabs.query({ url: ["*://*.youtube.com/*", "*://*.instagram.com/*", "*://*.tiktok.com/*"] }, (tabs) => {
                 let sent = false;
+                let pending = tabs.length;
+
+                const finalize = () => {
+                    if (pending > 0) return;
+                    if (!sent) {
+                        showSystemNotification(title, msg);
+                    }
+                };
+
+                if (tabs.length === 0) {
+                    finalize();
+                }
                 for (const tab of tabs) {
                     chrome.tabs.sendMessage(tab.id, {
                         action: "TIMER_COMPLETE",
                         type: isWork ? "work" : "break"
-                    }).catch(() => { });
-                    sent = true;
-                }
-
-                if (!sent) {
-                    showSystemNotification(title, msg);
+                    }).then(() => {
+                        sent = true;
+                    }).catch(() => { }).finally(() => {
+                        pending -= 1;
+                        finalize();
+                    });
                 }
 
                 if (isWork) {

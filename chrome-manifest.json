@@ -5,7 +5,8 @@
   "description": "Stop Doomscrolling. Block YouTube Shorts, Instagram Reels, and TikTok.",
   "permissions": [
     "storage",
-    "alarms"
+    "alarms",
+    "notifications"
   ],
   "host_permissions": [
     "https://raw.githubusercontent.com/",

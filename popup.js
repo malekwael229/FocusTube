@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const modeDesc = document.getElementById('modeDesc');
     const modeOptions = document.querySelectorAll('.mode-option');
     const passiveOption = document.getElementById('passiveOption');
-    const passiveOptionText = passiveOption.querySelector('.mode-option-text');
     const githubBtn = document.getElementById('githubBtn');
     const statShorts = document.getElementById('statShorts');
     const statTime = document.getElementById('statTime');
@@ -211,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
             mainToggle.parentElement.classList.add('disabled-wrapper');
         }
         chrome.storage.local.set({ focusMode: true });
-        updateUiState(true); // Ensure UI reflects ON state
+        updateUiState(true);
     }
 
     function unlockUiFromTimer() {
@@ -335,9 +334,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (text) text.innerText = isTimerWork ? "Passive: Locked (Timer Active)" : "Passive (Turn off Focus Mode)";
 
                 if (settings[activePlatform] === 'allow') {
-                    settings[activePlatform] = 'warn';
+                    const fallbackMode = activePlatform === 'ig' ? 'strict' : 'warn';
+                    settings[activePlatform] = fallbackMode;
                     chrome.storage.local.set({ platformSettings: settings });
-                    updateSelectedOptionVisuals('warn');
+                    updateSelectedOptionVisuals(settings[activePlatform]);
                 }
             } else {
                 passiveOption.classList.remove('disabled');

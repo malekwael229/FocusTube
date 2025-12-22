@@ -10,8 +10,6 @@ const CONFIG = {
     isDarkMode: true,
     timer: { end: null, type: 'work' },
     session: {
-        allowedCount: 0,
-
         allowUntil: 0,
         platform: null
     }
@@ -59,9 +57,7 @@ const Utils = {
                 Utils.unlockVideo();
                 return;
             }
-            let found = false;
             document.querySelectorAll('video, audio').forEach(el => {
-                found = true;
                 if (!el.paused || el.volume > 0 || !el.muted) {
                     el.pause(); el.muted = true; el.volume = 0; el.currentTime = 0;
                 }
@@ -228,9 +224,11 @@ const UI = {
         this.isOverlayNeeded = false;
         const overlay = document.getElementById(this.overlayId);
         if (overlay) overlay.remove();
-        document.body.classList.remove('ft-scroll-lock');
+        if (document.body) {
+            document.body.classList.remove('ft-scroll-lock');
+            document.body.style.overflow = '';
+        }
         document.documentElement.classList.remove('ft-scroll-lock');
-        document.body.style.overflow = '';
         Utils.unlockVideo();
     },
 
