@@ -1,12 +1,13 @@
 const Site = {
     isYT: () => location.hostname.includes('youtube.com'),
     isIG: () => location.hostname.includes('instagram.com'),
-    isTT: () => location.hostname.includes('tiktok.com')
+    isTT: () => location.hostname.includes('tiktok.com'),
+    isFB: () => location.hostname.includes('facebook.com')
 };
 
 const CONFIG = {
     isFocusMode: true,
-    platformSettings: { yt: 'strict', ig: 'strict', tt: 'strict' },
+    platformSettings: { yt: 'strict', ig: 'strict', tt: 'strict', fb: 'strict' },
     isDarkMode: true,
     timer: { end: null, type: 'work' },
     session: {
@@ -42,11 +43,14 @@ const Utils = {
         };
     },
 
-    logStat: function (id) {
-        if (!id || sessionStorage.getItem('ft_block_' + id)) return;
-        sessionStorage.setItem('ft_block_' + id, 'true');
+    logStat: function () {
+        if (window !== window.top) return;
+
+        const now = Date.now();
+        if (this._lastLog && (now - this._lastLog < 2000)) return;
+        this._lastLog = now;
+
         chrome.storage.local.get(['ft_stats_blocked'], (res) => {
-            if (chrome.runtime.lastError) return;
             const newCount = (res.ft_stats_blocked || 0) + 1;
             chrome.storage.local.set({ ft_stats_blocked: newCount });
         });
@@ -84,11 +88,11 @@ const Utils = {
 
     checkForUpdates: function () {
         const localVersion = chrome.runtime.getManifest().version;
-        if (sessionStorage.getItem('ft_update_checked')) return;
+        if (this._updateChecked) return;
 
         chrome.storage.local.get(['ft_latest_version'], (res) => {
             if (res.ft_latest_version && res.ft_latest_version !== localVersion && !document.getElementById('ft-update-notification')) {
-                sessionStorage.setItem('ft_update_checked', 'true');
+                this._updateChecked = true;
                 this.showUpdateNotification(res.ft_latest_version);
             }
         });
@@ -125,7 +129,8 @@ const Utils = {
         n.appendChild(link);
         n.appendChild(closeBtn);
 
-        document.body.appendChild(n);
+        if (document.body) document.body.appendChild(n);
+        else document.documentElement.appendChild(n);
         setTimeout(() => { if (n.parentElement) n.remove(); }, 15000);
     },
 
@@ -160,11 +165,17 @@ const UI = {
         this.isOverlayNeeded = true;
         this.startPersistence(type, platform, onAllow, onBack);
 
+        // Log stat only when creating a new overlay
+        Utils.logStat();
+
         const overlay = document.createElement('div');
         overlay.id = this.overlayId;
         overlay.className = 'focus-tube-warning';
         if (CONFIG.isDarkMode) overlay.classList.add('dark');
         overlay.style.cssText = "position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0,0,0,0.96) !important; display: flex !important; justify-content: center !important; align-items: center !important; z-index: 2147483647 !important; isolation: isolate !important;";
+
+        if (!document.body && !document.documentElement) return;
+        const target = document.body || document.documentElement;
 
         const card = document.createElement('div'); card.className = 'focus-tube-card';
         const img = document.createElement('img'); img.src = chrome.runtime.getURL('icons/icon128.png'); img.className = 'focus-tube-icon-img';
@@ -206,9 +217,9 @@ const UI = {
         card.append(img, h1, p, btnGroup);
         overlay.appendChild(card);
 
-        document.documentElement.appendChild(overlay);
+        target.appendChild(overlay);
 
-        if (!Site.isIG()) {
+        if (!Site.isIG() && document.body) {
             document.body.classList.add('ft-scroll-lock');
             document.documentElement.classList.add('ft-scroll-lock');
         }
@@ -219,7 +230,7 @@ const UI = {
         this.persistenceInterval = setInterval(() => {
             if (!this.isOverlayNeeded) { clearInterval(this.persistenceInterval); return; }
             if (!document.getElementById(this.overlayId)) this.create(type, platform, onAllow, onBack);
-            if (Site.isTT() || type === 'warn') Utils.lockVideo();
+            if (Site.isTT() || Site.isFB() || type === 'warn') Utils.lockVideo();
         }, 500);
     },
 
@@ -255,10 +266,41 @@ const UI = {
 
     showKickNotification: function () {
         const n = document.createElement('div');
-        n.style.cssText = `position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #222; color: #fff; padding: 16px 28px; border-radius: 50px; z-index: 2147483647; font-family: sans-serif; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);`;
-        n.innerHTML = `<img src="${chrome.runtime.getURL("icons/icon128.png")}" style="width:22px;height:22px;">Strict Mode prevented access.`;
+        n.style.cssText = `
+            position: fixed; 
+            bottom: 32px; 
+            left: 50%; 
+            transform: translateX(-50%) translateY(20px); 
+            background: rgba(20, 20, 20, 0.85); 
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            color: #fff; 
+            padding: 14px 24px; 
+            border-radius: 50px; 
+            z-index: 2147483647; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            font-size: 15px; 
+            font-weight: 600; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.1); 
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        `;
+        n.innerHTML = `<img src="${chrome.runtime.getURL("icons/icon128.png")}" style="width:24px;height:24px;border-radius:6px;">Strict Mode prevented access.`;
         document.documentElement.appendChild(n);
-        setTimeout(() => { n.remove(); }, 4000);
+
+        requestAnimationFrame(() => {
+            n.style.opacity = '1';
+            n.style.transform = 'translateX(-50%) translateY(0)';
+        });
+
+        setTimeout(() => {
+            n.style.opacity = '0';
+            n.style.transform = 'translateX(-50%) translateY(20px)';
+            setTimeout(() => n.remove(), 400);
+        }, 4000);
     }
 };
 
@@ -312,12 +354,12 @@ const YouTube = {
 
     handleShortsBlocking: function (url, isForced) {
         if (!isForced && CONFIG.session.allowUntil && CONFIG.session.allowUntil > Date.now() && CONFIG.session.platform === 'yt') return;
-        const id = url.split('/shorts/')[1]?.split('?')[0]?.split('&')[0];
-        if (id) Utils.logStat(id);
+
         const mode = isForced ? 'strict' : CONFIG.platformSettings.yt;
         if (mode === 'strict') {
             this.isRedirecting = true;
             sessionStorage.setItem('ft_kicked', 'true');
+            Utils.logStat();
             window.location.replace("https://www.youtube.com");
         } else if (mode === 'warn') {
             UI.create('warn', 'yt', () => Utils.unlockVideo(), () => window.location.href = "https://www.youtube.com");
@@ -374,7 +416,7 @@ const Instagram = {
 
                 this.isRedirecting = true;
                 sessionStorage.setItem('ft_kicked', 'true');
-                Utils.logStat('ig_block');
+                Utils.logStat();
                 window.location.replace('/');
 
                 setTimeout(() => { this.isRedirecting = false; }, 2000);
@@ -464,10 +506,167 @@ const TikTok = {
     block: function (isForced) {
         if (!isForced && CONFIG.session.allowUntil && CONFIG.session.allowUntil > Date.now() && CONFIG.session.platform === 'tt') return;
         const mode = isForced ? 'strict' : CONFIG.platformSettings.tt;
-        Utils.logStat('tt_block');
         UI.create(mode, 'tt', () => {
             CONFIG.session.allowUntil = Date.now() + (5 * 60 * 1000); CONFIG.session.platform = 'tt'; Utils.unlockVideo();
         }, () => window.location.href = "https://www.tiktok.com/messages");
+    }
+};
+
+const Facebook = {
+    currentMode: 'strict',
+    observer: null,
+
+    run: function (isUpdate) {
+        if (!isUpdate) {
+            this.initObserver();
+            Utils.setSafeInterval(() => this.check(), 400);
+        }
+        this.check();
+    },
+
+    initObserver: function () {
+        if (this.observer) return;
+        this.observer = new MutationObserver(() => this.applyHiding());
+        this.observer.observe(document, {
+            subtree: true,
+            childList: true,
+            attributes: true,
+            attributeFilter: ['href', 'style', 'class', 'role', 'aria-label']
+        });
+    },
+
+    check: function () {
+        const path = window.location.pathname;
+        const ts = Utils.getTimerState();
+        const isStrict = CONFIG.platformSettings.fb === 'strict';
+        const isWarn = CONFIG.platformSettings.fb === 'warn';
+
+        if (CONFIG.platformSettings.fb === 'strict' && this.currentMode !== 'strict') {
+            CONFIG.session.allowUntil = 0;
+            CONFIG.session.platform = null;
+        }
+        this.currentMode = CONFIG.platformSettings.fb;
+
+        const onReelsPath = path.startsWith('/reel/') || path.startsWith('/reels/');
+
+        if (!CONFIG.isFocusMode && !ts.isWork) {
+            this.applyHiding();
+        }
+
+        if (onReelsPath) {
+            if (CONFIG.session.allowUntil && CONFIG.session.allowUntil > Date.now() && CONFIG.session.platform === 'fb') {
+                if (isStrict) {
+                    // If strict mode is now active but we had a session, we might want to kill it? 
+                    // YT logic kills it. Let's stick to simple first.
+                    // Actually, strict should override unless allows? No, strict is strict.
+                    // But if 'warn' gave a pass, strict shouldn't just respect it? 
+                    // Current YT logic: if strict, session is killed.
+                } else {
+                    UI.remove(); return;
+                }
+            }
+
+            if (ts.isWork || isStrict) {
+                // Strict
+                UI.create('strict', 'fb', () => { }, () => window.location.href = 'https://www.facebook.com/');
+                Utils.lockVideo();
+                return;
+            } else if (isWarn) {
+                // Warn
+                UI.create('warn', 'fb', () => {
+                    CONFIG.session.allowUntil = Date.now() + (5 * 60 * 1000);
+                    CONFIG.session.platform = 'fb';
+                    UI.remove();
+                    Utils.unlockVideo();
+                }, () => window.location.href = 'https://www.facebook.com/');
+                Utils.lockVideo();
+                return;
+            }
+        }
+
+        // No overlay if not on a reel page or allowed
+        // If we are leaving the Reels page, clear the session so the warning appears again next time.
+        if (CONFIG.session.platform === 'fb') {
+            CONFIG.session.allowUntil = 0;
+            CONFIG.session.platform = null;
+        }
+        UI.remove();
+        this.applyHiding();
+    },
+
+    applyHiding: function () {
+        const ts = Utils.getTimerState();
+        const isFocusActive = (CONFIG.isFocusMode || ts.isWork);
+
+
+        const selectors = [
+            // top bar / nav reels buttons
+            'a[aria-label="Reels"]',
+            'a[href*="/reels/"]',
+            'a[href*="/reel/"]',
+
+            // sidebar/left nav reels
+            '[role="navigation"] a[aria-label="Reels"]',
+
+            // feed shelves / sections with "Reels"
+            'div[aria-label="Reels"]',
+            'span:has-text("Reels")' // Note: has-text is not valid CSS selector, handled manually below
+        ];
+
+        // Specific handling for Facebook Top Bar container avoidance (prevent blank space)
+        // User provided container: <li class="...">...</li>
+        const fbReelsLink = document.querySelector('a[aria-label="Reels"][href="/reel/?s=tab"]');
+        if (fbReelsLink) {
+            // Traverse up to the List Item to hide the whole tab slot
+            const container = fbReelsLink.closest('li');
+            if (container) {
+                if (isFocusActive) container.style.setProperty('display', 'none', 'important');
+                else container.style.removeProperty('display');
+            }
+        }
+
+        selectors.forEach(sel => {
+            if (sel.includes('has-text')) {
+                // Manual check for "Reels" text (handles navigation buttons and feed shelves)
+                const candidates = document.querySelectorAll('span, h3, div[role="button"] span');
+                candidates.forEach(el => {
+                    if (el.textContent === "Reels") {
+                        // 1. Navigation Buttons (Sidebar/Top)
+                        const btn = el.closest('div[role="button"]');
+                        if (btn && isFocusActive) btn.style.setProperty('display', 'none', 'important');
+
+                        // 2. Feed Reels Shelf
+                        // Look for the header text "Reels" and traverse up to the main shelf container.
+                        // The shelf usually has a specific structure. We can look for a common container class or role.
+                        // User snippet shows "Reels" is in an h3 or span inside the shelf.
+                        const shelfHeader = el.closest('div.x1n2onr6.x1ja2u2z'); // Common wrapper in shelf header
+                        if (shelfHeader) {
+                            // Traverse up to find the main card wrapper
+                            // The user highlighted: <div class="html-div xdj266r ...">
+                            // We'll traverse up a few levels to find the feed item container
+                            let parent = shelfHeader.parentElement;
+                            for (let i = 0; i < 8; i++) {
+                                if (!parent) break;
+                                // Check if this is the shelf wrapper (often has these hashed classes and shadows)
+                                // Simple heuristic: It's a direct child of the feed list, or we just hide the card element.
+                                // In user snippet, top div is "html-div xdj266r...".
+                                if (parent.className.includes('html-div') && parent.className.includes('xz9dl7a') === false) { // avoiding false positives if possible
+                                    if (isFocusActive) parent.style.setProperty('display', 'none', 'important');
+                                    else parent.style.removeProperty('display');
+                                    break;
+                                }
+                                parent = parent.parentElement;
+                            }
+                        }
+                    }
+                });
+            } else {
+                document.querySelectorAll(sel).forEach(el => {
+                    if (isFocusActive) el.style.setProperty('display', 'none', 'important');
+                    else el.style.removeProperty('display');
+                });
+            }
+        });
     }
 };
 
@@ -480,11 +679,16 @@ const TikTok = {
         CONFIG.timer.end = res.ft_timer_end;
         CONFIG.timer.type = res.ft_timer_type;
 
-        if (Site.isYT()) YouTube.init();
-        else if (Site.isIG()) Instagram.run();
-        else if (Site.isTT()) TikTok.run();
+        try {
+            if (Site.isYT()) YouTube.init();
+            else if (Site.isIG()) Instagram.run();
+            else if (Site.isTT()) TikTok.run();
+            else if (Site.isFB()) Facebook.run();
+        } catch (e) {
+            console.log("FocusTube Init Error:", e);
+        }
 
-        setTimeout(() => Utils.checkForUpdates(), 5000);
+        setTimeout(() => Utils.checkForUpdates(), 1000);
     });
 
     document.addEventListener('visibilitychange', () => {
@@ -498,6 +702,7 @@ const TikTok = {
             if (Site.isYT() && changes.platformSettings.newValue.yt === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
             if (Site.isIG() && changes.platformSettings.newValue.ig === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
             if (Site.isTT() && changes.platformSettings.newValue.tt === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
+            if (Site.isFB() && changes.platformSettings.newValue.fb === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
         }
         if (changes.darkMode) { CONFIG.isDarkMode = changes.darkMode.newValue; UI.updateTheme(); }
         if (changes.ft_timer_end) CONFIG.timer.end = changes.ft_timer_end.newValue;
@@ -506,6 +711,7 @@ const TikTok = {
         if (Site.isYT()) YouTube.runChecks();
         else if (Site.isIG()) Instagram.handleMutation();
         else if (Site.isTT()) TikTok.check();
+        else if (Site.isFB()) Facebook.check();
     });
 
     chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {

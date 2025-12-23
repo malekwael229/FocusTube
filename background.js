@@ -12,6 +12,27 @@ chrome.storage.onChanged.addListener((changes, area) => {
     }
 });
 
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'startTimer') {
+        const duration = request.duration || 25;
+        const endTime = Date.now() + (duration * 60 * 1000);
+        chrome.storage.local.set({
+            ft_timer_end: endTime,
+            ft_timer_type: 'work'
+        }, () => {
+            sendResponse({ end: endTime });
+        });
+        return true;
+    }
+
+    if (request.action === 'stopTimer') {
+        chrome.alarms.clear(TIMER_ALARM_NAME);
+        chrome.storage.local.remove(['ft_timer_end', 'ft_timer_type']);
+        sendResponse({ stopped: true });
+        return true;
+    }
+});
+
 function handleTimerUpdate(endTime) {
     chrome.alarms.clear(TIMER_ALARM_NAME);
     if (endTime && endTime > Date.now()) {
@@ -28,13 +49,13 @@ chrome.alarms.onAlarm.addListener((alarm) => {
             const title = isWork ? "Pomodoro Complete! 🎉" : "Break Over! ⏰";
             const msg = isWork ? "Time for a 5-minute break." : "Back to work. Distractions blocked.";
 
-            chrome.tabs.query({ url: ["*://*.youtube.com/*", "*://*.instagram.com/*", "*://*.tiktok.com/*"] }, (tabs) => {
+            chrome.tabs.query({ url: ["*://*.youtube.com/*", "*://*.instagram.com/*", "*://*.tiktok.com/*", "*://*.facebook.com/*"] }, (tabs) => {
                 let sent = false;
                 for (const tab of tabs) {
                     chrome.tabs.sendMessage(tab.id, {
                         action: "TIMER_COMPLETE",
                         type: isWork ? "work" : "break"
-                    }).catch(() => { });
+                    }, () => { void chrome.runtime?.lastError; });
                     sent = true;
                 }
 
@@ -81,7 +102,6 @@ function showSystemNotification(title, msg) {
             priority: 2,
             requireInteraction: true
         }, () => {
-            // If the permission is missing, browsers may set lastError.
             if (chrome.runtime && chrome.runtime.lastError) {
                 console.log('[FocusTube]', title + ':', msg);
             }

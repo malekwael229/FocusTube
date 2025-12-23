@@ -1,14 +1,15 @@
 {
   "manifest_version": 2,
   "name": "FocusTube: Distraction Blocker",
-  "version": "1.6",
+  "version": "1.7",
   "description": "Stop Doomscrolling. Block YouTube Shorts, Instagram Reels, and TikTok.",
   "permissions": [
     "storage",
     "alarms",
     "*://*.youtube.com/*",
     "*://*.instagram.com/*",
-    "*://*.tiktok.com/*"
+    "*://*.tiktok.com/*",
+    "*://*.facebook.com/*"
   ],
   "browser_action": {
     "default_popup": "popup.html"
@@ -23,7 +24,8 @@
       "matches": [
         "*://*.youtube.com/*",
         "*://*.instagram.com/*",
-        "*://*.tiktok.com/*"
+        "*://*.tiktok.com/*",
+        "*://*.facebook.com/*"
       ],
       "css": [
         "styles.css"

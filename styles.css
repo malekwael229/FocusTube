@@ -1,3 +1,14 @@
+* {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+*::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
 .focustube-popup-body {
     width: 280px;
     padding: 20px;
@@ -10,18 +21,7 @@
     overflow-x: hidden;
 }
 
-.update-banner {
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-    text-align: center;
-    padding: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
-    animation: slideDown 0.3s ease-out;
-}
+
 
 @keyframes slideDown {
     from {
@@ -157,19 +157,32 @@ body.preload .checkmark {
 
 .timer-btn {
     width: 100%;
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    background: linear-gradient(135deg, #2b86c5, #0d9488);
+    padding: 12px;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     color: white;
-    font-weight: 600;
-    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    font-family: system-ui, -apple-system, sans-serif;
     font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
     transition: opacity 0.2s;
+    box-shadow: none;
+}
+
+.timer-btn:hover {
+    opacity: 0.9;
+    transform: none;
+    box-shadow: none;
+}
+
+.timer-btn:active {
+    transform: translateY(0);
 }
 
 .timer-btn.active {
-    background: #ff4444;
+    background: #ff4757;
+    /* End Timer Color */
 }
 
 .timer-btn.break {
@@ -183,11 +196,39 @@ body.preload .checkmark {
     margin-bottom: 4px;
 }
 
+
 .timer-display {
     font-size: 28px;
     font-weight: 700;
     margin-bottom: 10px;
     font-variant-numeric: tabular-nums;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-feature-settings: "tnum";
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.timer-display.hidden,
+.timer-label.hidden {
+    opacity: 0;
+    transform: translateY(-10px);
+    display: none;
+    animation: none;
+}
+
+.timer-display:not(.hidden) {
+    animation: fadeInSlide 0.4s ease forwards;
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .hidden {
@@ -200,33 +241,151 @@ body.preload .checkmark {
     margin-top: 8px;
 }
 
-.platform-tabs {
+.platform-cards {
     display: flex;
-    background: #f1f3f5;
-    padding: 4px;
-    border-radius: 10px;
-    margin-bottom: 15px;
-    gap: 4px;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+    transition: opacity 0.3s;
 }
 
-.tab-btn {
-    flex: 1;
-    border: none;
+.platform-cards.disabled-cards {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.platform-card {
+    background: #f8f9fa;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    padding-left: 4px;
+    transition: background 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.platform-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(135deg, #2b86c5, #0d9488);
+    z-index: 1;
+}
+
+.platform-card.mode-strict::before {
+    background: linear-gradient(135deg, #2b86c5, #0d9488);
+}
+
+.platform-card.mode-warn::before {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+}
+
+.platform-card.mode-allow::before {
+    background: #d1d1d6;
+}
+
+body.dark-mode .platform-card.mode-allow::before {
+    background: #48484a;
+}
+
+body.dark-mode .platform-card {
+    background: #1e1e1e;
+}
+
+
+
+.platform-card.active {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode .platform-card.active {
+    background: #252525;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.card-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
     background: transparent;
-    padding: 6px 0;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 600;
-    color: #666;
+    border: none;
     cursor: pointer;
-    transition: all 0.2s;
+    text-align: left;
     outline: none;
+    color: inherit;
 }
 
-.tab-btn.active {
-    background: #fff;
-    color: #2b86c5;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+.card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.card-title {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: -0.2px;
+    color: #333;
+    -webkit-font-smoothing: antialiased;
+}
+
+body.dark-mode .card-title {
+    color: #fff;
+}
+
+.card-status {
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+}
+
+body.dark-mode .card-status {
+    color: #888;
+}
+
+.card-arrow {
+    color: #888;
+    transition: transform 0.3s;
+    display: flex;
+    align-items: center;
+}
+
+.platform-card.active .card-arrow {
+    transform: rotate(90deg);
+}
+
+
+.card-content {
+    max-height: 0;
+    padding-bottom: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease-out, opacity 0.3s ease-in, padding 0.35s ease;
+    background: rgba(0, 0, 0, 0.02);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+body.dark-mode .card-content {
+    background: #181818;
+    border-top: 1px solid #333;
+}
+
+.platform-card.active .card-content {
+    opacity: 1;
+    padding-bottom: 15px;
+}
+
+.mode-options {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 body.focus-mode-active [role="link"][href*="/explore/"] {
@@ -280,12 +439,20 @@ body.focus-mode-active [role="link"][href*="/explore/"] {
     transform: translateX(20px);
 }
 
-.focustube-popup-body .section-label {
+.timer-label {
+    font-family: system-ui, -apple-system, sans-serif;
     font-size: 13px;
-    font-weight: 600;
-    display: block;
-    margin-bottom: 12px;
-    color: #555;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+    transition: all 0.3s ease;
 }
 
 .focustube-popup-body .divider {
@@ -489,6 +656,7 @@ body.focus-mode-active ytd-rich-item-renderer:has(a[href^="/shorts"]) {
     pointer-events: auto !important;
 }
 
+
 .focus-tube-icon-img {
     width: 80px;
     height: 80px;
@@ -509,12 +677,29 @@ body.focus-mode-active ytd-rich-item-renderer:has(a[href^="/shorts"]) {
 }
 
 .focus-tube-card p {
-    font-size: 17px !important;
-    margin: 0 0 40px 0 !important;
-    color: #86868b !important;
-    line-height: 1.4;
+    font-size: 16px !important;
+    margin: 0 0 32px 0 !important;
+    color: #6e6e73 !important;
+    line-height: 1.5;
     font-family: inherit !important;
+    max-width: 400px;
 }
+
+
+#githubBtn {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+#githubBtn:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+}
+
+body.dark-mode #githubBtn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
 
 .focus-tube-btn-group {
     display: flex;
@@ -557,4 +742,63 @@ html.ft-scroll-lock,
 body.ft-scroll-lock {
     overflow: hidden !important;
     height: 100% !important;
+}
+
+
+.footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 15px;
+    padding-bottom: 5px;
+}
+
+.footer-row .note {
+    font-size: 11px;
+    text-align: center;
+    max-width: 180px;
+    margin: 0 8px;
+    line-height: 1.3;
+}
+
+.theme-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #999;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 8px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.theme-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #555;
+}
+
+.theme-btn.active {
+    color: #2b86c5;
+    background: rgba(43, 134, 197, 0.1);
+    box-shadow: 0 0 0 1px rgba(43, 134, 197, 0.2);
+}
+
+body.dark-mode .theme-btn {
+    color: #555;
+}
+
+body.dark-mode .theme-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ccc;
+}
+
+body.dark-mode .theme-btn.active {
+    color: #4facfe;
+    background: rgba(79, 172, 254, 0.15);
+    box-shadow: 0 0 0 1px rgba(79, 172, 254, 0.2);
 }

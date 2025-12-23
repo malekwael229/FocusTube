@@ -3,26 +3,29 @@
 
   # FocusTube: Distraction Blocker
   
-  **Reclaim your focus. Block YouTube Shorts, Instagram Reels, and the TikTok Feed.**
+  **Stop Doomscrolling. Reclaim Your Focus.**
+  
+  **Blocks YouTube Shorts, Instagram Reels, TikTok, and Facebook Reels.**
 
   [Installation](#installation) • [Features](#features) • [Configuration](#configuration) • [Technical Details](#technical-details)
   
   ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-  ![Version](https://img.shields.io/badge/version-1.6-green.svg)
+  ![Version](https://img.shields.io/badge/version-1.7-green.svg)
+  ![Firefox](https://img.shields.io/badge/firefox-compatible-orange.svg)
   
 </div>
 
 ---
 
-**FocusTube** is a Manifest V3 browser extension designed to stop doomscrolling in its tracks. Unlike basic element blockers, it uses advanced observation logic to handle modern Single Page Applications (SPAs), ensuring that distractions remain blocked even as you navigate.
+**FocusTube** is a premium Manifest V3 browser extension designed to stop doomscrolling in its tracks. Unlike basic element blockers, it uses **Session-Aware Logic** to handle modern Single Page Applications (SPAs), ensuring that distractions remain blocked even as you navigate, without breaking the rest of the site.
 
-## New in v1.6
+## New in v1.7
 
-*   **Enhanced Instagram Protection:** Smart visibility logic dynamically hides Reels/Explore buttons based on your Focus Mode.
-*   **Instant Kick:** Optimized strict mode redirects within ~50ms, preventing distraction pages from even loading.
-*   **Pomodoro Timer:** Built-in 25/5 interval timer. **Locks** the extension into Strict Mode while active.
-*   **Gamified Stats:** Real-time dashboard tracking blocked distractions and blocked time saved.
-*   **UI Overhaul:** Modern dark-mode interface with gradient accents.
+*   **Lockdown Mode:** When the Pomodoro Timer is active, FocusTube **locks** itself. You cannot disable the extension or switch to "Passive Mode" until the timer ends.
+*   **Facebook Support:** Full support for blocking **Facebook Reels** and hiding the "Reels" shelf from your feed.
+*   **Premium UI:** A complete visual overhaul featuring **Glassmorphism**, smooth animations, and a polished dark mode.
+*   **Smart Stats:** Rewritten stats engine that accurately counts **1 Block = 1 Distraction**, eliminating duplication bugs.
+*   **Firefox Ready:** Fully optimized code that adheres to Firefox's strict API standards.
 
 ---
 
@@ -30,21 +33,27 @@
 
 ### Behavioral Intervention
 *   **Strict Mode:**
-    *   **YouTube & Instagram:** Instantly redirects you to safe pages if you attempt to access Shorts/Reels.
-    *   **TikTok:** Blocks the feed entirely with a full-screen overlay.
+    *   **YouTube, Instagram, Facebook:** Instantly redirects you to safe pages (Feed/Messages) if you create a "Shorts" session.
+    *   **TikTok:** Blocks the entire feed with a full-screen focus overlay.
 *   **Soft Mode:** Presents a "Warning" overlay. You must consciously click "Watch Anyway" to proceed (5-minute timeout).
-*   **Passive Mode:** No active blocking, but visual clutter (like the Shorts shelf) remains hidden.
+*   **Passive Mode:** No active blocking, but visual clutter (like the Shorts shelf or Reels tab) remains hidden to prevent rabbit holes.
 
 ### Visual Cleaning
-*   **YouTube:** Removes Shorts shelf, Sidebar recommendations, and formatting chips.
-*   **Instagram:** Hides "Reels" and "Explore" tabs from navigation.
+*   **YouTube:** Removes Shorts shelf, Sidebar recommendations, and chip filters.
+*   **Instagram:** Hides "Reels" and "Explore" tabs from the navigation bar.
+*   **Facebook:** Hides the "Reels & Short Videos" shelf from the main feed.
+
+### Productivity Tools
+*   **Pomodoro Timer:** Built-in 25/5 interval timer.
+*   **Lockdown Security:** Prevents self-sabotage during work intervals.
+*   **Dashboard:** Tracks "Shorts Blocked" and "Time Saved" in real-time.
 
 ---
 
 ## Installation
 
 ### Official Stores
-*   **Microsoft Edge:** *[Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)* (v1.6 Pending)
+*   **Microsoft Edge:** *[Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)* (v1.7 Pending)
 *   **Firefox Add-ons:** *[Pending Review]*
 *   **Chrome Web Store:** *[Pending Review]*
 
@@ -52,35 +61,31 @@
 
 1.  **Clone or Download** this repository.
 2.  **Rename Manifest:**
-    *   **Chrome/Edge:** Rename `chrome-manifest.json` to `manifest.json`.
+    *   **Chrome/Edge/Brave:** Rename `chrome-manifest.json` to `manifest.json`.
     *   **Firefox:** Rename `firefox-manifest.json` to `manifest.json`.
 3.  **Load Extension:**
-    *   **Chrome/Edge:** `chrome://extensions` -> Enable Developer Mode -> **Load unpacked** -> Select folder.
-    *   **Firefox:** `about:debugging#/runtime/this-firefox` -> **Load Temporary Add-on...** -> Select `manifest.json`.
+    *   **Chrome/Edge:** Go to `chrome://extensions` → Enable **Developer Mode** (top right) → Click **Load unpacked** → Select the folder.
+    *   **Firefox:** Go to `about:debugging#/runtime/this-firefox` → Click **Load Temporary Add-on...** → Select the `manifest.json` file.
 
 ---
 
 ## Configuration
 
-Click the extension icon to access:
-*   **Master Toggle:** Global on/off switch.
-*   **Platform Tabs:** Configure YouTube, Instagram, and TikTok independently.
-*   **Pomodoro Timer:** Start a focus session (locks settings).
-
----
-
-## Known Limitations
-
-*   **Logged Out State:** Some platforms (especially Instagram and TikTok) serve content differently when you are not logged in. While blocking usually works, some visual hiding elements may not persist if the layout changes drastically.
-*   **CSS Class Changes:** Social media sites frequently update their code. If a blocker stops working, it likely needs a selector update. Please report these issues!
+Click the extension icon to access the **Control Center**:
+*   **Master Toggle:** Global On/Off (Locked during active Timer).
+*   **Platform Cards:** Click to expand and configure modes (Strict/Soft/Passive) for each site.
+*   **Pomodoro Timer:** Start a focus session.
 
 ---
 
 ## Technical Details
 
 *   **Architecture:** **Manifest V3** with Background Service Workers.
-*   **Performance:** Uses `MutationObserver` and `requestAnimationFrame` for zero-lag performance.
+*   **Performance:** Uses `MutationObserver` and `requestAnimationFrame` for zero-lag DOM manipulation.
+*   **Compatibility:** Cross-browser support for Chromium (Chrome, Edge, Brave) and Gecko (Firefox).
 *   **Privacy:** **100% Local.** No analytics, no tracking, no external servers.
+
+---
 
 ## License
 
