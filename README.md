@@ -53,7 +53,7 @@
 ## Installation
 
 ### Official Stores
-*   **Microsoft Edge:** *[Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)* (v1.7 Pending)
+*   **Microsoft Edge:** *[Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)*
 *   **Firefox Add-ons:** *[Pending Review]*
 *   **Chrome Web Store:** *[Pending Review]*
 
