@@ -53,8 +53,8 @@
 ## Installation
 
 ### Official Stores
-* **Microsoft Edge:** [Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)
-* **Firefox Add-ons:** [Download from Firefox Add-ons](https://addons.mozilla.org/addon/focus-tube/)
+* **Microsoft Edge:** [Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog) (V1.7)
+* **Firefox Add-ons:** [Download from Firefox Add-ons](https://addons.mozilla.org/addon/focus-tube/) (V1.6)
 * **Chrome Web Store:** *Soon*
 
 ### Manual Installation (Developer Mode)
