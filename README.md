@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="1400" height="560" alt="FocusTube Banner" src="https://github.com/user-attachments/assets/dda606fb-a366-4107-b573-bf0d8ac6da34" />
+  <img width="1400" height="560" alt="focustube-promotional-tile-1400x560" src="https://github.com/user-attachments/assets/7cb5e68f-e575-40da-8084-333c4f26c7e2" />
 
   # FocusTube: Distraction Blocker
   
@@ -84,6 +84,17 @@ Click the extension icon to access the **Control Center**:
 *   **Performance:** Uses `MutationObserver` and `requestAnimationFrame` for zero-lag DOM manipulation.
 *   **Compatibility:** Cross-browser support for Chromium (Chrome, Edge, Brave) and Gecko (Firefox).
 *   **Privacy:** **100% Local.** No analytics, no tracking, no external servers.
+
+---
+
+## Privacy Policy
+
+FocusTube is a privacy-first, open-source project.
+
+*   **No Data Collection:** This extension does not collect, store, transmit, or sell any user data.
+*   **Local Storage:** All preferences (timer settings, stats, active modes) are stored locally on your device using the browser's `storage.local` API.
+*   **No Analytics:** We do not use Google Analytics or any third-party tracking scripts.
+*   **No External Servers:** The extension does not communicate with any external servers.
 
 ---
 
