@@ -340,6 +340,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.action === "TIMER_COMPLETE") {
         chrome.storage.local.get(['playSound'], (res) => {
             if (res.playSound !== false) playBeep();
+            sendResponse({ received: true });
         });
+        return true;
     }
 });

@@ -101,12 +101,18 @@ function setupEventListeners() {
 
     timerBtn.addEventListener('click', () => {
         if (timerBtn.classList.contains('active')) {
-            chrome.runtime.sendMessage({ action: 'stopTimer' });
+            chrome.runtime.sendMessage({ action: 'stopTimer' }, (response) => {
+                if (chrome.runtime.lastError) void chrome.runtime.lastError;
+            });
             resetTimerUI();
         } else {
             chrome.storage.local.get(['ft_timer_duration'], (res) => {
                 const duration = parseInt(res.ft_timer_duration) || 25;
                 chrome.runtime.sendMessage({ action: 'startTimer', duration: duration }, (res) => {
+                    if (chrome.runtime.lastError) {
+                        console.error('Error starting timer:', chrome.runtime.lastError);
+                        return;
+                    }
                     if (res && res.end) startTimerDisplay(res.end, 'work');
                 });
             });
@@ -119,6 +125,10 @@ function setupEventListeners() {
             chrome.storage.local.get(['breakDuration'], (res) => {
                 const duration = parseInt(res.breakDuration) || 5;
                 chrome.runtime.sendMessage({ action: 'startTimer', duration: duration, type: 'break' }, (res) => {
+                    if (chrome.runtime.lastError) {
+                        console.error('Error starting break:', chrome.runtime.lastError);
+                        return;
+                    }
                     if (res && res.end) startTimerDisplay(res.end, 'break');
                 });
             });
@@ -431,7 +441,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.action === "TIMER_COMPLETE") {
         chrome.storage.local.get(['playSound'], (res) => {
             if (res.playSound !== false) playBeep();
+            sendResponse({ received: true });
         });
+        return true; // Keep channel open for async response
     }
 });
 

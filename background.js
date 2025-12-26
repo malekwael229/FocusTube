@@ -7,26 +7,36 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === 'startTimer') {
-        const duration = request.duration || 25;
-        const type = request.type || 'work';
-        const endTime = Date.now() + (duration * 60 * 1000);
-        chrome.storage.local.set({
-            ft_timer_end: endTime,
-            ft_timer_type: type
-        }, () => {
-            sendResponse({ end: endTime });
-        });
-        return true;
-    }
+    // console.log('Background received message:', request);
+    try {
+        if (request.action === 'startTimer') {
+            const duration = parseInt(request.duration) || 25;
+            const type = request.type || 'work';
+            const endTime = Date.now() + (duration * 60 * 1000);
 
-    if (request.action === 'stopTimer') {
-        chrome.alarms.clear(TIMER_ALARM_NAME);
-        chrome.storage.local.remove(['ft_timer_end', 'ft_timer_type']);
-        sendResponse({ stopped: true });
-        return true;
-    }
+            chrome.storage.local.set({
+                ft_timer_end: endTime,
+                ft_timer_type: type
+            }, () => {
+                if (chrome.runtime.lastError) {
+                    console.error('Storage error:', chrome.runtime.lastError);
+                    return;
+                }
+                sendResponse({ end: endTime });
+            });
+            return true; // Keep channel open
+        }
 
+        if (request.action === 'stopTimer') {
+            chrome.alarms.clear(TIMER_ALARM_NAME);
+            chrome.storage.local.remove(['ft_timer_end', 'ft_timer_type'], () => {
+                sendResponse({ stopped: true });
+            });
+            return true; // Keep channel open
+        }
+    } catch (error) {
+        console.error('Error in background onMessage:', error);
+    }
 });
 
 function handleTimerUpdate(endTime) {

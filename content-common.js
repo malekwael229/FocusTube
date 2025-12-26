@@ -11,11 +11,7 @@ const CONFIG = {
     isDarkMode: true,
     playSound: true,
     timer: { end: null, type: 'work' },
-    session: {
-        allowedCount: 0,
-        allowUntil: 0,
-        platform: null
-    },
+    session: { allowedCount: 0, allowUntil: 0, platform: null },
     popupVisibility: { yt: true, ig: true, tt: true, fb: true },
     visualHideHidden: true,
     restrictHidden: true
@@ -25,12 +21,23 @@ const Utils = {
     intervals: [],
     videoLockInterval: null,
 
+    ensureBody: function (callback) {
+        if (document.body) {
+            callback();
+        } else {
+            const observer = new MutationObserver(() => {
+                if (document.body) {
+                    observer.disconnect();
+                    callback();
+                }
+            });
+            observer.observe(document.documentElement, { childList: true });
+        }
+    },
+
     setSafeInterval: function (callback, ms) {
         const id = setInterval(() => {
-            if (!chrome.runtime?.id) {
-                clearInterval(id);
-                return;
-            }
+            if (!chrome.runtime?.id) { clearInterval(id); return; }
             callback();
         }, ms);
         this.intervals.push(id);
@@ -40,19 +47,14 @@ const Utils = {
     getTimerState: function () {
         const now = Date.now();
         const isActive = CONFIG.timer.end && CONFIG.timer.end > now;
-        return {
-            isWork: isActive && CONFIG.timer.type === 'work',
-            isBreak: isActive && CONFIG.timer.type === 'break'
-        };
+        return { isWork: isActive && CONFIG.timer.type === 'work', isBreak: isActive && CONFIG.timer.type === 'break' };
     },
 
     logStat: function () {
         if (window !== window.top) return;
-
         const now = Date.now();
         if (this._lastLog && (now - this._lastLog < 2000)) return;
         this._lastLog = now;
-
         chrome.storage.local.get(['ft_stats_blocked'], (res) => {
             const newCount = (res.ft_stats_blocked || 0) + 1;
             chrome.storage.local.set({ ft_stats_blocked: newCount });
@@ -62,16 +64,9 @@ const Utils = {
     lockVideo: function () {
         if (this.videoLockInterval) clearInterval(this.videoLockInterval);
         const performLock = () => {
-            if (!document.getElementById(UI.overlayId)) {
-                Utils.unlockVideo();
-                return;
-            }
-            let found = false;
+            if (!document.getElementById(UI.overlayId)) { Utils.unlockVideo(); return; }
             document.querySelectorAll('video, audio').forEach(el => {
-                found = true;
-                if (!el.paused || el.volume > 0 || !el.muted) {
-                    el.pause(); el.muted = true; el.volume = 0; el.currentTime = 0;
-                }
+                if (!el.paused || el.volume > 0 || !el.muted) { el.pause(); el.muted = true; el.volume = 0; el.currentTime = 0; }
             });
         };
         performLock();
@@ -82,10 +77,7 @@ const Utils = {
         if (this.videoLockInterval) {
             clearInterval(this.videoLockInterval);
             this.videoLockInterval = null;
-            document.querySelectorAll('video, audio').forEach(el => {
-                el.volume = 1;
-                if (Site.isIG()) el.play().catch(() => { });
-            });
+            document.querySelectorAll('video, audio').forEach(el => { el.volume = 1; if (Site.isIG()) el.play().catch(() => { }); });
         }
     },
 
@@ -102,6 +94,12 @@ const Utils = {
             gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.6);
             osc.start(); osc.stop(ctx.currentTime + 0.6);
         } catch (e) { }
+    },
+
+    toggleFocusClass: function (isActive) {
+        if (!document.body) return;
+        if (isActive) document.body.classList.add('focus-mode-active');
+        else document.body.classList.remove('focus-mode-active');
     }
 };
 
@@ -119,7 +117,6 @@ const UI = {
 
         this.isOverlayNeeded = true;
         this.startPersistence(type, platform, onAllow, onBack);
-
         Utils.logStat();
 
         const overlay = document.createElement('div');
@@ -128,7 +125,6 @@ const UI = {
         if (CONFIG.isDarkMode) overlay.classList.add('dark');
         overlay.style.cssText = "position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0,0,0,0.96) !important; display: flex !important; justify-content: center !important; align-items: center !important; z-index: 2147483647 !important; isolation: isolate !important;";
 
-        if (!document.body && !document.documentElement) return;
         const target = document.body || document.documentElement;
 
         const card = document.createElement('div'); card.className = 'focus-tube-card';
@@ -152,10 +148,9 @@ const UI = {
             watchBtn.className = 'focus-tube-btn focus-tube-btn-secondary';
             watchBtn.textContent = 'Watch Anyway';
 
-            // Breathing Pause Implementation
             watchBtn.style.opacity = '0.5';
             watchBtn.style.cursor = 'not-allowed';
-            watchBtn.disabled = true; // Robust disable
+            watchBtn.disabled = true;
 
             setTimeout(() => {
                 if (watchBtn) {
@@ -166,7 +161,7 @@ const UI = {
             }, 3000);
 
             watchBtn.onclick = () => {
-                if (watchBtn.disabled) return; // Double protection
+                if (watchBtn.disabled) return;
                 this.remove();
                 CONFIG.session.allowUntil = Date.now() + (5 * 60 * 1000);
                 CONFIG.session.platform = platform;
@@ -185,7 +180,6 @@ const UI = {
 
         card.append(img, h1, p, btnGroup);
         overlay.appendChild(card);
-
         target.appendChild(overlay);
 
         if (!Site.isIG() && document.body) {
@@ -208,9 +202,11 @@ const UI = {
         this.isOverlayNeeded = false;
         const overlay = document.getElementById(this.overlayId);
         if (overlay) overlay.remove();
-        if (document.body) document.body.classList.remove('ft-scroll-lock');
-        document.documentElement.classList.remove('ft-scroll-lock');
-        if (document.body) document.body.style.overflow = '';
+        if (document.body) {
+            document.body.classList.remove('ft-scroll-lock');
+            document.body.style.overflow = '';
+        }
+        if (document.documentElement) document.documentElement.classList.remove('ft-scroll-lock');
         Utils.unlockVideo();
     },
 
@@ -236,38 +232,19 @@ const UI = {
     showKickNotification: function () {
         const n = document.createElement('div');
         n.style.cssText = `
-            position: fixed; 
-            bottom: 32px; 
-            left: 50%; 
-            transform: translateX(-50%) translateY(20px); 
-            background: rgba(20, 20, 20, 0.85); 
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            color: #fff; 
-            padding: 14px 24px; 
-            border-radius: 50px; 
-            z-index: 2147483647; 
+            position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); 
+            background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            color: #fff; padding: 14px 24px; border-radius: 50px; z-index: 2147483647; 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            font-size: 15px; 
-            font-weight: 600; 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
+            font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 12px; 
             box-shadow: 0 10px 40px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.1); 
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         `;
         n.innerHTML = `<img src="${chrome.runtime.getURL("icons/icon128.png")}" style="width:24px;height:24px;border-radius:6px;">Strict Mode prevented access.`;
         document.documentElement.appendChild(n);
-
-        requestAnimationFrame(() => {
-            n.style.opacity = '1';
-            n.style.transform = 'translateX(-50%) translateY(0)';
-        });
-
+        requestAnimationFrame(() => { n.style.opacity = '1'; n.style.transform = 'translateX(-50%) translateY(0)'; });
         setTimeout(() => {
-            n.style.opacity = '0';
-            n.style.transform = 'translateX(-50%) translateY(20px)';
+            n.style.opacity = '0'; n.style.transform = 'translateX(-50%) translateY(20px)';
             setTimeout(() => n.remove(), 400);
         }, 4000);
     }
@@ -279,7 +256,6 @@ const UI = {
         CONFIG.isFocusMode = res.focusMode !== false;
         if (res.platformSettings) {
             CONFIG.platformSettings = res.platformSettings;
-
 
             if (res.restrictHiddenPlatforms === false) {
                 if (res.popup_visible_yt === false) CONFIG.platformSettings.yt = 'allow';
@@ -302,7 +278,6 @@ const UI = {
             fb: res.popup_visible_fb !== false
         };
 
-
         document.dispatchEvent(new CustomEvent('ft-settings-ready'));
     });
 
@@ -314,7 +289,6 @@ const UI = {
         if (changes.focusMode) CONFIG.isFocusMode = changes.focusMode.newValue;
         if (changes.platformSettings) {
             CONFIG.platformSettings = changes.platformSettings.newValue;
-
 
             chrome.storage.local.get(['popup_visible_yt', 'popup_visible_ig', 'popup_visible_tt', 'popup_visible_fb', 'restrictHiddenPlatforms'], (res) => {
                 if (res.restrictHiddenPlatforms === false) {
@@ -328,11 +302,8 @@ const UI = {
                 if (Site.isIG() && CONFIG.platformSettings.ig === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
                 if (Site.isTT() && CONFIG.platformSettings.tt === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
                 if (Site.isFB() && CONFIG.platformSettings.fb === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
-
-
             });
         }
-
 
         if (changes.restrictHiddenPlatforms) CONFIG.restrictHidden = changes.restrictHiddenPlatforms.newValue !== false;
         if (changes.visualHideHiddenPlatforms) CONFIG.visualHideHidden = changes.visualHideHiddenPlatforms.newValue !== false;
@@ -344,7 +315,6 @@ const UI = {
 
         if (changes.restrictHiddenPlatforms || changes.visualHideHiddenPlatforms || changes.popup_visible_yt || changes.popup_visible_ig || changes.popup_visible_tt || changes.popup_visible_fb) {
 
-
             if (CONFIG.restrictHidden === false) {
                 if (CONFIG.popupVisibility.yt === false && CONFIG.platformSettings) CONFIG.platformSettings.yt = 'allow';
                 if (CONFIG.popupVisibility.ig === false && CONFIG.platformSettings) CONFIG.platformSettings.ig = 'allow';
@@ -354,7 +324,6 @@ const UI = {
 
             chrome.storage.local.get(['platformSettings', 'popup_visible_yt', 'popup_visible_ig', 'popup_visible_tt', 'popup_visible_fb', 'restrictHiddenPlatforms', 'visualHideHiddenPlatforms'], (res) => {
                 if (res.platformSettings) {
-
                     CONFIG.platformSettings = res.platformSettings;
                     if (res.restrictHiddenPlatforms === false) {
                         if (res.popup_visible_yt === false) CONFIG.platformSettings.yt = 'allow';
@@ -369,15 +338,12 @@ const UI = {
         if (changes.playSound) CONFIG.playSound = changes.playSound.newValue;
         if (changes.ft_timer_end) CONFIG.timer.end = changes.ft_timer_end.newValue;
         if (changes.ft_timer_type) CONFIG.timer.type = changes.ft_timer_type.newValue;
-
-
     });
 
     chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         if (msg.action === "TIMER_COMPLETE") {
             try {
                 if (!sender.tab) {
-
                     if (CONFIG.playSound) Utils.playBeep();
                 } else {
                     if (CONFIG.playSound) Utils.playBeep();
