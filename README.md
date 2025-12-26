@@ -1,5 +1,5 @@
-
-<img width="1400" height="560" alt="focustube-promotional-tile" src="https://github.com/user-attachments/assets/dda606fb-a366-4107-b573-bf0d8ac6da34" />
+<div align="center">
+  <img width="1400" height="560" alt="FocusTube Banner" src="https://github.com/user-attachments/assets/dda606fb-a366-4107-b573-bf0d8ac6da34" />
 
   # FocusTube: Distraction Blocker
   
@@ -10,7 +10,7 @@
   [Installation](#installation) • [Features](#features) • [Configuration](#configuration) • [Technical Details](#technical-details)
   
   ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-  ![Version](https://img.shields.io/badge/version-1.7-green.svg)
+  ![Version](https://img.shields.io/badge/version-1.8-green.svg)
   ![Firefox](https://img.shields.io/badge/firefox-compatible-orange.svg)
   
 </div>
@@ -19,13 +19,13 @@
 
 **FocusTube** is a premium Manifest V3 browser extension designed to stop doomscrolling in its tracks. Unlike basic element blockers, it uses **Session-Aware Logic** to handle modern Single Page Applications (SPAs), ensuring that distractions remain blocked even as you navigate, without breaking the rest of the site.
 
-## New in v1.7
+## New in v1.8
 
-*   **Lockdown Mode:** When the Pomodoro Timer is active, FocusTube **locks** itself. You cannot disable the extension or switch to "Passive Mode" until the timer ends.
-*   **Facebook Support:** Full support for blocking **Facebook Reels** and hiding the "Reels" shelf from your feed.
-*   **Premium UI:** A complete visual overhaul featuring **Glassmorphism**, smooth animations, and a polished dark mode.
-*   **Smart Stats:** Rewritten stats engine that accurately counts **1 Block = 1 Distraction**, eliminating duplication bugs.
-*   **Firefox Ready:** Fully optimized code that adheres to Firefox's strict API standards.
+*   **Total Customization:** You are no longer locked into the default settings. Configure Focus durations (15-60m) and Break durations (5-15m) to match your workflow.
+*   **Options Dashboard:** A brand new settings page to manage sounds, auto-start preferences, and more.
+*   **Declutter Mode:** Don't use TikTok or Facebook? You can now **hide** specific platform cards from the extension popup to keep your interface clean.
+*   **Data Portability:** Added **Import/Export** functionality. Back up your settings and stats to a JSON file so you never lose your progress.
+*   **Modular Engine:** Completely rewritten internal architecture for faster performance and better stability across all platforms.
 
 ---
 
@@ -44,18 +44,18 @@
 *   **Facebook:** Hides the "Reels & Short Videos" shelf from the main feed.
 
 ### Productivity Tools
-*   **Pomodoro Timer:** Built-in 25/5 interval timer.
-*   **Lockdown Security:** Prevents self-sabotage during work intervals.
-*   **Dashboard:** Tracks "Shorts Blocked" and "Time Saved" in real-time.
+*   **Customizable Timer:** Built-in Pomodoro timer with adjustable Focus/Break intervals.
+*   **Lockdown Security:** Prevents self-sabotage. When the timer is running, the extension **locks itself**—you cannot disable blocking or switch modes until the timer ends.
+*   **Dashboard:** Tracks "Shorts Blocked", "Time Saved", and "Sessions Completed" in real-time.
 
 ---
 
 ## Installation
 
 ### Official Stores
-* **Microsoft Edge:** [Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog) (V1.7)
-* **Firefox Add-ons:** [Download from Firefox Add-ons](https://addons.mozilla.org/addon/focus-tube/) (V1.7)
-* **Chrome Web Store:** *Soon*
+*   **Microsoft Edge:** *[Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)* (v1.8 Pending)
+*   **Firefox Add-ons:** *[Download from Firefox Add-ons](https://addons.mozilla.org/addon/focus-tube/)* (v1.8 Pending)
+*   **Chrome Web Store:** *[Pending Review]*
 
 ### Manual Installation (Developer Mode)
 
@@ -74,13 +74,13 @@
 Click the extension icon to access the **Control Center**:
 *   **Master Toggle:** Global On/Off (Locked during active Timer).
 *   **Platform Cards:** Click to expand and configure modes (Strict/Soft/Passive) for each site.
-*   **Pomodoro Timer:** Start a focus session.
+*   **Settings (⚙️):** Click the gear icon to access the Options Dashboard for timer customization and data management.
 
 ---
 
 ## Technical Details
 
-*   **Architecture:** **Manifest V3** with Background Service Workers.
+*   **Architecture:** **Manifest V3** with modular content scripts (Split Architecture).
 *   **Performance:** Uses `MutationObserver` and `requestAnimationFrame` for zero-lag DOM manipulation.
 *   **Compatibility:** Cross-browser support for Chromium (Chrome, Edge, Brave) and Gecko (Firefox).
 *   **Privacy:** **100% Local.** No analytics, no tracking, no external servers.
