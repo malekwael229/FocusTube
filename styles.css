@@ -16,7 +16,8 @@
     background: #fbfbfb;
     color: #333;
     transition: background 0.3s ease, color 0.3s ease;
-    min-height: 520px;
+    min-height: auto;
+    height: fit-content;
     overflow-y: auto;
     overflow-x: hidden;
 }
@@ -214,6 +215,18 @@ body.preload .checkmark {
 
 .timer-btn.break {
     background: #10b981;
+}
+
+.timer-btn.break-btn {
+    background: #10b981;
+    margin-top: 8px;
+    font-size: 13px;
+    padding: 10px;
+    opacity: 0.9;
+}
+
+.timer-btn.break-btn:hover {
+    opacity: 1;
 }
 
 .timer-label {
@@ -437,7 +450,7 @@ body.dark-mode .card-content {
     right: 0;
     bottom: 0;
     background-color: #e0e0e0;
-    transition: all 0.2s ease-in-out;
+    transition: 0.4s;
     border-radius: 34px;
 }
 
@@ -449,7 +462,7 @@ body.dark-mode .card-content {
     left: 3px;
     bottom: 3px;
     background-color: white;
-    transition: all 0.2s ease-in-out;
+    transition: 0.4s;
     border-radius: 50%;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
@@ -633,9 +646,6 @@ body.focus-mode-active.ft-platform-yt yt-chip-cloud-chip-renderer:has([aria-labe
 
 body.focus-mode-active.ft-platform-yt .reel-item-endpoint,
 body.focus-mode-active.ft-platform-yt ytd-rich-item-renderer:has(a[href^="/shorts"]) {
-    opacity: 0 !important;
-    filter: blur(10px);
-    transition: opacity 0.3s ease, filter 0.3s ease, display 0.3s allow-discrete !important;
     display: none !important;
 }
 

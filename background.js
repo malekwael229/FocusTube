@@ -9,10 +9,11 @@ chrome.storage.onChanged.addListener((changes, area) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'startTimer') {
         const duration = request.duration || 25;
+        const type = request.type || 'work';
         const endTime = Date.now() + (duration * 60 * 1000);
         chrome.storage.local.set({
             ft_timer_end: endTime,
-            ft_timer_type: 'work'
+            ft_timer_type: type
         }, () => {
             sendResponse({ end: endTime });
         });
@@ -25,6 +26,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ stopped: true });
         return true;
     }
+
 });
 
 function handleTimerUpdate(endTime) {
@@ -36,28 +38,52 @@ function handleTimerUpdate(endTime) {
 
 const onAlarmHandler = (alarm) => {
     if (alarm.name === TIMER_ALARM_NAME) {
-        chrome.storage.local.get(['ft_timer_type'], (res) => {
+        chrome.storage.local.get(['ft_timer_type', 'breakDuration'], (res) => {
             const isWork = res.ft_timer_type === 'work';
-            const title = isWork ? "Pomodoro Complete! 🎉" : "Break Over! ⏰";
-            const msg = isWork ? "Time for a 5-minute break." : "Back to work. Distractions blocked.";
+            const breakTime = parseInt(res.breakDuration) || 5;
+
+            chrome.storage.local.get(['autoStartBreaks'], (res2) => {
+                const autoStart = res2.autoStartBreaks !== false;
+
+                let title = isWork ? "Focus Timer Complete! 🎉" : "Break Over! ⏰";
+                let msg = isWork ? `Time for a ${breakTime}-minute break.` : "Back to work. Distractions blocked.";
+
+                if (isWork && !autoStart) {
+                    msg = "Focus session complete.";
+                }
+
+                showSystemNotification(title, msg);
+            });
 
 
-            showSystemNotification(title, msg);
+            chrome.runtime.sendMessage({
+                action: "TIMER_COMPLETE",
+                type: isWork ? "work" : "break",
+                breakDuration: breakTime
+            }, () => { void chrome.runtime?.lastError; });
 
 
             chrome.tabs.query({ url: ["*://*.youtube.com/*", "*://*.instagram.com/*", "*://*.tiktok.com/*", "*://*.facebook.com/*"] }, (tabs) => {
                 for (const tab of tabs) {
                     chrome.tabs.sendMessage(tab.id, {
                         action: "TIMER_COMPLETE",
-                        type: isWork ? "work" : "break"
+                        type: isWork ? "work" : "break",
+                        breakDuration: breakTime
                     }, () => { void chrome.runtime?.lastError; });
                 }
 
 
                 if (isWork) {
-                    chrome.storage.local.set({
-                        ft_timer_end: Date.now() + (5 * 60 * 1000),
-                        ft_timer_type: 'break'
+                    chrome.storage.local.get(['breakDuration', 'autoStartBreaks'], (res) => {
+                        if (res.autoStartBreaks === false) {
+                            chrome.storage.local.remove(['ft_timer_end', 'ft_timer_type']);
+                            return;
+                        }
+                        const duration = parseInt(res.breakDuration) || 5;
+                        chrome.storage.local.set({
+                            ft_timer_end: Date.now() + (duration * 60 * 1000),
+                            ft_timer_type: 'break'
+                        });
                     });
                 } else {
                     chrome.storage.local.remove(['ft_timer_end', 'ft_timer_type']);
@@ -70,28 +96,41 @@ const onAlarmHandler = (alarm) => {
 chrome.alarms.onAlarm.addListener(onAlarmHandler);
 
 function showSystemNotification(title, msg) {
-    try {
-        if (!chrome.notifications || !chrome.notifications.create) {
-            console.log('[FocusTube]', title + ':', msg);
-            return;
-        }
+    chrome.storage.local.get(['showNotifications'], (res) => {
+        if (res.showNotifications === false) return;
 
-
-        const iconUrl = chrome.runtime.getURL('icons/icon128.png');
-        const notificationId = 'focustube-' + Date.now();
-
-        chrome.notifications.create(notificationId, {
-            type: 'basic',
-            iconUrl: iconUrl,
-            title: title,
-            message: msg,
-            priority: 2
-        }, (id) => {
-            if (chrome.runtime && chrome.runtime.lastError) {
-                console.error('[FocusTube Notification Error]', chrome.runtime.lastError.message);
+        try {
+            if (!chrome.notifications || !chrome.notifications.create) {
+                return;
             }
-        });
-    } catch (e) {
-        console.error('[FocusTube Notification Exception]', e);
-    }
+
+
+            const iconUrl = chrome.runtime.getURL('icons/icon128.png');
+            const notificationId = 'focustube-' + Date.now();
+
+            chrome.notifications.create(notificationId, {
+                type: 'basic',
+                iconUrl: iconUrl,
+                title: title,
+                message: msg,
+                priority: 2
+            }, (id) => {
+                if (chrome.runtime && chrome.runtime.lastError) {
+                    void chrome.runtime.lastError;
+                }
+            });
+        } catch (e) {
+        }
+    });
 }
+
+
+chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === 'local' || namespace === 'sync') {
+        chrome.tabs.query({ url: '*://*.youtube.com/*' }, (tabs) => {
+            tabs.forEach(tab => {
+                chrome.tabs.sendMessage(tab.id, { type: 'SETTINGS_UPDATED', changes }).catch(() => { });
+            });
+        });
+    }
+});

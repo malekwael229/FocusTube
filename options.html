@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocusTube Options</title>
+    <link rel="stylesheet" href="options.css">
+</head>
+
+<body>
+    <div class="container">
+
+        <header class="header">
+            <div class="header-left">
+                <button class="icon-btn" id="backBtn" title="Back to Popup">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m12 19-7-7 7-7" />
+                        <path d="M19 12H5" />
+                    </svg>
+                </button>
+                <h1 class="gradient-text">FocusTube Options</h1>
+            </div>
+            <button class="icon-btn" id="supportProject" title="View Source Code">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+                    <path d="M9 18c-4.51 2-5-2-7-2" />
+                </svg>
+            </button>
+        </header>
+
+
+        <div class="stats-card">
+            <div class="stat-item">
+                <div class="stat-value" id="totalBlocked">0</div>
+                <div class="stat-label">Total Blocked</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="timeSaved">0m</div>
+                <div class="stat-label">Time Saved</div>
+            </div>
+
+        </div>
+
+
+
+        <section class="settings-section">
+            <div class="section-accent accent-blue"></div>
+            <div class="section-content">
+                <div class="section-header">
+                    <h2>Focus Timer</h2>
+                    <p>Configure your focus session preferences</p>
+                </div>
+                <div class="settings-list">
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <span class="setting-label">Focus Duration</span>
+                            <span class="setting-description">Length of each focus session</span>
+                        </div>
+                        <select class="select-dropdown custom-select" id="focusDuration">
+                            <option value="15">15 minutes</option>
+                            <option value="25" selected>25 minutes</option>
+                            <option value="30">30 minutes</option>
+                            <option value="45">45 minutes</option>
+                            <option value="60">60 minutes</option>
+                        </select>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <span class="setting-label">Break Duration</span>
+                            <span class="setting-description">Length of break between sessions</span>
+                        </div>
+                        <select class="select-dropdown custom-select" id="breakDuration">
+                            <option value="5" selected>5 minutes</option>
+                            <option value="10">10 minutes</option>
+                            <option value="15">15 minutes</option>
+                        </select>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <span class="setting-label">Auto-start Breaks</span>
+                            <span class="setting-description">Automatically start break timer after focus ends</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autoStartBreaks" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <span class="setting-label">Play Sound</span>
+                            <span class="setting-description">Play a notification sound when timer ends</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="playSound" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <section class="settings-section">
+            <div class="section-accent accent-orange"></div>
+            <div class="section-content">
+                <div class="section-header">
+                    <h2>Popup Visibility</h2>
+                    <p>Choose which platform cards appear in the popup</p>
+                </div>
+                <div class="settings-list">
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <span class="setting-label">Show YouTube</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="popup_visible_yt" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <span class="setting-label">Show Instagram</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="popup_visible_ig" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <span class="setting-label">Show TikTok</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="popup_visible_tt" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <span class="setting-label">Show Facebook</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="popup_visible_fb" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <span class="setting-label">Restrict Hidden Platforms</span>
+                            <span class="setting-description">Apply blocking rules even if hidden from popup</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="restrictHiddenPlatforms" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <span class="setting-label">Visual Hiding on Hidden</span>
+                            <span class="setting-description">Hide distracting elements on hidden platforms</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="visualHideHiddenPlatforms" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <section class="settings-section">
+            <div class="section-accent accent-teal"></div>
+            <div class="section-content">
+                <div class="section-header">
+                    <h2>Blocking Behavior</h2>
+                    <p>Control how FocusTube handles distracting content</p>
+                </div>
+                <div class="settings-list">
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <span class="setting-label">Lock Settings During Timer</span>
+                            <span class="setting-description">Prevent changes while Focus Timer is active</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="lockSettings" class="toggle-input">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <section class="settings-section">
+            <div class="section-accent accent-orange"></div>
+            <div class="section-content">
+                <div class="section-header">
+                    <h2>Notifications</h2>
+                    <p>Manage alerts and reminders</p>
+                </div>
+                <div class="settings-list">
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <span class="setting-label">System Notifications</span>
+                            <span class="setting-description">Show Windows notifications when timer ends</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="showNotifications" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+
+        <section class="settings-section">
+            <div class="section-accent accent-gray"></div>
+            <div class="section-content">
+                <div class="section-header">
+                    <h2>Appearance</h2>
+                    <p>Customize how FocusTube looks</p>
+                </div>
+                <div class="settings-list">
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <span class="setting-label">Theme</span>
+                        </div>
+                        <div class="theme-toggle-group">
+                            <button id="lightThemeBtn" class="icon-btn theme-btn" title="Light Mode">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <circle cx="12" cy="12" r="5" />
+                                    <path
+                                        d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                                </svg>
+                            </button>
+                            <button id="darkThemeBtn" class="icon-btn theme-btn" title="Dark Mode">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <span class="setting-label">Show Stats in Popup</span>
+                            <span class="setting-description">Display blocking statistics in the popup</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="showStatsInPopup" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <section class="settings-section">
+            <div class="section-accent accent-teal"></div>
+            <div class="section-content">
+                <div class="section-header">
+                    <h2>Data & Privacy</h2>
+                    <p>Manage your data and statistics</p>
+                </div>
+                <div class="action-buttons">
+                    <input type="file" id="importFile" accept=".json" style="display: none;">
+                    <button class="btn btn-secondary" id="importData">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="17 8 12 3 7 8" />
+                            <line x1="12" x2="12" y1="3" y2="15" />
+                        </svg>
+                        Import Data
+                    </button>
+                    <button class="btn btn-secondary" id="exportData">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" x2="12" y1="15" y2="3" />
+                        </svg>
+                        Export Data
+                    </button>
+                    <button class="btn btn-secondary" id="resetSettings">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                            <path d="M21 3v5h-5" />
+                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                            <path d="M3 21v-5h5" />
+                        </svg>
+                        Reset Settings
+                    </button>
+                    <button class="btn btn-danger" id="clearData">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 6h18" />
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                            <line x1="10" x2="10" y1="11" y2="17" />
+                            <line x1="14" x2="14" y1="11" y2="17" />
+                        </svg>
+                        Clear All Data
+                    </button>
+                </div>
+            </div>
+        </section>
+
+
+        <section class="about-section">
+            <div class="about-info">
+                <h2>FocusTube</h2>
+                <p class="version">Version 1.8.0</p>
+            </div>
+            <div class="about-actions">
+                <button class="btn btn-secondary" id="starRepo">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polygon
+                            points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                        </polygon>
+                    </svg>
+                    Star Repository
+                </button>
+                <button class="btn btn-secondary" id="reportIssue">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                        <line x1="4" y1="22" x2="4" y2="15"></line>
+                    </svg>
+                    Report Issue
+                </button>
+            </div>
+            <p class="about-description">
+                FocusTube is an open-source browser extension that helps you stay focused by blocking
+                distracting short-form video content across YouTube, Instagram, TikTok, and Facebook.
+            </p>
+        </section>
+    </div>
+    <script src="options.js"></script>
+</body>
+
+</html>

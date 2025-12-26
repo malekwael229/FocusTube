@@ -20,12 +20,20 @@
                     </path>
                 </svg>
             </div>
+            <div id="settingsBtn" class="icon-btn" title="Settings">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                    <circle cx="12" cy="12" r="3" />
+                </svg>
+            </div>
         </div>
         <div class="header-toggle">
             <span id="toggleLockedLabel" class="locked-label hidden">LOCKED</span>
             <label class="switch">
                 <input type="checkbox" id="mainToggle" checked>
-                <span class="slider no-anim"></span>
+                <span class="slider"></span>
             </label>
         </div>
     </div>
@@ -45,8 +53,13 @@
     <div class="settings-box">
         <div class="timer-section">
             <div id="timerDisplay" class="timer-display hidden">00:00</div>
-            <div id="timerLabel" class="timer-label hidden">POMODORO ACTIVE</div>
-            <button id="timerBtn" class="timer-btn">Start Pomodoro Timer (25m)</button>
+            <div id="timerLabel" class="timer-label hidden">TIMER ACTIVE</div>
+
+            <div class="timer-controls">
+                <button id="timerBtn" class="timer-btn">Start Timer</button>
+                <button id="breakBtn" class="timer-btn break-btn hidden">Start Break</button>
+
+            </div>
             <p id="timerNote" class="timer-note">Strict Mode is enforced while timer is active.</p>
         </div>
 

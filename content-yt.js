@@ -18,7 +18,9 @@ const YouTube = {
         setTimeout(() => this.checkKick(), 500);
 
         chrome.storage.onChanged.addListener((changes) => {
-            if (changes.platformSettings || changes.focusMode || changes.ft_timer_end || changes.ft_timer_type) {
+            if (changes.platformSettings || changes.focusMode || changes.ft_timer_end || changes.ft_timer_type ||
+                changes.visualHideHiddenPlatforms || changes.restrictHiddenPlatforms ||
+                changes.popup_visible_yt || changes.popup_visible_ig || changes.popup_visible_tt || changes.popup_visible_fb) {
                 this.runChecks();
             }
         });
@@ -68,7 +70,14 @@ const YouTube = {
         }
     },
 
-    applyFocusMode: function () { if (document.body) document.body.classList.add('focus-mode-active'); },
+    applyFocusMode: function () {
+
+        if (CONFIG.popupVisibility && CONFIG.popupVisibility.yt === false && CONFIG.visualHideHidden === false) {
+            this.removeVisualFocus();
+            return;
+        }
+        if (document.body) document.body.classList.add('focus-mode-active');
+    },
     removeVisualFocus: function () { if (document.body) document.body.classList.remove('focus-mode-active'); },
     checkKick: function () {
         if (sessionStorage.getItem('ft_kicked')) { sessionStorage.removeItem('ft_kicked'); UI.showKickNotification(); }

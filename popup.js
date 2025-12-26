@@ -21,9 +21,25 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => document.body.classList.remove('preload'), 100);
 
 
-    chrome.storage.local.get(['focusMode', 'platformSettings', 'darkMode', 'ft_timer', 'ft_timer_end', 'ft_timer_type', 'ft_stats_blocked'], (result) => {
+
+    chrome.storage.local.get(['focusMode', 'platformSettings', 'darkMode', 'ft_timer', 'ft_timer_end', 'ft_timer_type', 'ft_stats_blocked', 'popup_visible_yt', 'popup_visible_ig', 'popup_visible_tt', 'popup_visible_fb', 'ft_timer_duration', 'showStatsInPopup'], (result) => {
         const isEnabled = result.focusMode !== false;
         toggle.checked = isEnabled;
+
+        const duration = parseInt(result.ft_timer_duration) || 25;
+        if (!result.ft_timer_end) {
+            timerBtn.innerText = `Start Timer (${duration}m)`;
+        }
+
+        if (result.popup_visible_yt === false) document.querySelector('.platform-card[data-platform="yt"]')?.classList.add('hidden');
+        if (result.popup_visible_ig === false) document.querySelector('.platform-card[data-platform="ig"]')?.classList.add('hidden');
+        if (result.popup_visible_tt === false) document.querySelector('.platform-card[data-platform="tt"]')?.classList.add('hidden');
+        if (result.popup_visible_fb === false) document.querySelector('.platform-card[data-platform="fb"]')?.classList.add('hidden');
+
+        if (result.autoStartBreaks === false && !result.ft_timer_end) {
+            const breakBtn = document.getElementById('breakBtn');
+            if (breakBtn) breakBtn.classList.remove('hidden');
+        }
 
 
         const isDark = result.darkMode !== false;
@@ -34,6 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
             settings = { ...settings, ...result.platformSettings };
         }
 
+
+        if (result.showStatsInPopup === false) {
+            document.querySelector('.stats-container').classList.add('hidden');
+        }
 
         updateStats(result.ft_stats_blocked || 0);
 
@@ -84,11 +104,28 @@ function setupEventListeners() {
             chrome.runtime.sendMessage({ action: 'stopTimer' });
             resetTimerUI();
         } else {
-            chrome.runtime.sendMessage({ action: 'startTimer', duration: 25 }, (res) => {
-                if (res && res.end) startTimerDisplay(res.end, 'work');
+            chrome.storage.local.get(['ft_timer_duration'], (res) => {
+                const duration = parseInt(res.ft_timer_duration) || 25;
+                chrome.runtime.sendMessage({ action: 'startTimer', duration: duration }, (res) => {
+                    if (res && res.end) startTimerDisplay(res.end, 'work');
+                });
             });
         }
     });
+
+    const breakBtn = document.getElementById('breakBtn');
+    if (breakBtn) {
+        breakBtn.addEventListener('click', () => {
+            chrome.storage.local.get(['breakDuration'], (res) => {
+                const duration = parseInt(res.breakDuration) || 5;
+                chrome.runtime.sendMessage({ action: 'startTimer', duration: duration, type: 'break' }, (res) => {
+                    if (res && res.end) startTimerDisplay(res.end, 'break');
+                });
+            });
+        });
+    }
+
+
 
 
     lightBtn.addEventListener('click', () => {
@@ -100,6 +137,17 @@ function setupEventListeners() {
         applyTheme(true);
         chrome.storage.local.set({ darkMode: true });
     });
+
+    const settingsBtn = document.getElementById('settingsBtn');
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', () => {
+            if (chrome.runtime.openOptionsPage) {
+                chrome.runtime.openOptionsPage();
+            } else {
+                window.open(chrome.runtime.getURL('options.html'));
+            }
+        });
+    }
 
     document.querySelectorAll('.card-header').forEach(header => {
         header.addEventListener('click', (e) => {
@@ -125,6 +173,7 @@ function setupEventListeners() {
     document.querySelectorAll('.mode-option').forEach(opt => {
         opt.addEventListener('click', (e) => {
             if (opt.classList.contains('disabled')) return;
+            if (timerBtn.classList.contains('active')) return; // Prevent changes while timer is active
             const card = opt.closest('.platform-card');
             const platform = card.dataset.platform;
             const value = opt.dataset.value;
@@ -197,6 +246,11 @@ function startTimerDisplay(endTime, type) {
     timerLabel.classList.remove('hidden');
     timerBtn.classList.add('active');
 
+    const breakBtn = document.getElementById('breakBtn');
+    if (breakBtn) breakBtn.classList.add('hidden');
+
+
+
     if (type === 'break') {
         timerBtn.classList.add('break');
         timerBtn.innerText = "Stop Break";
@@ -204,7 +258,7 @@ function startTimerDisplay(endTime, type) {
         lockControlsForBreak();
     } else {
         timerBtn.innerText = "End Timer";
-        timerLabel.innerText = "Pomodoro Timer Active";
+        timerLabel.innerText = "Focus Timer Active";
         lockControlsForTimer();
     }
 
@@ -227,7 +281,19 @@ function resetTimerUI() {
     timerDisplay.classList.add('hidden');
     timerLabel.classList.add('hidden');
     timerBtn.classList.remove('active', 'break');
-    timerBtn.innerText = "Start Pomodoro Timer (25m)";
+
+
+
+    chrome.storage.local.get(['ft_timer_duration', 'autoStartBreaks'], (res) => {
+        const duration = res.ft_timer_duration || 25;
+        timerBtn.innerText = `Start Timer (${duration}m)`;
+
+        if (res.autoStartBreaks === false) {
+            const breakBtn = document.getElementById('breakBtn');
+            if (breakBtn) breakBtn.classList.remove('hidden');
+        }
+    });
+
     unlockControls();
 }
 
@@ -346,6 +412,28 @@ function unlockControls() {
     });
 }
 
+function playBeep() {
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'sine'; osc.frequency.value = 880;
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.6);
+        osc.start(); osc.stop(ctx.currentTime + 0.6);
+    } catch (e) { }
+}
+
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    if (msg.action === "TIMER_COMPLETE") {
+        chrome.storage.local.get(['playSound'], (res) => {
+            if (res.playSound !== false) playBeep();
+        });
+    }
+});
 
 const scroller = document.documentElement;
 let pos = scroller.scrollTop;

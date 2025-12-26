@@ -9,12 +9,16 @@ const CONFIG = {
     isFocusMode: true,
     platformSettings: { yt: 'strict', ig: 'strict', tt: 'strict', fb: 'strict' },
     isDarkMode: true,
+    playSound: true,
     timer: { end: null, type: 'work' },
     session: {
         allowedCount: 0,
         allowUntil: 0,
         platform: null
-    }
+    },
+    popupVisibility: { yt: true, ig: true, tt: true, fb: true },
+    visualHideHidden: true,
+    restrictHidden: true
 };
 
 const Utils = {
@@ -147,7 +151,22 @@ const UI = {
             const watchBtn = document.createElement('button');
             watchBtn.className = 'focus-tube-btn focus-tube-btn-secondary';
             watchBtn.textContent = 'Watch Anyway';
+
+            // Breathing Pause Implementation
+            watchBtn.style.opacity = '0.5';
+            watchBtn.style.cursor = 'not-allowed';
+            watchBtn.disabled = true; // Robust disable
+
+            setTimeout(() => {
+                if (watchBtn) {
+                    watchBtn.style.opacity = '1';
+                    watchBtn.style.cursor = 'pointer';
+                    watchBtn.disabled = false;
+                }
+            }, 3000);
+
             watchBtn.onclick = () => {
+                if (watchBtn.disabled) return; // Double protection
                 this.remove();
                 CONFIG.session.allowUntil = Date.now() + (5 * 60 * 1000);
                 CONFIG.session.platform = platform;
@@ -255,15 +274,35 @@ const UI = {
 };
 
 (function () {
-    chrome.storage.local.get(['focusMode', 'platformSettings', 'darkMode', 'ft_timer_end', 'ft_timer_type'], (res) => {
+    chrome.storage.local.get(['focusMode', 'platformSettings', 'darkMode', 'ft_timer_end', 'ft_timer_type', 'playSound', 'popup_visible_yt', 'popup_visible_ig', 'popup_visible_tt', 'popup_visible_fb', 'restrictHiddenPlatforms', 'visualHideHiddenPlatforms'], (res) => {
         if (chrome.runtime.lastError) return;
         CONFIG.isFocusMode = res.focusMode !== false;
-        if (res.platformSettings) CONFIG.platformSettings = res.platformSettings;
+        if (res.platformSettings) {
+            CONFIG.platformSettings = res.platformSettings;
+
+
+            if (res.restrictHiddenPlatforms === false) {
+                if (res.popup_visible_yt === false) CONFIG.platformSettings.yt = 'allow';
+                if (res.popup_visible_ig === false) CONFIG.platformSettings.ig = 'allow';
+                if (res.popup_visible_tt === false) CONFIG.platformSettings.tt = 'allow';
+                if (res.popup_visible_fb === false) CONFIG.platformSettings.fb = 'allow';
+            }
+        }
         CONFIG.isDarkMode = res.darkMode !== false;
+        CONFIG.playSound = res.playSound !== false;
         CONFIG.timer.end = res.ft_timer_end;
         CONFIG.timer.type = res.ft_timer_type;
 
-        // Broadcast that settings are ready
+        CONFIG.restrictHidden = res.restrictHiddenPlatforms !== false;
+        CONFIG.visualHideHidden = res.visualHideHiddenPlatforms !== false;
+        CONFIG.popupVisibility = {
+            yt: res.popup_visible_yt !== false,
+            ig: res.popup_visible_ig !== false,
+            tt: res.popup_visible_tt !== false,
+            fb: res.popup_visible_fb !== false
+        };
+
+
         document.dispatchEvent(new CustomEvent('ft-settings-ready'));
     });
 
@@ -275,12 +314,59 @@ const UI = {
         if (changes.focusMode) CONFIG.isFocusMode = changes.focusMode.newValue;
         if (changes.platformSettings) {
             CONFIG.platformSettings = changes.platformSettings.newValue;
-            if (Site.isYT() && changes.platformSettings.newValue.yt === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
-            if (Site.isIG() && changes.platformSettings.newValue.ig === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
-            if (Site.isTT() && changes.platformSettings.newValue.tt === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
-            if (Site.isFB() && changes.platformSettings.newValue.fb === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
+
+
+            chrome.storage.local.get(['popup_visible_yt', 'popup_visible_ig', 'popup_visible_tt', 'popup_visible_fb', 'restrictHiddenPlatforms'], (res) => {
+                if (res.restrictHiddenPlatforms === false) {
+                    if (res.popup_visible_yt === false) CONFIG.platformSettings.yt = 'allow';
+                    if (res.popup_visible_ig === false) CONFIG.platformSettings.ig = 'allow';
+                    if (res.popup_visible_tt === false) CONFIG.platformSettings.tt = 'allow';
+                    if (res.popup_visible_fb === false) CONFIG.platformSettings.fb = 'allow';
+                }
+
+                if (Site.isYT() && CONFIG.platformSettings.yt === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
+                if (Site.isIG() && CONFIG.platformSettings.ig === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
+                if (Site.isTT() && CONFIG.platformSettings.tt === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
+                if (Site.isFB() && CONFIG.platformSettings.fb === 'strict') { CONFIG.session.allowUntil = 0; CONFIG.session.platform = null; }
+
+
+            });
+        }
+
+
+        if (changes.restrictHiddenPlatforms) CONFIG.restrictHidden = changes.restrictHiddenPlatforms.newValue !== false;
+        if (changes.visualHideHiddenPlatforms) CONFIG.visualHideHidden = changes.visualHideHiddenPlatforms.newValue !== false;
+
+        if (changes.popup_visible_yt) CONFIG.popupVisibility.yt = changes.popup_visible_yt.newValue !== false;
+        if (changes.popup_visible_ig) CONFIG.popupVisibility.ig = changes.popup_visible_ig.newValue !== false;
+        if (changes.popup_visible_tt) CONFIG.popupVisibility.tt = changes.popup_visible_tt.newValue !== false;
+        if (changes.popup_visible_fb) CONFIG.popupVisibility.fb = changes.popup_visible_fb.newValue !== false;
+
+        if (changes.restrictHiddenPlatforms || changes.visualHideHiddenPlatforms || changes.popup_visible_yt || changes.popup_visible_ig || changes.popup_visible_tt || changes.popup_visible_fb) {
+
+
+            if (CONFIG.restrictHidden === false) {
+                if (CONFIG.popupVisibility.yt === false && CONFIG.platformSettings) CONFIG.platformSettings.yt = 'allow';
+                if (CONFIG.popupVisibility.ig === false && CONFIG.platformSettings) CONFIG.platformSettings.ig = 'allow';
+                if (CONFIG.popupVisibility.tt === false && CONFIG.platformSettings) CONFIG.platformSettings.tt = 'allow';
+                if (CONFIG.popupVisibility.fb === false && CONFIG.platformSettings) CONFIG.platformSettings.fb = 'allow';
+            }
+
+            chrome.storage.local.get(['platformSettings', 'popup_visible_yt', 'popup_visible_ig', 'popup_visible_tt', 'popup_visible_fb', 'restrictHiddenPlatforms', 'visualHideHiddenPlatforms'], (res) => {
+                if (res.platformSettings) {
+
+                    CONFIG.platformSettings = res.platformSettings;
+                    if (res.restrictHiddenPlatforms === false) {
+                        if (res.popup_visible_yt === false) CONFIG.platformSettings.yt = 'allow';
+                        if (res.popup_visible_ig === false) CONFIG.platformSettings.ig = 'allow';
+                        if (res.popup_visible_tt === false) CONFIG.platformSettings.tt = 'allow';
+                        if (res.popup_visible_fb === false) CONFIG.platformSettings.fb = 'allow';
+                    }
+                }
+            });
         }
         if (changes.darkMode) { CONFIG.isDarkMode = changes.darkMode.newValue; UI.updateTheme(); }
+        if (changes.playSound) CONFIG.playSound = changes.playSound.newValue;
         if (changes.ft_timer_end) CONFIG.timer.end = changes.ft_timer_end.newValue;
         if (changes.ft_timer_type) CONFIG.timer.type = changes.ft_timer_type.newValue;
 
@@ -289,10 +375,20 @@ const UI = {
 
     chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         if (msg.action === "TIMER_COMPLETE") {
+            try {
+                if (!sender.tab) {
+
+                    if (CONFIG.playSound) Utils.playBeep();
+                } else {
+                    if (CONFIG.playSound) Utils.playBeep();
+                    if (msg.type === "work") {
+                        const duration = msg.breakDuration || 5;
+                        UI.showToast("Focus Session Complete! 🎉", `Great job! Take a ${duration}-minute break.`);
+                    }
+                    else UI.showToast("Break Over! ⏰", "Time to get back to work.");
+                }
+            } catch (e) { }
             sendResponse({ status: 'received' });
-            Utils.playBeep();
-            if (msg.type === "work") UI.showToast("Focus Session Complete! 🎉", "Great job! Take a 5-minute break.");
-            else UI.showToast("Break Over! ⏰", "Time to get back to work.");
         }
     });
 })();
