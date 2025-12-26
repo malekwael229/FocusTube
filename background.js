@@ -1,10 +1,4 @@
-const UPDATE_ALARM_NAME = 'ft_update_check';
 const TIMER_ALARM_NAME = 'focusTubeTimer';
-
-chrome.runtime.onInstalled.addListener(() => {
-    chrome.alarms.create(UPDATE_ALARM_NAME, { periodInMinutes: 360 });
-    checkForUpdates();
-});
 
 chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'local' && changes.ft_timer_end) {
@@ -40,28 +34,25 @@ function handleTimerUpdate(endTime) {
     }
 }
 
-chrome.alarms.onAlarm.addListener((alarm) => {
-    if (alarm.name === UPDATE_ALARM_NAME) {
-        checkForUpdates();
-    } else if (alarm.name === TIMER_ALARM_NAME) {
+const onAlarmHandler = (alarm) => {
+    if (alarm.name === TIMER_ALARM_NAME) {
         chrome.storage.local.get(['ft_timer_type'], (res) => {
             const isWork = res.ft_timer_type === 'work';
             const title = isWork ? "Pomodoro Complete! 🎉" : "Break Over! ⏰";
             const msg = isWork ? "Time for a 5-minute break." : "Back to work. Distractions blocked.";
 
+
+            showSystemNotification(title, msg);
+
+
             chrome.tabs.query({ url: ["*://*.youtube.com/*", "*://*.instagram.com/*", "*://*.tiktok.com/*", "*://*.facebook.com/*"] }, (tabs) => {
-                let sent = false;
                 for (const tab of tabs) {
                     chrome.tabs.sendMessage(tab.id, {
                         action: "TIMER_COMPLETE",
                         type: isWork ? "work" : "break"
                     }, () => { void chrome.runtime?.lastError; });
-                    sent = true;
                 }
 
-                if (!sent) {
-                    showSystemNotification(title, msg);
-                }
 
                 if (isWork) {
                     chrome.storage.local.set({
@@ -74,19 +65,9 @@ chrome.alarms.onAlarm.addListener((alarm) => {
             });
         });
     }
-});
+};
 
-function checkForUpdates() {
-    const GITHUB_MANIFEST_URL = 'https://raw.githubusercontent.com/malekwael229/FocusTube/main/chrome-manifest.json';
-    fetch(GITHUB_MANIFEST_URL, { cache: 'no-cache' })
-        .then(r => r.json())
-        .then(remote => {
-            if (remote && remote.version) {
-                chrome.storage.local.set({ ft_latest_version: remote.version });
-            }
-        })
-        .catch(() => { });
-}
+chrome.alarms.onAlarm.addListener(onAlarmHandler);
 
 function showSystemNotification(title, msg) {
     try {
@@ -94,19 +75,23 @@ function showSystemNotification(title, msg) {
             console.log('[FocusTube]', title + ':', msg);
             return;
         }
-        chrome.notifications.create({
+
+
+        const iconUrl = chrome.runtime.getURL('icons/icon128.png');
+        const notificationId = 'focustube-' + Date.now();
+
+        chrome.notifications.create(notificationId, {
             type: 'basic',
-            iconUrl: 'icons/icon128.png',
+            iconUrl: iconUrl,
             title: title,
             message: msg,
-            priority: 2,
-            requireInteraction: true
-        }, () => {
+            priority: 2
+        }, (id) => {
             if (chrome.runtime && chrome.runtime.lastError) {
-                console.log('[FocusTube]', title + ':', msg);
+                console.error('[FocusTube Notification Error]', chrome.runtime.lastError.message);
             }
         });
     } catch (e) {
-        console.log('[FocusTube]', title + ':', msg);
+        console.error('[FocusTube Notification Exception]', e);
     }
 }

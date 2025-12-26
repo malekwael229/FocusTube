@@ -102,6 +102,33 @@ body.preload .checkmark {
     height: 20px;
 }
 
+.header-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.locked-label {
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 99px;
+    letter-spacing: 0.5px;
+    background: rgba(43, 134, 197, 0.1);
+    color: #2b86c5;
+    transform: scale(0.9);
+    transition: all 0.2s ease;
+}
+
+.locked-label.break {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.locked-label.hidden {
+    display: none;
+}
+
 .stats-container {
     display: flex;
     justify-content: space-between;
@@ -388,9 +415,6 @@ body.dark-mode .card-content {
     gap: 8px;
 }
 
-body.focus-mode-active [role="link"][href*="/explore/"] {
-    display: none !important;
-}
 
 .focustube-popup-body .switch {
     position: relative;
@@ -413,7 +437,7 @@ body.focus-mode-active [role="link"][href*="/explore/"] {
     right: 0;
     bottom: 0;
     background-color: #e0e0e0;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.2s ease-in-out;
     border-radius: 34px;
 }
 
@@ -425,7 +449,7 @@ body.focus-mode-active [role="link"][href*="/explore/"] {
     left: 3px;
     bottom: 3px;
     background-color: white;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.2s ease-in-out;
     border-radius: 50%;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
@@ -593,22 +617,39 @@ body.dark-mode .tab-btn.active {
     color: #fff;
 }
 
-body.focus-mode-active ytd-guide-entry-renderer:has(a[title="Shorts"]),
-body.focus-mode-active ytd-mini-guide-entry-renderer:has(a[title="Shorts"]),
-body.focus-mode-active ytd-guide-entry-renderer:has(a[href^="/shorts"]),
-body.focus-mode-active ytd-mini-guide-entry-renderer:has(a[href^="/shorts"]),
+body.focus-mode-active.ft-platform-yt ytd-guide-entry-renderer:has(a[title="Shorts"]),
+body.focus-mode-active.ft-platform-yt ytd-mini-guide-entry-renderer:has(a[title="Shorts"]),
+body.focus-mode-active.ft-platform-yt ytd-guide-entry-renderer:has(a[href^="/shorts"]),
+body.focus-mode-active.ft-platform-yt ytd-mini-guide-entry-renderer:has(a[href^="/shorts"]),
 
-body.focus-mode-active ytd-rich-shelf-renderer[is-shorts],
-body.focus-mode-active ytd-rich-shelf-renderer[is-shorts=""],
-body.focus-mode-active ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]),
+body.focus-mode-active.ft-platform-yt ytd-rich-shelf-renderer[is-shorts],
+body.focus-mode-active.ft-platform-yt ytd-rich-shelf-renderer[is-shorts=""],
+body.focus-mode-active.ft-platform-yt ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]),
 
-body.focus-mode-active ytd-reel-shelf-renderer,
+body.focus-mode-active.ft-platform-yt ytd-reel-shelf-renderer,
 
-body.focus-mode-active yt-chip-cloud-chip-renderer:has(span[title="Shorts"]),
-body.focus-mode-active yt-chip-cloud-chip-renderer:has([aria-label="Shorts"]),
+body.focus-mode-active.ft-platform-yt yt-chip-cloud-chip-renderer:has(span[title="Shorts"]),
+body.focus-mode-active.ft-platform-yt yt-chip-cloud-chip-renderer:has([aria-label="Shorts"]),
 
-body.focus-mode-active .reel-item-endpoint,
-body.focus-mode-active ytd-rich-item-renderer:has(a[href^="/shorts"]) {
+body.focus-mode-active.ft-platform-yt .reel-item-endpoint,
+body.focus-mode-active.ft-platform-yt ytd-rich-item-renderer:has(a[href^="/shorts"]) {
+    opacity: 0 !important;
+    filter: blur(10px);
+    transition: opacity 0.3s ease, filter 0.3s ease, display 0.3s allow-discrete !important;
+    display: none !important;
+}
+
+
+body.focus-mode-active.ft-platform-ig a[href^="/reels/"],
+body.focus-mode-active.ft-platform-ig a[href^="/explore/"],
+body.focus-mode-active.ft-platform-ig div:has(> a[href^="/reels/"]),
+body.focus-mode-active.ft-platform-ig div:has(> a[href^="/explore/"]) {
+    display: none !important;
+}
+
+
+body.focus-mode-active.ft-platform-fb div:has(> a[href*="/reels/"]),
+body.focus-mode-active.ft-platform-fb div:has(> div[aria-label="Reels"]) {
     display: none !important;
 }
 

@@ -3,6 +3,7 @@ const timerBtn = document.getElementById('timerBtn');
 const timerDisplay = document.getElementById('timerDisplay');
 const timerLabel = document.getElementById('timerLabel');
 const timerNote = document.getElementById('timerNote');
+const toggleLockedLabel = document.getElementById('toggleLockedLabel');
 const lightBtn = document.getElementById('lightBtn');
 const darkBtn = document.getElementById('darkBtn');
 const githubBtn = document.getElementById('githubBtn');
@@ -16,35 +17,35 @@ let settings = {
     fb: 'strict'
 };
 document.addEventListener('DOMContentLoaded', () => {
-    // Remove preload class
+
     setTimeout(() => document.body.classList.remove('preload'), 100);
 
-    // Load Data
+
     chrome.storage.local.get(['focusMode', 'platformSettings', 'darkMode', 'ft_timer', 'ft_timer_end', 'ft_timer_type', 'ft_stats_blocked'], (result) => {
         const isEnabled = result.focusMode !== false;
         toggle.checked = isEnabled;
 
-        // Dark Mode (Default TRUE)
+
         const isDark = result.darkMode !== false;
         applyTheme(isDark);
 
-        // Settings
+
         if (result.platformSettings) {
             settings = { ...settings, ...result.platformSettings };
         }
 
-        // Stats
+
         updateStats(result.ft_stats_blocked || 0);
 
-        // Timer
+
         if (result.ft_timer_end && result.ft_timer_end > Date.now()) {
             startTimerDisplay(result.ft_timer_end, result.ft_timer_type);
         }
 
-        // Initialize Cards
+
         initializeCards();
 
-        // Listeners
+
         setupEventListeners();
     });
 });
@@ -63,21 +64,21 @@ function applyTheme(isDark) {
 
 
 function setupEventListeners() {
-    // Global Toggle
+
     toggle.addEventListener('change', () => {
         const isEnabled = toggle.checked;
         chrome.storage.local.set({ focusMode: isEnabled });
-        // updateGlobalToggleState(isEnabled); // Removed coupling
+
     });
 
-    // GitHub Button
+
     if (githubBtn) {
         githubBtn.addEventListener('click', () => {
             chrome.tabs.create({ url: 'https://github.com/malekwael229/FocusTube' });
         });
     }
 
-    // Timer
+
     timerBtn.addEventListener('click', () => {
         if (timerBtn.classList.contains('active')) {
             chrome.runtime.sendMessage({ action: 'stopTimer' });
@@ -89,7 +90,7 @@ function setupEventListeners() {
         }
     });
 
-    // Theme Control
+
     lightBtn.addEventListener('click', () => {
         applyTheme(false);
         chrome.storage.local.set({ darkMode: false });
@@ -120,7 +121,7 @@ function setupEventListeners() {
         });
     });
 
-    // Option Buttons
+
     document.querySelectorAll('.mode-option').forEach(opt => {
         opt.addEventListener('click', (e) => {
             if (opt.classList.contains('disabled')) return;
@@ -128,11 +129,11 @@ function setupEventListeners() {
             const platform = card.dataset.platform;
             const value = opt.dataset.value;
 
-            // Save
+
             settings[platform] = value;
             chrome.storage.local.set({ platformSettings: settings });
 
-            // Update UI for this card
+
             updateCardUI(card, value);
         });
     });
@@ -174,7 +175,7 @@ function updateCardUI(card, mode) {
 function updateStats(count) {
     if (statShorts) statShorts.innerText = count;
     if (statTime) {
-        // Estimate: 1 minute saved per blocked short
+
         const minutes = count;
         if (minutes < 60) {
             statTime.innerText = `${minutes}m`;
@@ -186,12 +187,12 @@ function updateStats(count) {
     }
 }
 
-// Timer Logic
+
 let timerInterval;
 function startTimerDisplay(endTime, type) {
     clearInterval(timerInterval);
 
-    // UI Setup
+
     timerDisplay.classList.remove('hidden');
     timerLabel.classList.remove('hidden');
     timerBtn.classList.add('active');
@@ -200,7 +201,7 @@ function startTimerDisplay(endTime, type) {
         timerBtn.classList.add('break');
         timerBtn.innerText = "Stop Break";
         timerLabel.innerText = "BREAK TIME";
-        unlockControls();
+        lockControlsForBreak();
     } else {
         timerBtn.innerText = "End Timer";
         timerLabel.innerText = "Pomodoro Timer Active";
@@ -211,7 +212,6 @@ function startTimerDisplay(endTime, type) {
         const left = Math.ceil((endTime - Date.now()) / 1000);
         if (left <= 0) {
             clearInterval(timerInterval);
-            resetTimerUI();
             return;
         }
         const m = Math.floor(left / 60).toString().padStart(2, '0');
@@ -232,27 +232,32 @@ function resetTimerUI() {
 }
 
 function lockControlsForTimer() {
-    // Lock Main Toggle
+
     toggle.disabled = true;
     toggle.parentElement.classList.add('locked');
+    if (toggleLockedLabel) {
+        toggleLockedLabel.innerText = "LOCKED";
+        toggleLockedLabel.classList.remove('hidden', 'break');
+    }
 
-    // Force Strict Mode on all
+
     const newSettings = { yt: 'strict', ig: 'strict', tt: 'strict', fb: 'strict' };
     settings = newSettings;
     chrome.storage.local.set({ platformSettings: newSettings, focusMode: true });
 
-    // Ensure Global is ON
+
     toggle.checked = true;
 
-    // Update UI
+
     document.querySelectorAll('.platform-card').forEach(card => {
         updateCardUI(card, 'strict');
-        // Lock Options
+        card.querySelector('.card-status').innerText = "Strict (Locked by Timer)";
+
         card.querySelectorAll('.mode-option').forEach(opt => {
             if (opt.dataset.value !== 'strict') {
                 opt.classList.add('timer-locked', 'disabled');
 
-                // Get Base Text
+
                 const map = {
                     'warn': 'Soft: Warn me first',
                     'allow': 'Passive: Let me watch'
@@ -268,17 +273,59 @@ function lockControlsForTimer() {
     });
 }
 
+function lockControlsForBreak() {
+
+    toggle.disabled = true;
+    toggle.parentElement.classList.add('locked');
+    if (toggleLockedLabel) {
+        toggleLockedLabel.innerText = "LOCKED";
+        toggleLockedLabel.classList.remove('hidden');
+        toggleLockedLabel.classList.add('break');
+    }
+
+
+    const newSettings = { yt: 'allow', ig: 'allow', tt: 'allow', fb: 'allow' };
+    settings = newSettings;
+    chrome.storage.local.set({ platformSettings: newSettings, focusMode: false });
+
+
+    toggle.checked = false;
+
+    document.querySelectorAll('.platform-card').forEach(card => {
+        updateCardUI(card, 'allow');
+
+        card.querySelector('.card-status').innerText = "Passive (Locked by Break)";
+
+
+        card.querySelectorAll('.mode-option').forEach(opt => {
+            if (opt.dataset.value !== 'allow') {
+                opt.classList.add('timer-locked', 'disabled');
+                const map = {
+                    'strict': 'Strict: Kick me out',
+                    'warn': 'Soft: Warn me first'
+                };
+                let txt = map[opt.dataset.value] || "";
+                if (card.dataset.platform === 'ig' && opt.dataset.value === 'warn') {
+                    txt = "Soft: Warn me first (Soon)";
+                }
+                opt.querySelector('.mode-option-text').innerText = `${txt} (Locked)`;
+            }
+        });
+    });
+}
+
 function unlockControls() {
     toggle.disabled = false;
     toggle.parentElement.classList.remove('locked');
+    if (toggleLockedLabel) toggleLockedLabel.classList.add('hidden');
 
-    // Restore UI strings
+
     document.querySelectorAll('.platform-card').forEach(card => {
         const platform = card.dataset.platform;
-        // Refresh to clear locks
+
         updateCardUI(card, settings[platform]);
 
-        // Reset text for non-selected options
+
         card.querySelectorAll('.mode-option').forEach(opt => {
             opt.classList.remove('timer-locked', 'disabled');
 
@@ -291,7 +338,7 @@ function unlockControls() {
             let txt = map[opt.dataset.value];
             if (card.dataset.platform === 'ig' && opt.dataset.value === 'warn') {
                 txt = "Soft: Warn me first (Soon)";
-                opt.classList.add('disabled'); // Keep IG disabled
+                opt.classList.add('disabled');
             }
 
             opt.querySelector('.mode-option-text').innerText = txt;
@@ -299,8 +346,8 @@ function unlockControls() {
     });
 }
 
-// Global Smooth Scroll
-const scroller = document.documentElement; // Usually html in extensions
+
+const scroller = document.documentElement;
 let pos = scroller.scrollTop;
 let target = scroller.scrollTop;
 let isMoving = false;
@@ -309,7 +356,7 @@ window.addEventListener('wheel', (e) => {
     e.preventDefault();
     target += e.deltaY;
 
-    // Clamp
+
     const max = scroller.scrollHeight - scroller.clientHeight;
     target = Math.max(0, Math.min(target, max));
 
@@ -320,7 +367,7 @@ window.addEventListener('wheel', (e) => {
 }, { passive: false });
 
 function updateScroll() {
-    // Re-check scroller in case it changed (rare but safe)
+
     const el = document.scrollingElement || document.documentElement || document.body;
 
     const delta = target - pos;
@@ -331,13 +378,13 @@ function updateScroll() {
         return;
     }
 
-    pos += delta * 0.1; // Smoothness factor
+    pos += delta * 0.1;
     el.scrollTop = pos;
     requestAnimationFrame(updateScroll);
 }
 
-// Smooth Scroll Logic (Momentum)
-// Target the wrapper specifically
+
+
 const scrollContainer = document.getElementById('smooth-scroll-wrapper');
 
 if (scrollContainer) {
@@ -346,13 +393,13 @@ if (scrollContainer) {
     let isScrolling = false;
 
     scrollContainer.addEventListener('wheel', (e) => {
-        // Prevent default only if content is scrollable
+
         if (scrollContainer.scrollHeight > scrollContainer.clientHeight) {
             e.preventDefault();
 
             targetScroll += e.deltaY;
 
-            // Clamp
+
             const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
             targetScroll = Math.max(0, Math.min(targetScroll, maxScroll));
 
@@ -381,3 +428,21 @@ if (scrollContainer) {
         }
     }
 }
+
+
+chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local') {
+        if (changes.ft_timer_end || changes.ft_timer_type) {
+            chrome.storage.local.get(['ft_timer_end', 'ft_timer_type'], (res) => {
+                if (res.ft_timer_end && res.ft_timer_end > Date.now()) {
+                    startTimerDisplay(res.ft_timer_end, res.ft_timer_type);
+                } else if (!res.ft_timer_end) {
+                    resetTimerUI();
+                }
+            });
+        }
+        if (changes.ft_stats_blocked) {
+            updateStats(changes.ft_stats_blocked.newValue || 0);
+        }
+    }
+});

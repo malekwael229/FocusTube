@@ -6,6 +6,7 @@
   "permissions": [
     "storage",
     "alarms",
+    "notifications",
     "*://*.youtube.com/*",
     "*://*.instagram.com/*",
     "*://*.tiktok.com/*",
@@ -31,7 +32,43 @@
         "styles.css"
       ],
       "js": [
-        "content.js"
+        "content-common.js"
+      ],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "*://*.youtube.com/*"
+      ],
+      "js": [
+        "content-yt.js"
+      ],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "*://*.instagram.com/*"
+      ],
+      "js": [
+        "content-ig.js"
+      ],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "*://*.tiktok.com/*"
+      ],
+      "js": [
+        "content-tt.js"
+      ],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "*://*.facebook.com/*"
+      ],
+      "js": [
+        "content-fb.js"
       ],
       "run_at": "document_start"
     }
@@ -47,7 +84,7 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "focustube@malekwael.com",
-      "strict_min_version": "109.0",
+      "strict_min_version": "121.0",
       "data_collection_permissions": {
         "required": [
           "none"

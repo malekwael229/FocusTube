@@ -1,5 +1,5 @@
-<div align="center">
-  <img width="1400" height="560" alt="FocusTube Banner" src="https://github.com/user-attachments/assets/1e95b1ee-c4a4-4d4f-a898-f00dcef223c4" />
+
+<img width="1400" height="560" alt="focustube-promotional-tile" src="https://github.com/user-attachments/assets/dda606fb-a366-4107-b573-bf0d8ac6da34" />
 
   # FocusTube: Distraction Blocker
   
@@ -53,9 +53,9 @@
 ## Installation
 
 ### Official Stores
-*   **Microsoft Edge:** *[Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)* (v1.7 Pending)
-*   **Firefox Add-ons:** *[Pending Review]*
-*   **Chrome Web Store:** *[Pending Review]*
+* **Microsoft Edge:** [Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog) (V1.7)
+* **Firefox Add-ons:** [Download from Firefox Add-ons](https://addons.mozilla.org/addon/focus-tube/) (V1.7)
+* **Chrome Web Store:** *Soon*
 
 ### Manual Installation (Developer Mode)
 
