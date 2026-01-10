@@ -1,96 +1,101 @@
 const Facebook = {
-    currentMode: 'strict',
+    initialized: false,
     observer: null,
+    currentMode: 'strict',
+    fallbackInterval: null,
+    storiesOverlayId: 'ft-fb-stories-overlay',
 
-    run: function (isUpdate) {
-        if (!isUpdate) {
-            if (document.body) document.body.classList.add('ft-platform-fb');
-            this.initObserver();
-            Utils.setSafeInterval(() => this.check(), 400);
-        }
-        this.check();
+    init: function () {
+        if (this.initialized) return;
+        if (!document.body) { setTimeout(() => this.init(), 100); return; }
+
+        this.initialized = true;
+        document.body.classList.add('ft-platform-fb');
+
+        this.observer = new MutationObserver(() => this.runChecks());
+        this.observer.observe(document.body, { childList: true, subtree: true });
+
+        window.addEventListener('popstate', () => this.runChecks());
 
         chrome.storage.onChanged.addListener((changes) => {
-            if (changes.platformSettings || changes.focusMode || changes.ft_timer_end || changes.ft_timer_type) {
-                this.check();
+            if (changes.platformSettings || changes.focusMode || changes.ft_timer_end || changes.ft_timer_type || changes.hide_fb_stories || changes.hide_fb_reels_nav) {
+                this.runChecks();
             }
         });
+
+        this.fallbackInterval = Utils.setSafeInterval(() => this.runChecks(), 1000);
+        this.runChecks();
     },
 
-    initObserver: function () {
-        if (this.observer) return;
-        this.observer = new MutationObserver(() => {
-            const ts = Utils.getTimerState();
-            this.applyHiding(CONFIG.isFocusMode || ts.isWork);
-        });
-        this.observer.observe(document, {
-            subtree: true,
-            childList: true,
-            attributes: true,
-            attributeFilter: ['href', 'style', 'class', 'role', 'aria-label']
-        });
-    },
+    runChecks: function () {
+        if (!document.body) return;
 
-    check: function () {
         const path = window.location.pathname;
-        const ts = Utils.getTimerState();
-        const isStrict = CONFIG.platformSettings.fb === 'strict';
-        const isWarn = CONFIG.platformSettings.fb === 'warn';
-        const isFocusActive = CONFIG.isFocusMode || ts.isWork;
+        const isFocusActive = FocusState.shouldBlock;
+        let action = 'none';
+        let reason = '';
 
         if (CONFIG.platformSettings.fb === 'strict' && this.currentMode !== 'strict') {
-            CONFIG.session.allowUntil = 0;
-            CONFIG.session.platform = null;
+            Utils.clearSession();
+            UI.remove();
+            this.removeStoriesOverlay();
         }
         this.currentMode = CONFIG.platformSettings.fb;
+
+        if (FocusState.isBreak) {
+            action = 'remove'; reason = 'break timer';
+            UI.remove();
+            this.removeStoriesOverlay();
+            this.applyReelsHiding(false);
+            Utils.debugLog('fb', { path, mode: this.currentMode, isWork: FocusState.isWork, isBreak: FocusState.isBreak, sessionAllowed: Utils.isSessionAllowed('fb'), action, reason });
+            return;
+        }
 
         const onReelsPath = path.startsWith('/reel/') || path.startsWith('/reels/');
 
         if (onReelsPath) {
-            if (CONFIG.session.allowUntil && CONFIG.session.allowUntil > Date.now() && CONFIG.session.platform === 'fb') {
-                if (isStrict) {
-                } else {
-                    UI.remove();
-                    this.applyHiding(isFocusActive);
-                    return;
-                }
-            }
-
-            if (ts.isWork || isStrict) {
+            if (Utils.isSessionAllowed('fb') && CONFIG.platformSettings.fb !== 'strict') {
+                action = 'allow'; reason = 'session allowed';
+                UI.remove();
+                this.applyReelsHiding(isFocusActive && CONFIG.visualHiding.fbReelsNav);
+            } else if (FocusState.isWork || CONFIG.platformSettings.fb === 'strict') {
+                action = 'block'; reason = FocusState.isWork ? 'work timer' : 'strict mode';
                 UI.create('strict', 'fb', () => { }, () => window.location.href = 'https://www.facebook.com/');
                 Utils.lockVideo();
-                this.applyHiding(isFocusActive);
-                return;
-            } else if (isWarn) {
+                this.applyReelsHiding(isFocusActive && CONFIG.visualHiding.fbReelsNav);
+            } else if (CONFIG.platformSettings.fb === 'warn') {
+                action = 'warn'; reason = 'warn mode';
                 UI.create('warn', 'fb', () => {
-                    CONFIG.session.allowUntil = Date.now() + (5 * 60 * 1000);
-                    CONFIG.session.platform = 'fb';
+                    Utils.setAllowWindow('fb', 5);
                     UI.remove();
                     Utils.unlockVideo();
-                    this.applyHiding(isFocusActive);
                 }, () => window.location.href = 'https://www.facebook.com/');
                 Utils.lockVideo();
-                this.applyHiding(isFocusActive);
-                return;
+                this.applyReelsHiding(isFocusActive && CONFIG.visualHiding.fbReelsNav);
+            }
+        } else {
+            action = 'safe'; reason = 'non-reels path';
+            if (CONFIG.session.platform === 'fb') Utils.clearSession();
+            UI.remove();
+            this.applyReelsHiding(isFocusActive && CONFIG.visualHiding.fbReelsNav);
+
+            if (isFocusActive && CONFIG.visualHiding.fbStories) {
+                this.showStoriesOverlay();
+            } else {
+                this.removeStoriesOverlay();
             }
         }
 
-        if (CONFIG.session.platform === 'fb') {
-            CONFIG.session.allowUntil = 0;
-            CONFIG.session.platform = null;
-        }
-        UI.remove();
-        this.applyHiding(isFocusActive);
+        Utils.debugLog('fb', { path, mode: this.currentMode, isWork: FocusState.isWork, isBreak: FocusState.isBreak, sessionAllowed: Utils.isSessionAllowed('fb'), action, reason });
     },
 
-    applyHiding: function (shouldHide) {
+    applyReelsHiding: function (shouldHide) {
         const selectors = [
             'a[aria-label="Reels"]',
             'a[href*="/reels/"]',
             'a[href*="/reel/"]',
             '[role="navigation"] a[aria-label="Reels"]',
-            'div[aria-label="Reels"]',
-            'span:has-text("Reels")'
+            'div[aria-label="Reels"]'
         ];
 
         const fbReelsLink = document.querySelector('a[aria-label="Reels"][href="/reel/?s=tab"]');
@@ -103,39 +108,73 @@ const Facebook = {
         }
 
         selectors.forEach(sel => {
-            if (sel.includes('has-text')) {
-                const candidates = document.querySelectorAll('span, h3, div[role="button"] span');
-                candidates.forEach(el => {
-                    if (el.textContent === "Reels") {
-                        const btn = el.closest('div[role="button"]');
-                        if (btn && shouldHide) btn.style.setProperty('display', 'none', 'important');
-                        else if (btn) btn.style.removeProperty('display');
+            document.querySelectorAll(sel).forEach(el => {
+                if (shouldHide) el.style.setProperty('display', 'none', 'important');
+                else el.style.removeProperty('display');
+            });
+        });
 
-                        const shelfHeader = el.closest('div.x1n2onr6.x1ja2u2z');
-                        if (shelfHeader) {
-                            let parent = shelfHeader.parentElement;
-                            for (let i = 0; i < 8; i++) {
-                                if (!parent) break;
-                                if (parent.className.includes('html-div') && parent.className.includes('xz9dl7a') === false) {
-                                    if (shouldHide) parent.style.setProperty('display', 'none', 'important');
-                                    else parent.style.removeProperty('display');
-                                    break;
-                                }
-                                parent = parent.parentElement;
-                            }
+        const candidates = document.querySelectorAll('span, h3, div[role="button"] span');
+        candidates.forEach(el => {
+            if (el.textContent === "Reels") {
+                const btn = el.closest('div[role="button"]');
+                if (btn && shouldHide) btn.style.setProperty('display', 'none', 'important');
+                else if (btn) btn.style.removeProperty('display');
+
+                const shelfHeader = el.closest('div.x1n2onr6.x1ja2u2z');
+                if (shelfHeader) {
+                    let parent = shelfHeader.parentElement;
+                    for (let i = 0; i < 8; i++) {
+                        if (!parent) break;
+                        if (parent.className.includes('html-div') && parent.className.includes('xz9dl7a') === false) {
+                            if (shouldHide) parent.style.setProperty('display', 'none', 'important');
+                            else parent.style.removeProperty('display');
+                            break;
                         }
+                        parent = parent.parentElement;
                     }
-                });
-            } else {
-                document.querySelectorAll(sel).forEach(el => {
-                    if (shouldHide) el.style.setProperty('display', 'none', 'important');
-                    else el.style.removeProperty('display');
-                });
+                }
             }
         });
+    },
+
+    showStoriesOverlay: function () {
+        if (document.getElementById(this.storiesOverlayId)) return;
+
+        const storiesContainer = document.querySelector('[aria-label="Stories"]');
+        if (!storiesContainer) return;
+
+        const storyShelf = storiesContainer.querySelector('[scrollable="true"]') ||
+            storiesContainer.querySelector('.xb57i2i') ||
+            storiesContainer;
+
+        storyShelf.style.position = 'relative';
+        storyShelf.style.overflow = 'hidden';
+
+        const overlay = document.createElement('div');
+        overlay.id = this.storiesOverlayId;
+        overlay.className = 'ft-stories-overlay';
+        if (CONFIG.isDarkMode) overlay.classList.add('dark');
+
+        const icon = document.createElement('img');
+        icon.src = chrome.runtime.getURL('icons/icon48.png');
+        icon.className = 'ft-stories-overlay-icon';
+
+        const text = document.createElement('span');
+        text.textContent = 'Stories Hidden';
+
+        overlay.appendChild(icon);
+        overlay.appendChild(text);
+        storyShelf.appendChild(overlay);
+    },
+
+    removeStoriesOverlay: function () {
+        const overlay = document.getElementById(this.storiesOverlayId);
+        if (overlay) overlay.remove();
     }
 };
 
 if (Site.isFB()) {
-    document.addEventListener('ft-settings-ready', () => Facebook.run());
+    if (window.__ftSettingsReady) Facebook.init();
+    else document.addEventListener('ft-settings-ready', () => Facebook.init());
 }

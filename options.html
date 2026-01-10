@@ -5,348 +5,1304 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FocusTube Options</title>
-    <link rel="stylesheet" href="options.css">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            border: 0 solid hsl(228 12% 20%);
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --background: hsl(228 15% 10%);
+            --foreground: hsl(220 14% 96%);
+            --card: hsl(228 15% 13%);
+            --card-foreground: hsl(220 14% 96%);
+            --primary: hsl(204 100% 65%);
+            --primary-foreground: hsl(228 15% 10%);
+            --secondary: hsl(228 12% 18%);
+            --secondary-foreground: hsl(220 14% 85%);
+            --muted: hsl(228 12% 18%);
+            --muted-foreground: hsl(220 9% 50%);
+            --accent: hsl(183 100% 50%);
+            --destructive: hsl(0 72% 51%);
+            --border: hsl(228 12% 20%);
+            --radius: 0.625rem;
+        }
+
+        html {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        html::-webkit-scrollbar {
+            display: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--background);
+            color: var(--foreground);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 32rem;
+            margin: 0 auto;
+            padding: 1.5rem 1rem;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .header-left,
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .icon-btn {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.5rem;
+            background: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: none;
+            color: var(--foreground);
+        }
+
+        .icon-btn:hover {
+            background: hsl(228 12% 22%);
+        }
+
+        .icon-btn svg {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, hsl(204 99% 65%), hsl(183 100% 50%));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            border: 1px solid hsl(228 12% 20% / 0.5);
+            overflow: hidden;
+        }
+
+        .platform-grid {
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .platform-icons {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .platform-btn {
+            position: relative;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.75rem;
+            background: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            color: var(--foreground);
+        }
+
+        .platform-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .platform-btn.mode-strict {
+            background: rgba(239, 68, 68, 0.25);
+        }
+
+        .platform-btn.mode-warn {
+            background: rgba(246, 211, 101, 0.25);
+        }
+
+        .platform-btn.mode-passive {
+            background: rgba(79, 172, 254, 0.25);
+        }
+
+        .platform-btn.mode-strict:hover {
+            background: rgba(239, 68, 68, 0.35);
+        }
+
+        .platform-btn.mode-warn:hover {
+            background: rgba(246, 211, 101, 0.35);
+        }
+
+        .platform-btn.mode-passive:hover {
+            background: rgba(79, 172, 254, 0.35);
+        }
+
+        .platform-btn:active {
+            transform: scale(0.95);
+        }
+
+        .platform-btn svg {
+            width: 1.75rem;
+            height: 1.75rem;
+        }
+
+        .platform-badge {
+            position: absolute;
+            top: -0.25rem;
+            right: -0.25rem;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            font-size: 9px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .badge-red {
+            background: #ef4444;
+        }
+
+        .badge-amber {
+            background: #f59e0b;
+        }
+
+        .badge-gray {
+            background: #4facfe;
+        }
+
+        .badge-blue {
+            background: #4facfe;
+        }
+
+        .platform-hint {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+            margin-top: 0.75rem;
+        }
+
+        .platform-detail {
+            padding: 1rem;
+            display: none;
+        }
+
+        .platform-detail.active {
+            display: block;
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .detail-header svg {
+            width: 1.75rem;
+            height: 1.75rem;
+            color: var(--muted-foreground);
+        }
+
+        .detail-header span {
+            font-weight: 500;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+        }
+
+        .mode-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            background: hsl(228 12% 18% / 0.4);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            color: var(--foreground);
+            margin-bottom: 0.5rem;
+        }
+
+        .mode-btn:hover {
+            background: hsl(228 12% 16%);
+        }
+
+        .mode-btn.selected {
+            border-color: hsl(204 100% 65% / 0.3);
+        }
+
+        .mode-btn.selected[data-mode="S"] {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .mode-btn.selected[data-mode="W"] {
+            background: rgba(246, 211, 101, 0.2);
+        }
+
+        .mode-btn.selected[data-mode="P"] {
+            background: rgba(79, 172, 254, 0.2);
+        }
+
+        .mode-radio {
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            border: 2px solid hsl(220 9% 35%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .mode-dot {
+            width: 0.625rem;
+            height: 0.625rem;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .mode-btn.selected .mode-dot {
+            opacity: 1;
+        }
+
+        .mode-info {
+            flex: 1;
+        }
+
+        .mode-info .label {
+            font-size: 14px;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 2px;
+            font-family: inherit;
+        }
+
+        .mode-info .desc {
+            font-size: 12px;
+            color: #888;
+            display: block;
+            font-family: inherit;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .stat-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.5rem;
+            background: hsl(204 100% 65% / 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-icon svg {
+            width: 1.25rem;
+            height: 1.25rem;
+            color: var(--primary);
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+        }
+
+        .settings-section {
+            position: relative;
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 0.25rem;
+            border-radius: 9999px;
+        }
+
+        .bar-blue {
+            background: hsl(204 100% 65%);
+        }
+
+        .bar-orange {
+            background: hsl(25 95% 53%);
+        }
+
+        .bar-teal {
+            background: hsl(172 66% 50%);
+        }
+
+        .bar-gray {
+            background: hsl(220 9% 46%);
+        }
+
+        .section-content {
+            padding: 1rem;
+        }
+
+        .section-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.125rem;
+        }
+
+        .section-desc {
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+            margin-bottom: 0.75rem;
+        }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.625rem 0.5rem;
+            margin: 0 -0.5rem;
+            border-radius: 0.5rem;
+            transition: background 0.2s;
+        }
+
+        .setting-row:hover {
+            background: hsl(228 12% 18% / 0.5);
+        }
+
+        .setting-row.setting-nested {
+            margin-left: 1.5rem;
+            opacity: 0.85;
+            position: relative;
+        }
+
+        .setting-row.setting-nested::before {
+            content: '';
+            position: absolute;
+            left: -1rem;
+            top: -0.75rem;
+            width: 0.75rem;
+            height: calc(50% + 0.75rem);
+            border-left: 2px solid hsl(220 9% 30%);
+            border-bottom: 2px solid hsl(220 9% 30%);
+            border-bottom-left-radius: 0.5rem;
+        }
+
+        .setting-row.hidden-row {
+            display: none !important;
+        }
+
+        .setting-info {
+            flex: 1;
+            padding-right: 1rem;
+        }
+
+        .setting-label {
+            font-size: 0.875rem;
+        }
+
+        .setting-desc {
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+            margin-top: 0.125rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 2.75rem;
+            height: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch .toggle-input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--muted);
+            transition: 0.2s;
+            border-radius: 9999px;
+        }
+
+        .toggle-slider::before {
+            position: absolute;
+            content: "";
+            height: 1.25rem;
+            width: 1.25rem;
+            left: 0.125rem;
+            bottom: 0.125rem;
+            background: var(--background);
+            transition: 0.2s;
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-input:checked+.toggle-slider {
+            background: var(--primary);
+        }
+
+        .toggle-input:checked+.toggle-slider::before {
+            transform: translateX(1.25rem);
+        }
+
+        .toggle {
+            position: relative;
+            width: 2.75rem;
+            height: 1.5rem;
+            background: var(--muted);
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .toggle.on {
+            background: var(--primary);
+        }
+
+        .toggle.on.destructive {
+            background: var(--destructive);
+        }
+
+        .toggle-thumb {
+            position: absolute;
+            top: 0.125rem;
+            left: 0.125rem;
+            width: 1.25rem;
+            height: 1.25rem;
+            background: var(--background);
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .toggle.on .toggle-thumb {
+            transform: translateX(1.25rem);
+        }
+
+        .select-wrapper {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .select-trigger {
+            width: 7rem;
+            height: 2rem;
+            padding: 0 0.75rem;
+            font-size: 0.75rem;
+            background: var(--secondary);
+            border: none;
+            border-radius: var(--radius);
+            color: var(--foreground);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s;
+        }
+
+        .select-trigger:hover {
+            background: hsl(228 12% 22%);
+        }
+
+        .select-trigger.open {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .select-trigger svg {
+            width: 1rem;
+            height: 1rem;
+            opacity: 0.5;
+        }
+
+        .select-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--secondary);
+            border-radius: 0 0 var(--radius) var(--radius);
+            z-index: 50;
+            display: none;
+            padding: 0.25rem;
+        }
+
+        .select-dropdown.open {
+            display: block;
+        }
+
+        .select-option {
+            padding: 0.375rem 0.5rem;
+            font-size: 0.75rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.15s;
+        }
+
+        .select-option:hover {
+            background: hsl(228 12% 25%);
+        }
+
+        .select-option.selected {
+            background: hsl(204 100% 65% / 0.15);
+        }
+
+        .select-check {
+            width: 1rem;
+            height: 1rem;
+            opacity: 0;
+        }
+
+        .select-option.selected .select-check {
+            opacity: 1;
+            color: var(--primary);
+        }
+
+        select.select-dropdown {
+            display: none;
+        }
+
+        .custom-select-wrapper {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .custom-select-trigger {
+            width: 7rem;
+            height: 2rem;
+            padding: 0 0.75rem;
+            font-size: 0.75rem;
+            background: var(--secondary);
+            border: none;
+            border-radius: var(--radius);
+            color: var(--foreground);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s;
+        }
+
+        .custom-select-trigger:hover {
+            background: hsl(228 12% 22%);
+        }
+
+        .custom-select-wrapper.open .custom-select-trigger {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .custom-arrow {
+            width: 1rem;
+            height: 1rem;
+            opacity: 0.5;
+        }
+
+        .custom-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--secondary);
+            border-radius: 0 0 var(--radius) var(--radius);
+            z-index: 50;
+            display: none;
+            padding: 0.25rem;
+        }
+
+        .custom-select-wrapper.open .custom-options {
+            display: block;
+        }
+
+        .custom-option {
+            padding: 0.375rem 0.5rem;
+            font-size: 0.75rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .custom-option:hover {
+            background: hsl(228 12% 25%);
+        }
+
+        .custom-option.selected {
+            background: hsl(204 100% 65% / 0.15);
+        }
+
+        .action-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding-top: 0.25rem;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: none;
+            color: var(--secondary-foreground);
+            background: var(--secondary);
+        }
+
+        .action-btn:hover {
+            background: hsl(228 12% 22%);
+        }
+
+        .action-btn.danger {
+            background: var(--destructive);
+            color: white;
+        }
+
+        .action-btn.danger:hover {
+            background: hsl(0 72% 45%);
+        }
+
+        .action-btn svg {
+            width: 0.875rem;
+            height: 0.875rem;
+        }
+
+        .about-section {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .about-title {
+            font-size: 1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, hsl(204 99% 65%), hsl(183 100% 50%));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.125rem;
+        }
+
+        .about-version {
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+            margin-bottom: 0.75rem;
+        }
+
+        .about-btns {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .about-desc {
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+            max-width: 20rem;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        .decor-left,
+        .decor-right {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            width: 16rem;
+            pointer-events: none;
+        }
+
+        .decor-left {
+            left: 0;
+        }
+
+        .decor-right {
+            right: 0;
+        }
+
+        .decor-left::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to right, hsl(204 100% 65% / 0.05), transparent);
+        }
+
+        .decor-right::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to left, hsl(204 100% 65% / 0.05), transparent);
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(48px);
+        }
+
+        .orb-1 {
+            top: 25%;
+            left: -5rem;
+            width: 10rem;
+            height: 10rem;
+            background: hsl(204 100% 65% / 0.1);
+        }
+
+        .orb-2 {
+            bottom: 33%;
+            left: -2.5rem;
+            width: 8rem;
+            height: 8rem;
+            background: hsl(183 100% 50% / 0.1);
+        }
+
+        .orb-3 {
+            top: 33%;
+            right: -5rem;
+            width: 10rem;
+            height: 10rem;
+            background: hsl(183 100% 50% / 0.1);
+        }
+
+        .orb-4 {
+            bottom: 25%;
+            right: -2.5rem;
+            width: 8rem;
+            height: 8rem;
+            background: hsl(204 100% 65% / 0.1);
+        }
+
+        @media (max-width: 1024px) {
+
+            .decor-left,
+            .decor-right {
+                display: none;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .animate-scale-in {
+            animation: scaleIn 0.2s ease-out;
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .animate-slide-out {
+            animation: slideOut 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="container">
+    <div class="decor-left">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+    <div class="decor-right">
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+    </div>
 
+    <div class="container">
         <header class="header">
             <div class="header-left">
-                <button class="icon-btn" id="backBtn" title="Back to Popup">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
+                <button class="icon-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
                         <path d="m12 19-7-7 7-7" />
                         <path d="M19 12H5" />
                     </svg>
                 </button>
-                <h1 class="gradient-text">FocusTube Options</h1>
+                <h1 class="title">FocusTube Options</h1>
             </div>
-            <button class="icon-btn" id="supportProject" title="View Source Code">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path
-                        d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
-                    <path d="M9 18c-4.51 2-5-2-7-2" />
-                </svg>
-            </button>
+            <div class="header-right">
+                <button class="icon-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path
+                            d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+                        <path d="M9 18c-4.51 2-5-2-7-2" />
+                    </svg>
+                </button>
+            </div>
         </header>
 
-
-        <div class="stats-card">
-            <div class="stat-item">
-                <div class="stat-value" id="totalBlocked">0</div>
-                <div class="stat-label">Total Blocked</div>
+        <div class="card platform-grid" id="platformGrid">
+            <div class="platform-icons" id="platformIcons">
+                <button class="platform-btn animate-scale-in" data-platform="yt" style="animation-delay: 0ms">
+                    <svg viewBox="0 0 24 24">
+                        <path fill="currentColor"
+                            d="M23.5 6.2c-.3-1-1-1.8-2-2.1C19.8 3.5 12 3.5 12 3.5s-7.8 0-9.5.6c-1 .3-1.7 1.1-2 2.1C0 7.9 0 12 0 12s0 4.1.5 5.8c.3 1 1 1.8 2 2.1 1.7.6 9.5.6 9.5.6s7.8 0 9.5-.6c1-.3 1.7-1.1 2-2.1.5-1.7.5-5.8.5-5.8s0-4.1-.5-5.8zM9.5 15.5v-7l6.4 3.5-6.4 3.5z" />
+                    </svg>
+                    <span class="platform-badge badge-red" id="badge-yt">S</span>
+                </button>
+                <button class="platform-btn animate-scale-in" data-platform="ig" style="animation-delay: 50ms">
+                    <svg viewBox="0 0 24 24">
+                        <path fill="currentColor"
+                            d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.3 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .3-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.3-1-.4-2.2-.1-1.3-.1-1.7-.1-4.9s0-3.6.1-4.9c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.3 2.2-.4 1.3-.1 1.7-.1 4.9-.1M12 0C8.7 0 8.3 0 7 .1 5.7.2 4.8.3 4 .6c-.9.3-1.6.7-2.3 1.4C1 2.7.6 3.4.3 4.3.1 5.1 0 6 0 7.3 0 8.6 0 9 0 12.3s0 3.7.1 5c.1 1.3.2 2.2.5 3 .3.9.7 1.6 1.4 2.3.7.7 1.4 1.1 2.3 1.4.8.3 1.7.4 3 .5 1.3.1 1.7.1 5 .1s3.7 0 5-.1c1.3-.1 2.2-.2 3-.5.9-.3 1.6-.7 2.3-1.4.7-.7 1.1-1.4 1.4-2.3.3-.8.4-1.7.5-3 .1-1.3.1-1.7.1-5s0-3.7-.1-5c-.1-1.3-.2-2.2-.5-3-.3-.9-.7-1.6-1.4-2.3C21.6 1 20.9.6 20 .3c-.8-.3-1.7-.4-3-.5C15.7 0 15.3 0 12 0zm0 5.8a6.2 6.2 0 100 12.4 6.2 6.2 0 000-12.4zM12 16a4 4 0 110-8 4 4 0 010 8zm6.4-10.8a1.4 1.4 0 100 2.8 1.4 1.4 0 000-2.8z" />
+                    </svg>
+                    <span class="platform-badge badge-red" id="badge-ig">S</span>
+                </button>
+                <button class="platform-btn animate-scale-in" data-platform="tt" style="animation-delay: 100ms">
+                    <svg viewBox="0 0 24 24">
+                        <path fill="currentColor"
+                            d="M19.3 7.3c-1.4-.1-2.7-.7-3.6-1.6-.9-.9-1.5-2.1-1.6-3.4h-3.2v13.3c0 1.7-1.4 3.1-3.1 3.1s-3.1-1.4-3.1-3.1 1.4-3.1 3.1-3.1c.3 0 .6 0 .9.1V9.2c-.3 0-.6-.1-.9-.1-3.5 0-6.4 2.9-6.4 6.4s2.9 6.4 6.4 6.4 6.4-2.9 6.4-6.4V10c1.3.9 2.9 1.4 4.5 1.4V8.1c-.5.1-1 .2-1.5.2v-1z" />
+                    </svg>
+                    <span class="platform-badge badge-red" id="badge-tt">S</span>
+                </button>
+                <button class="platform-btn animate-scale-in" data-platform="fb" style="animation-delay: 150ms">
+                    <svg viewBox="0 0 24 24">
+                        <path fill="currentColor"
+                            d="M24 12c0-6.6-5.4-12-12-12S0 5.4 0 12c0 6 4.4 11 10.1 11.9v-8.4H7.1V12h3v-2.7c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v2.9h-1.5c-1.5 0-2 .9-2 1.9V12h3.3l-.5 3.5h-2.8v8.4C19.6 23 24 18 24 12z" />
+                    </svg>
+                    <span class="platform-badge badge-red" id="badge-fb">S</span>
+                </button>
+                <button class="platform-btn animate-scale-in" data-platform="li" style="animation-delay: 200ms">
+                    <svg viewBox="0 0 24 24">
+                        <path fill="currentColor"
+                            d="M20.4 20.4h-3.5v-5.6c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9v5.7H9.4V9h3.4v1.6h.1c.5-.9 1.6-1.8 3.4-1.8 3.6 0 4.3 2.4 4.3 5.5v6.1zM5.3 7.4c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm1.8 13H3.5V9h3.5v11.4zM22.2 0H1.8C.8 0 0 .8 0 1.8v20.4c0 1 .8 1.8 1.8 1.8h20.4c1 0 1.8-.8 1.8-1.8V1.8c0-1-.8-1.8-1.8-1.8z" />
+                    </svg>
+                    <span class="platform-badge badge-red" id="badge-li">S</span>
+                </button>
             </div>
-            <div class="stat-item">
-                <div class="stat-value" id="timeSaved">0m</div>
-                <div class="stat-label">Time Saved</div>
-            </div>
-
+            <p class="platform-hint">Click a platform to configure blocking mode</p>
         </div>
 
+        <div class="card platform-detail" id="platformDetail">
+            <div class="detail-header">
+                <button class="icon-btn" id="backBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                </button>
+                <span id="detailIcon"></span>
+                <span id="detailName"></span>
+            </div>
+            <div class="section-label">Blocking Mode</div>
+            <div id="modeButtons"></div>
+            <div id="visualHidingSection" style="display: none; margin-top: 1.25rem;">
+                <div class="section-label">Visual Hiding</div>
+                <div id="settingsToggles"></div>
+            </div>
+        </div>
 
-
-        <section class="settings-section">
-            <div class="section-accent accent-blue"></div>
-            <div class="section-content">
-                <div class="section-header">
-                    <h2>Focus Timer</h2>
-                    <p>Configure your focus session preferences</p>
+        <div class="stats-grid">
+            <div class="card stat-card">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path
+                            d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+                    </svg>
                 </div>
-                <div class="settings-list">
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-label">Focus Duration</span>
-                            <span class="setting-description">Length of each focus session</span>
-                        </div>
-                        <select class="select-dropdown custom-select" id="focusDuration">
-                            <option value="15">15 minutes</option>
-                            <option value="25" selected>25 minutes</option>
-                            <option value="30">30 minutes</option>
-                            <option value="45">45 minutes</option>
-                            <option value="60">60 minutes</option>
-                        </select>
+                <div>
+                    <div class="stat-value" id="totalBlocked">0</div>
+                    <div class="stat-label">Total Blocked</div>
+                </div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="stat-value" id="timeSaved">0m</div>
+                    <div class="stat-label">Time Saved</div>
+                </div>
+            </div>
+        </div>
+
+        <section class="settings-section card">
+            <div class="section-bar bar-blue"></div>
+            <div class="section-content">
+                <h2 class="section-title">Focus Timer</h2>
+                <p class="section-desc">Configure your focus session preferences</p>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Focus Duration</div>
+                        <div class="setting-desc">Length of each focus session</div>
                     </div>
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-label">Break Duration</span>
-                            <span class="setting-description">Length of break between sessions</span>
-                        </div>
-                        <select class="select-dropdown custom-select" id="breakDuration">
-                            <option value="5" selected>5 minutes</option>
-                            <option value="10">10 minutes</option>
-                            <option value="15">15 minutes</option>
-                        </select>
+                    <select class="select-dropdown custom-select" id="focusDuration">
+                        <option value="15">15 minutes</option>
+                        <option value="25" selected>25 minutes</option>
+                        <option value="30">30 minutes</option>
+                        <option value="45">45 minutes</option>
+                        <option value="60">60 minutes</option>
+                    </select>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Break Duration</div>
+                        <div class="setting-desc">Length of break between sessions</div>
                     </div>
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-label">Auto-start Breaks</span>
-                            <span class="setting-description">Automatically start break timer after focus ends</span>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="autoStartBreaks" class="toggle-input" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
+                    <select class="select-dropdown custom-select" id="breakDuration">
+                        <option value="5" selected>5 minutes</option>
+                        <option value="10">10 minutes</option>
+                        <option value="15">15 minutes</option>
+                    </select>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Auto-start Breaks</div>
+                        <div class="setting-desc">Automatically start break timer after focus ends</div>
                     </div>
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-label">Play Sound</span>
-                            <span class="setting-description">Play a notification sound when timer ends</span>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="playSound" class="toggle-input" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoStartBreaks" class="toggle-input" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-row setting-nested">
+                    <div class="setting-info">
+                        <div class="setting-label">Show Break Button</div>
+                        <div class="setting-desc">Display "Take Break" button in popup during focus</div>
                     </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="showBreakButton" class="toggle-input" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Play Sound</div>
+                        <div class="setting-desc">Play notification sound when timer ends</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="playSound" class="toggle-input" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="settings-section card">
+            <div class="section-bar bar-orange"></div>
+            <div class="section-content">
+                <h2 class="section-title">Popup Visibility</h2>
+                <p class="section-desc">Choose which platforms appear in the popup</p>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Show YouTube</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="popup_visible_yt" class="toggle-input" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Show Instagram</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="popup_visible_ig" class="toggle-input" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Show TikTok</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="popup_visible_tt" class="toggle-input" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Show Facebook</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="popup_visible_fb" class="toggle-input" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Show LinkedIn</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="popup_visible_li" class="toggle-input" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Restrict Hidden Platforms</div>
+                        <div class="setting-desc">Apply blocking rules even if hidden from popup</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="restrictHiddenPlatforms" class="toggle-input" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Visual Hiding on Hidden</div>
+                        <div class="setting-desc">Hide distracting elements on hidden platforms</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="visualHideHiddenPlatforms" class="toggle-input" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
                 </div>
             </div>
         </section>
 
-
-        <section class="settings-section">
-            <div class="section-accent accent-orange"></div>
+        <section class="settings-section card">
+            <div class="section-bar bar-teal"></div>
             <div class="section-content">
-                <div class="section-header">
-                    <h2>Popup Visibility</h2>
-                    <p>Choose which platform cards appear in the popup</p>
-                </div>
-                <div class="settings-list">
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-label">Show YouTube</span>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="popup_visible_yt" class="toggle-input" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
+                <h2 class="section-title">Blocking Behavior</h2>
+                <p class="section-desc">Control how FocusTube handles distracting content</p>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Lock Settings During Timer</div>
+                        <div class="setting-desc">Prevent changes while Focus Timer is active</div>
                     </div>
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-label">Show Instagram</span>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="popup_visible_ig" class="toggle-input" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-label">Show TikTok</span>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="popup_visible_tt" class="toggle-input" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-label">Show Facebook</span>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="popup_visible_fb" class="toggle-input" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-label">Restrict Hidden Platforms</span>
-                            <span class="setting-description">Apply blocking rules even if hidden from popup</span>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="restrictHiddenPlatforms" class="toggle-input" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-label">Visual Hiding on Hidden</span>
-                            <span class="setting-description">Hide distracting elements on hidden platforms</span>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="visualHideHiddenPlatforms" class="toggle-input" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="lockSettings" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </label>
                 </div>
             </div>
         </section>
 
-
-        <section class="settings-section">
-            <div class="section-accent accent-teal"></div>
+        <section class="settings-section card">
+            <div class="section-bar bar-orange"></div>
             <div class="section-content">
-                <div class="section-header">
-                    <h2>Blocking Behavior</h2>
-                    <p>Control how FocusTube handles distracting content</p>
-                </div>
-                <div class="settings-list">
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-label">Lock Settings During Timer</span>
-                            <span class="setting-description">Prevent changes while Focus Timer is active</span>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="lockSettings" class="toggle-input">
-                            <span class="toggle-slider"></span>
-                        </label>
+                <h2 class="section-title">Notifications</h2>
+                <p class="section-desc">Manage alerts and reminders</p>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">System Notifications</div>
+                        <div class="setting-desc">Show notifications when timer ends</div>
                     </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="showNotifications" class="toggle-input" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
                 </div>
             </div>
         </section>
 
-
-        <section class="settings-section">
-            <div class="section-accent accent-orange"></div>
+        <section class="settings-section card">
+            <div class="section-bar bar-teal"></div>
             <div class="section-content">
-                <div class="section-header">
-                    <h2>Notifications</h2>
-                    <p>Manage alerts and reminders</p>
-                </div>
-                <div class="settings-list">
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-label">System Notifications</span>
-                            <span class="setting-description">Show Windows notifications when timer ends</span>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="showNotifications" class="toggle-input" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-        </section>
+                <h2 class="section-title">Data & Privacy</h2>
+                <p class="section-desc">Manage your data and statistics</p>
+                <input type="file" id="importFile" accept=".json" style="display: none;">
 
-
-
-        <section class="settings-section">
-            <div class="section-accent accent-gray"></div>
-            <div class="section-content">
-                <div class="section-header">
-                    <h2>Appearance</h2>
-                    <p>Customize how FocusTube looks</p>
-                </div>
-                <div class="settings-list">
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-label">Theme</span>
-                        </div>
-                        <div class="theme-toggle-group">
-                            <button id="lightThemeBtn" class="icon-btn theme-btn" title="Light Mode">
-                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <circle cx="12" cy="12" r="5" />
-                                    <path
-                                        d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-                                </svg>
-                            </button>
-                            <button id="darkThemeBtn" class="icon-btn theme-btn" title="Dark Mode">
-                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-label">Show Stats in Popup</span>
-                            <span class="setting-description">Display blocking statistics in the popup</span>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="showStatsInPopup" class="toggle-input" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-
-        <section class="settings-section">
-            <div class="section-accent accent-teal"></div>
-            <div class="section-content">
-                <div class="section-header">
-                    <h2>Data & Privacy</h2>
-                    <p>Manage your data and statistics</p>
-                </div>
-                <div class="action-buttons">
-                    <input type="file" id="importFile" accept=".json" style="display: none;">
-                    <button class="btn btn-secondary" id="importData">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <div class="action-btns">
+                    <button class="action-btn" id="importData">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                             <polyline points="17 8 12 3 7 8" />
                             <line x1="12" x2="12" y1="3" y2="15" />
                         </svg>
-                        Import Data
+                        Import
                     </button>
-                    <button class="btn btn-secondary" id="exportData">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <button class="action-btn" id="exportData">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                             <polyline points="7 10 12 15 17 10" />
                             <line x1="12" x2="12" y1="15" y2="3" />
                         </svg>
-                        Export Data
+                        Export
                     </button>
-                    <button class="btn btn-secondary" id="resetSettings">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                            <path d="M21 3v5h-5" />
-                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                            <path d="M3 21v-5h5" />
+                    <button class="action-btn" id="resetSettings">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                            <path d="M3 3v5h5" />
                         </svg>
-                        Reset Settings
+                        Reset
                     </button>
-                    <button class="btn btn-danger" id="clearData">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <button class="action-btn danger" id="clearData">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
                             <path d="M3 6h18" />
                             <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
                             <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                            <line x1="10" x2="10" y1="11" y2="17" />
-                            <line x1="14" x2="14" y1="11" y2="17" />
                         </svg>
-                        Clear All Data
+                        Clear All
                     </button>
                 </div>
             </div>
         </section>
 
-
-        <section class="about-section">
-            <div class="about-info">
-                <h2>FocusTube</h2>
-                <p class="version">Version 1.8.0</p>
-            </div>
-            <div class="about-actions">
-                <button class="btn btn-secondary" id="starRepo">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
+        <section class="card about-section">
+            <h2 class="about-title">FocusTube</h2>
+            <p class="about-version">Version 2.0.0</p>
+            <div class="about-btns">
+                <button class="action-btn" id="starRepo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
                         <polygon
-                            points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
-                        </polygon>
+                            points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                     </svg>
-                    Star Repository
+                    Star Repo
                 </button>
-                <button class="btn btn-secondary" id="reportIssue">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
-                        <line x1="4" y1="22" x2="4" y2="15"></line>
+                <button class="action-btn" id="reportIssue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                        <line x1="4" x2="4" y1="22" y2="15" />
                     </svg>
                     Report Issue
                 </button>
             </div>
-            <p class="about-description">
-                FocusTube is an open-source browser extension that helps you stay focused by blocking
-                distracting short-form video content across YouTube, Instagram, TikTok, and Facebook.
+            <p class="about-desc">
+                An open-source browser extension that helps you stay focused by blocking distracting short-form video
+                content.
             </p>
         </section>
+
+        <div style="height: 1.5rem;"></div>
     </div>
+
     <script src="options.js"></script>
 </body>
 

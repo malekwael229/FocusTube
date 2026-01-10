@@ -1,4 +1,12 @@
 const Instagram = {
+    initialized: false,
+    observer: null,
+    isRedirecting: false,
+    currentMode: 'strict',
+    lastPath: '',
+    fallbackInterval: null,
+    storiesOverlayId: 'ft-ig-stories-overlay',
+
     igSelectors: {
         nav: {
             explore: "a[href*='/explore/']",
@@ -6,52 +14,106 @@ const Instagram = {
         }
     },
 
-    observer: null,
-    isRedirecting: false,
+    init: function () {
+        if (this.initialized) return;
+        if (!document.body) { setTimeout(() => this.init(), 100); return; }
 
-    run: function (isUpdate) {
-        if (!isUpdate) {
-            if (document.body) document.body.classList.add('ft-platform-ig');
-            this.initObserver();
-            Utils.setSafeInterval(() => this.handleMutation(), 800);
-        }
-        this.rapidKick();
-        this.handleMutation();
+        this.initialized = true;
+        document.body.classList.add('ft-platform-ig');
+        this.isRedirecting = false;
+
+        this.observer = new MutationObserver(() => this.runChecks());
+        this.observer.observe(document.body, { childList: true, subtree: true });
+
+        window.addEventListener('popstate', () => this.runChecks());
 
         chrome.storage.onChanged.addListener((changes) => {
             if (changes.platformSettings || changes.focusMode || changes.ft_timer_end || changes.ft_timer_type) {
-                this.handleMutation();
+                this.runChecks();
             }
         });
+
+        this.fallbackInterval = Utils.setSafeInterval(() => this.runChecks(), 1000);
+        this.runChecks();
+        this.checkKick();
     },
 
-    initObserver: function () {
-        if (this.observer) return;
-        this.isRedirecting = false;
-        this.observer = new MutationObserver(() => this.handleMutation());
-        this.observer.observe(document, { subtree: true, childList: true, attributes: true, attributeFilter: ['href', 'style', 'class', 'role'] });
-
-        Utils.setSafeInterval(() => this.rapidKick(), 200);
-    },
-
-    rapidKick: function () {
-        if (this.isRedirecting) return;
+    runChecks: function () {
+        if (this.isRedirecting || !document.body) return;
 
         const path = window.location.pathname;
-        if (path.startsWith('/reels/') || path.startsWith('/reel/') || path.startsWith('/explore/')) {
-            const ts = Utils.getTimerState();
-            const shouldBlock = CONFIG.isFocusMode || ts.isWork || CONFIG.platformSettings.ig === 'strict';
+        const isFocusActive = FocusState.shouldBlock;
+        let action = 'none';
+        let reason = '';
 
-            if (shouldBlock) {
-                if (sessionStorage.getItem('ft_kicked') === 'true' && path === '/') return;
+        if (CONFIG.platformSettings.ig === 'strict' && this.currentMode !== 'strict') {
+            Utils.clearSession();
+            this.removeStoriesOverlay();
+        }
+        this.currentMode = CONFIG.platformSettings.ig;
 
-                this.isRedirecting = true;
-                sessionStorage.setItem('ft_kicked', 'true');
-                Utils.logStat();
-                window.location.replace('/');
+        if (FocusState.isBreak) {
+            action = 'remove'; reason = 'break timer';
+            this.applyVisible(document.body.querySelectorAll(this.igSelectors.nav.reels));
+            this.applyVisible(document.body.querySelectorAll(this.igSelectors.nav.explore));
+            this.removeStoriesOverlay();
+            Utils.debugLog('ig', { path, mode: this.currentMode, isWork: FocusState.isWork, isBreak: FocusState.isBreak, isFocusActive, action, reason });
+            return;
+        }
 
-                setTimeout(() => { this.isRedirecting = false; }, 2000);
+        if (isFocusActive && CONFIG.visualHiding.igReelsNav) {
+            this.applyHidden(document.body.querySelectorAll(this.igSelectors.nav.reels));
+            this.applyHidden(document.body.querySelectorAll(this.igSelectors.nav.explore));
+        } else {
+            this.applyVisible(document.body.querySelectorAll(this.igSelectors.nav.reels));
+            this.applyVisible(document.body.querySelectorAll(this.igSelectors.nav.explore));
+        }
+
+        if (this.isBlockablePath(path)) {
+            const shouldBlock = isFocusActive || CONFIG.platformSettings.ig === 'strict';
+            if (shouldBlock && !this.isRedirecting) {
+                action = 'redirect'; reason = 'blockable path';
+                this.rapidKick(path);
+            } else {
+                action = 'allow'; reason = 'no block condition';
             }
+        } else {
+            action = 'safe'; reason = 'non-blockable path';
+            if (sessionStorage.getItem('ft_kicked')) {
+                sessionStorage.removeItem('ft_kicked');
+                UI.showKickNotification();
+            }
+        }
+
+        if (isFocusActive && CONFIG.visualHiding.igStories) {
+            this.showStoriesOverlay();
+        } else {
+            this.removeStoriesOverlay();
+        }
+
+        Utils.debugLog('ig', { path, mode: this.currentMode, isWork: FocusState.isWork, isBreak: FocusState.isBreak, isFocusActive, action, reason });
+    },
+
+    isBlockablePath: function (path) {
+        return path.startsWith('/reels/') || path.startsWith('/reel/') || path.startsWith('/explore/');
+    },
+
+    rapidKick: function (path) {
+        if (this.isRedirecting) return;
+        if (sessionStorage.getItem('ft_kicked') === 'true' && path === '/') return;
+
+        this.isRedirecting = true;
+        sessionStorage.setItem('ft_kicked', 'true');
+        Utils.logStat();
+        window.location.replace('/');
+
+        setTimeout(() => { this.isRedirecting = false; }, 2000);
+    },
+
+    checkKick: function () {
+        if (sessionStorage.getItem('ft_kicked') && !this.isBlockablePath(window.location.pathname)) {
+            sessionStorage.removeItem('ft_kicked');
+            UI.showKickNotification();
         }
     },
 
@@ -67,36 +129,37 @@ const Instagram = {
         else elements.style.removeProperty('display');
     },
 
-    handleMutation: function () {
-        if (!document.body) return;
+    showStoriesOverlay: function () {
+        if (document.getElementById(this.storiesOverlayId)) return;
+        const storyTray = document.querySelector('[data-pagelet="story_tray"]');
+        if (!storyTray) return;
 
-        const path = window.location.pathname;
-        const ts = Utils.getTimerState();
+        storyTray.style.position = 'relative';
 
-        const isFocusActive = CONFIG.isFocusMode || ts.isWork;
+        const overlay = document.createElement('div');
+        overlay.id = this.storiesOverlayId;
+        overlay.className = 'ft-stories-overlay';
+        if (CONFIG.isDarkMode) overlay.classList.add('dark');
 
-        if (isFocusActive) {
-            this.applyHidden(document.body.querySelectorAll(this.igSelectors.nav.reels));
-            this.applyHidden(document.body.querySelectorAll(this.igSelectors.nav.explore));
-        } else {
-            this.applyVisible(document.body.querySelectorAll(this.igSelectors.nav.reels));
-            this.applyVisible(document.body.querySelectorAll(this.igSelectors.nav.explore));
-        }
+        const icon = document.createElement('img');
+        icon.src = chrome.runtime.getURL('icons/icon48.png');
+        icon.className = 'ft-stories-overlay-icon';
 
-        if (!path.startsWith('/reels/') && !path.startsWith('/reel/') && !path.startsWith('/explore/')) {
-            if (sessionStorage.getItem('ft_kicked')) {
-                sessionStorage.removeItem('ft_kicked');
-                UI.showKickNotification();
-            }
-        } else {
-            const shouldBlock = isFocusActive || CONFIG.platformSettings.ig === 'strict';
-            if (shouldBlock && !this.isRedirecting) {
-                this.rapidKick();
-            }
-        }
+        const text = document.createElement('span');
+        text.textContent = 'Stories Hidden';
+
+        overlay.appendChild(icon);
+        overlay.appendChild(text);
+        storyTray.appendChild(overlay);
+    },
+
+    removeStoriesOverlay: function () {
+        const overlay = document.getElementById(this.storiesOverlayId);
+        if (overlay) overlay.remove();
     }
 };
 
 if (Site.isIG()) {
-    document.addEventListener('ft-settings-ready', () => Instagram.run());
+    if (window.__ftSettingsReady) Instagram.init();
+    else document.addEventListener('ft-settings-ready', () => Instagram.init());
 }

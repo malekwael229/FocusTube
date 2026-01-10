@@ -7,13 +7,13 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    // console.log('Background received message:', request);
     try {
         if (request.action === 'startTimer') {
             const duration = parseInt(request.duration) || 25;
             const type = request.type || 'work';
             const endTime = Date.now() + (duration * 60 * 1000);
 
+            chrome.storage.local.remove('ft_work_session_ended');
             chrome.storage.local.set({
                 ft_timer_end: endTime,
                 ft_timer_type: type
@@ -24,7 +24,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 }
                 sendResponse({ end: endTime });
             });
-            return true; // Keep channel open
+            return true;
         }
 
         if (request.action === 'stopTimer') {
@@ -32,7 +32,24 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             chrome.storage.local.remove(['ft_timer_end', 'ft_timer_type'], () => {
                 sendResponse({ stopped: true });
             });
-            return true; // Keep channel open
+            return true;
+        }
+
+        if (request.action === 'startBreak') {
+            const duration = parseInt(request.duration) || 5;
+            const endTime = Date.now() + (duration * 60 * 1000);
+
+            chrome.storage.local.set({
+                ft_timer_end: endTime,
+                ft_timer_type: 'break'
+            }, () => {
+                if (chrome.runtime.lastError) {
+                    console.error('Storage error:', chrome.runtime.lastError);
+                    return;
+                }
+                sendResponse({ end: endTime });
+            });
+            return true;
         }
     } catch (error) {
         console.error('Error in background onMessage:', error);
@@ -60,6 +77,7 @@ const onAlarmHandler = (alarm) => {
 
                 if (isWork && !autoStart) {
                     msg = "Focus session complete.";
+                    chrome.storage.local.set({ ft_work_session_ended: true });
                 }
 
                 showSystemNotification(title, msg);

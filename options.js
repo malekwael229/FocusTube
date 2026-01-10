@@ -13,16 +13,27 @@ document.addEventListener('DOMContentLoaded', function () {
         lockSettings: false,
         showNotifications: true,
         darkMode: true,
-        showStatsInPopup: true,
         ft_stats_blocked: 0,
 
         popup_visible_yt: true,
         popup_visible_ig: true,
         popup_visible_tt: true,
-        popup_visible_tt: true,
         popup_visible_fb: true,
+        popup_visible_li: true,
         restrictHiddenPlatforms: true,
-        visualHideHiddenPlatforms: true
+        visualHideHiddenPlatforms: true,
+
+        hide_ig_stories: true,
+        hide_fb_stories: true,
+        hide_yt_shorts_nav: true,
+        hide_ig_reels_nav: true,
+        hide_fb_reels_nav: true,
+        hide_li_feed: true,
+        hide_li_puzzles: true,
+        hide_li_addfeed: true,
+
+        showBreakButton: true,
+        accentColor: '#4facfe'
     };
 
     function loadSettings() {
@@ -36,22 +47,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
             setToggle('autoStartBreaks', items.autoStartBreaks);
+            updateBreakButtonVisibility(items.autoStartBreaks !== false);
+            setToggle('showBreakButton', items.autoStartBreaks !== false ? false : items.showBreakButton);
             setToggle('playSound', items.playSound);
 
             setToggle('lockSettings', items.lockSettings);
             setToggle('showNotifications', items.showNotifications);
-            setToggle('showStatsInPopup', items.showStatsInPopup);
 
 
             setToggle('popup_visible_yt', items.popup_visible_yt);
             setToggle('popup_visible_ig', items.popup_visible_ig);
             setToggle('popup_visible_tt', items.popup_visible_tt);
             setToggle('popup_visible_fb', items.popup_visible_fb);
+            setToggle('popup_visible_li', items.popup_visible_li);
 
 
             setToggle('restrictHiddenPlatforms', items.restrictHiddenPlatforms);
             setToggle('visualHideHiddenPlatforms', items.visualHideHiddenPlatforms);
 
+            setToggle('hide_ig_stories', items.hide_ig_stories);
+            setToggle('hide_fb_stories', items.hide_fb_stories);
+            setToggle('hide_yt_shorts_nav', items.hide_yt_shorts_nav);
+            setToggle('hide_ig_reels_nav', items.hide_ig_reels_nav);
+            setToggle('hide_fb_reels_nav', items.hide_fb_reels_nav);
+            setToggle('hide_li_feed', items.hide_li_feed);
+            setToggle('hide_li_puzzles', items.hide_li_puzzles);
+            setToggle('hide_li_addfeed', items.hide_li_addfeed);
 
             if (document.getElementById('totalBlocked')) document.getElementById('totalBlocked').textContent = items.ft_stats_blocked;
 
@@ -66,6 +87,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 document.getElementById('timeSaved').textContent = timeSavedText;
             }
+
+            const accentColor = items.accentColor || '#4facfe';
+            applyAccentColor(accentColor);
+            document.querySelectorAll('.color-preset').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.color === accentColor);
+            });
         });
     }
 
@@ -73,6 +100,17 @@ document.addEventListener('DOMContentLoaded', function () {
         const toggle = document.getElementById(id);
         if (toggle) {
             toggle.checked = value;
+        }
+    }
+
+    function updateBreakButtonVisibility(autoStartOn, shouldSave = false) {
+        const breakButtonRow = document.getElementById('showBreakButton')?.closest('.setting-row');
+        if (breakButtonRow) {
+            breakButtonRow.classList.toggle('hidden-row', autoStartOn);
+        }
+        if (autoStartOn) {
+            setToggle('showBreakButton', false);
+            if (shouldSave) saveSetting('showBreakButton', false);
         }
     }
 
@@ -93,6 +131,9 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.toggle-input').forEach(toggle => {
         toggle.addEventListener('change', function () {
             saveSetting(this.id, this.checked);
+            if (this.id === 'autoStartBreaks') {
+                updateBreakButtonVisibility(this.checked, true);
+            }
         });
     });
 
@@ -336,6 +377,23 @@ function playBeep() {
     } catch (e) { }
 }
 
+function applyAccentColor(color) {
+    document.documentElement.style.setProperty('--accent-primary', color);
+}
+
+document.querySelectorAll('.color-preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const color = btn.dataset.color;
+        if (!/^#[0-9A-Fa-f]{6}$/.test(color)) return;
+
+        document.querySelectorAll('.color-preset').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        applyAccentColor(color);
+        chrome.storage.local.set({ accentColor: color });
+    });
+});
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.action === "TIMER_COMPLETE") {
         chrome.storage.local.get(['playSound'], (res) => {
@@ -345,3 +403,234 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         return true;
     }
 });
+
+const platforms = {
+    yt: { name: 'YouTube', settings: [{ id: 'hide_shorts_nav', label: 'Hide Shorts Button', desc: 'Hide the Shorts link in sidebar' }] },
+    ig: { name: 'Instagram', settings: [{ id: 'hide_stories', label: 'Hide Stories', desc: 'Hide the Stories tray at the top' }, { id: 'hide_reels_nav', label: 'Hide Reels Button', desc: 'Hide the Reels tab in navigation' }] },
+    tt: { name: 'TikTok', settings: [] },
+    fb: { name: 'Facebook', settings: [{ id: 'hide_stories', label: 'Hide Stories', desc: 'Hide the Stories section' }, { id: 'hide_reels_nav', label: 'Hide Reels Button', desc: 'Hide the Reels link in sidebar' }] },
+    li: { name: 'LinkedIn', settings: [{ id: 'hide_feed', label: 'Hide Feed', desc: 'Hide the main feed section' }, { id: 'hide_puzzles', label: 'Hide Puzzles', desc: 'Hide Today\'s puzzles section' }, { id: 'hide_addfeed', label: 'Hide Add to Feed', desc: 'Hide suggested follows' }] }
+};
+
+const modes = [
+    { id: 'S', label: 'Strict', desc: 'Block and hide distracting content', color: '#ef4444' },
+    { id: 'W', label: 'Warn', desc: 'Show overlay before allowing access', color: '#f59e0b' },
+    { id: 'P', label: 'Passive', desc: 'Visual hiding only, no blocking', color: '#4facfe' }
+];
+
+let platformModes = { yt: 'S', ig: 'S', tt: 'S', fb: 'S', li: 'S' };
+const platformSettings = {
+    yt: { hide_shorts_nav: true },
+    ig: { hide_stories: true, hide_reels_nav: true },
+    tt: {},
+    fb: { hide_stories: true, hide_reels_nav: true },
+    li: { hide_feed: true, hide_puzzles: true, hide_addfeed: true }
+};
+
+let currentPlatform = null;
+
+function loadPlatformModes() {
+    chrome.storage.local.get(['platformSettings'], (result) => {
+        if (result.platformSettings) {
+            const modeMap = { strict: 'S', warn: 'W', allow: 'P' };
+            Object.keys(result.platformSettings).forEach(id => {
+                const mode = result.platformSettings[id];
+                platformModes[id] = modeMap[mode] || 'S';
+            });
+        }
+        ['yt', 'ig', 'tt', 'fb', 'li'].forEach(id => updateBadge(id, false));
+    });
+}
+
+function savePlatformMode(id, mode) {
+    const modeMap = { S: 'strict', W: 'warn', P: 'allow' };
+    chrome.storage.local.get(['platformSettings'], (result) => {
+        const settings = result.platformSettings || {};
+        settings[id] = modeMap[mode] || 'strict';
+        chrome.storage.local.set({ platformSettings: settings });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.toggle').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+            toggle.classList.toggle('on');
+        });
+    });
+
+    document.querySelectorAll('.select-trigger').forEach(trigger => {
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const dropdown = trigger.nextElementSibling;
+            const isOpen = dropdown && dropdown.classList.contains('open');
+            document.querySelectorAll('.select-dropdown').forEach(d => d.classList.remove('open'));
+            document.querySelectorAll('.select-trigger').forEach(t => t.classList.remove('open'));
+            if (!isOpen && dropdown) {
+                dropdown.classList.add('open');
+                trigger.classList.add('open');
+            }
+        });
+    });
+
+    document.querySelectorAll('.select-option').forEach(option => {
+        option.addEventListener('click', () => {
+            const dropdown = option.parentElement;
+            const trigger = dropdown.previousElementSibling;
+            dropdown.querySelectorAll('.select-option').forEach(o => o.classList.remove('selected'));
+            option.classList.add('selected');
+            if (trigger && trigger.querySelector('span')) {
+                trigger.querySelector('span').textContent = option.textContent.trim();
+                trigger.dataset.value = option.dataset.value;
+            }
+            dropdown.classList.remove('open');
+            if (trigger) trigger.classList.remove('open');
+        });
+    });
+
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.select-dropdown').forEach(d => d.classList.remove('open'));
+        document.querySelectorAll('.select-trigger').forEach(t => t.classList.remove('open'));
+    });
+
+    const platformGrid = document.getElementById('platformGrid');
+    const platformDetail = document.getElementById('platformDetail');
+    const backBtn = document.getElementById('backBtn');
+
+    document.querySelectorAll('.platform-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentPlatform = btn.dataset.platform;
+            showPlatformDetail(currentPlatform);
+        });
+    });
+
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            if (platformDetail) {
+                platformDetail.classList.remove('animate-slide-in');
+                platformDetail.classList.add('animate-slide-out');
+                setTimeout(() => {
+                    platformDetail.classList.remove('active', 'animate-slide-out');
+                    if (platformGrid) platformGrid.style.display = 'block';
+                    currentPlatform = null;
+                }, 250);
+            }
+        });
+    }
+
+    function updateAllBadges() {
+        chrome.storage.local.get(['ft_timer_end', 'ft_timer_type'], (res) => {
+            const isWorkTimer = res.ft_timer_end && res.ft_timer_end > Date.now() && res.ft_timer_type === 'work';
+            ['yt', 'ig', 'tt', 'fb', 'li'].forEach(id => updateBadge(id, isWorkTimer));
+        });
+    }
+
+    loadPlatformModes();
+
+    chrome.storage.onChanged.addListener((changes, area) => {
+        if (area === 'local') {
+            if (changes.ft_timer_end || changes.ft_timer_type) {
+                updateAllBadges();
+            }
+            if (changes.platformSettings) {
+                loadPlatformModes();
+            }
+        }
+    });
+});
+
+function showPlatformDetail(id) {
+    const platform = platforms[id];
+    const platformGrid = document.getElementById('platformGrid');
+    const platformDetail = document.getElementById('platformDetail');
+
+    if (platformGrid) platformGrid.style.display = 'none';
+    if (platformDetail) {
+        platformDetail.classList.add('active');
+        platformDetail.classList.add('animate-slide-in');
+    }
+
+    const detailIcon = document.getElementById('detailIcon');
+    const detailName = document.getElementById('detailName');
+    const sourceSvg = document.querySelector(`[data-platform="${id}"] svg`);
+
+    if (detailIcon && sourceSvg) detailIcon.innerHTML = sourceSvg.outerHTML;
+    if (detailName) detailName.textContent = platform.name;
+
+    const modeContainer = document.getElementById('modeButtons');
+    if (modeContainer) {
+        modeContainer.innerHTML = modes.map(mode => `
+            <button class="mode-btn ${platformModes[id] === mode.id ? 'selected' : ''}" data-mode="${mode.id}">
+                <div class="mode-radio" style="border-color: ${platformModes[id] === mode.id ? mode.color : ''}">
+                    <div class="mode-dot" style="background: ${mode.color}"></div>
+                </div>
+                <div class="mode-info">
+                    <span class="label">${mode.label}</span>
+                    <span class="desc">${mode.desc}</span>
+                </div>
+            </button>
+        `).join('');
+
+        modeContainer.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                modeContainer.querySelectorAll('.mode-btn').forEach(b => {
+                    b.classList.remove('selected');
+                    b.querySelector('.mode-radio').style.borderColor = '';
+                });
+                btn.classList.add('selected');
+                const selectedMode = modes.find(m => m.id === btn.dataset.mode);
+                btn.querySelector('.mode-radio').style.borderColor = selectedMode ? selectedMode.color : '';
+                platformModes[id] = btn.dataset.mode;
+                savePlatformMode(id, btn.dataset.mode);
+                updateBadge(id);
+            });
+        });
+    }
+
+    const settingsSection = document.getElementById('visualHidingSection');
+    const settingsContainer = document.getElementById('settingsToggles');
+    if (platform.settings.length > 0 && settingsSection && settingsContainer) {
+        settingsSection.style.display = 'block';
+        settingsContainer.innerHTML = platform.settings.map(setting => `
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-label">${setting.label}</div>
+                    <div class="setting-desc">${setting.desc}</div>
+                </div>
+                <div class="toggle ${platformSettings[id][setting.id] ? 'on' : ''}" data-setting-id="${setting.id}">
+                    <div class="toggle-thumb"></div>
+                </div>
+            </div>
+        `).join('');
+
+        settingsContainer.querySelectorAll('.toggle').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                toggle.classList.toggle('on');
+                platformSettings[id][toggle.dataset.settingId] = toggle.classList.contains('on');
+            });
+        });
+    } else if (settingsSection) {
+        settingsSection.style.display = 'none';
+    }
+}
+
+function updateBadge(id, isWorkTimer = false) {
+    const badge = document.getElementById(`badge-${id}`);
+    const btn = document.querySelector(`.platform-btn[data-platform="${id}"]`);
+    if (!badge) return;
+    const mode = isWorkTimer ? 'S' : platformModes[id];
+    badge.textContent = mode;
+    badge.className = 'platform-badge';
+    if (btn) {
+        btn.classList.remove('mode-strict', 'mode-warn', 'mode-passive');
+    }
+    if (mode === 'S') {
+        badge.classList.add('badge-red');
+        if (btn) btn.classList.add('mode-strict');
+    } else if (mode === 'W') {
+        badge.classList.add('badge-amber');
+        if (btn) btn.classList.add('mode-warn');
+    } else {
+        badge.classList.add('badge-blue');
+        if (btn) btn.classList.add('mode-passive');
+    }
+}

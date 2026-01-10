@@ -10,22 +10,24 @@
   [Installation](#installation) • [Features](#features) • [Configuration](#configuration) • [Technical Details](#technical-details)
   
   ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-  ![Version](https://img.shields.io/badge/version-1.8-green.svg)
+  ![Version](https://img.shields.io/badge/version-2.0.0-green.svg)
   ![Firefox](https://img.shields.io/badge/firefox-compatible-orange.svg)
   
 </div>
 
 ---
 
-**FocusTube** is a premium Manifest V3 browser extension designed to stop doomscrolling in its tracks. Unlike basic element blockers, it uses **Session-Aware Logic** to handle modern Single Page Applications (SPAs), ensuring that distractions remain blocked even as you navigate, without breaking the rest of the site.
+**FocusTube** is a Manifest V3 browser extension designed to stop doomscrolling in its tracks. Unlike basic element blockers, it uses **Session-Aware Logic** to handle modern Single Page Applications (SPAs), ensuring that distractions remain blocked even as you navigate, without breaking the rest of the site.
 
-## New in v1.8
+## New in v2.0.0
 
-*   **Total Customization:** You are no longer locked into the default settings. Configure Focus durations (15-60m) and Break durations (5-15m) to match your workflow.
-*   **Options Dashboard:** A brand new settings page to manage sounds, auto-start preferences, and more.
-*   **Declutter Mode:** Don't use TikTok or Facebook? You can now **hide** specific platform cards from the extension popup to keep your interface clean.
-*   **Data Portability:** Added **Import/Export** functionality. Back up your settings and stats to a JSON file so you never lose your progress.
-*   **Modular Engine:** Completely rewritten internal architecture for faster performance and better stability across all platforms.
+*   **LinkedIn Support:** Added LinkedIn blocking and visual hiding, including Feed, Puzzles, and Add to Your Feed controls.
+*   **Expanded Visual Hiding:** New per-platform toggles for YouTube Shorts navigation, Instagram Reels and Stories, and Facebook Reels and Stories.
+*   **Popup Redesign:** Compact control center with platform icon grid, mode badges, per-platform detail panels, onboarding tutorial, and review prompt.
+*   **Timer Improvements:** Clear work and break states, manual break start when auto-start is off, and stricter lock behavior for the master toggle and modes.
+*   **Break Behavior:** Breaks disable visual hiding and overlays for consistent passive behavior.
+*   **Options Refresh:** Reorganized sections, added per-platform visual hiding controls, and removed the Appearance section and show-stats toggle.
+*   **Packaging Updates:** Updated manifests and permissions, including LinkedIn host permissions, with version bump to 2.0.0.
 
 ---
 
@@ -53,9 +55,9 @@
 ## Installation
 
 ### Official Stores
-*   **Microsoft Edge:** *[Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)* (v1.8)
-*   **Firefox Add-ons:** *[Download from Firefox Add-ons](https://addons.mozilla.org/addon/focus-tube/)* (v1.8)
-*   **Chrome Web Store:** *[Download from Chrome Web Store](https://chromewebstore.google.com/detail/focustube-distraction-blo/ppdjgkniggbikifojmkindmbhppmoell?authuser=1&hl=en)* (v1.8)
+*   **Microsoft Edge:** *[Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)* (v2.0.0)
+*   **Firefox Add-ons:** *[Download from Firefox Add-ons](https://addons.mozilla.org/addon/focus-tube/)* (v2.0.0)
+*   **Chrome Web Store:** *[Download from Chrome Web Store](https://chromewebstore.google.com/detail/focustube-distraction-blo/ppdjgkniggbikifojmkindmbhppmoell?authuser=1&hl=en)* (v2.0.0)
 
 ### Manual Installation (Developer Mode)
 
@@ -81,7 +83,7 @@ Click the extension icon to access the **Control Center**:
 ## Technical Details
 
 *   **Architecture:** **Manifest V3** with modular content scripts (Split Architecture).
-*   **Performance:** Uses `MutationObserver` and `requestAnimationFrame` for zero-lag DOM manipulation.
+*   **Performance:** Uses `MutationObserver` and `requestAnimationFrame` for responsive, low-overhead DOM manipulation.
 *   **Compatibility:** Cross-browser support for Chromium (Chrome, Edge, Brave) and Gecko (Firefox).
 *   **Privacy:** **100% Local.** No analytics, no tracking, no external servers.
 

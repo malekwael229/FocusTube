@@ -2,24 +2,64 @@ const Site = {
     isYT: () => location.hostname.includes('youtube.com'),
     isIG: () => location.hostname.includes('instagram.com'),
     isTT: () => location.hostname.includes('tiktok.com'),
-    isFB: () => location.hostname.includes('facebook.com')
+    isFB: () => location.hostname.includes('facebook.com'),
+    isLI: () => location.hostname.includes('linkedin.com')
 };
 
 const CONFIG = {
     isFocusMode: true,
-    platformSettings: { yt: 'strict', ig: 'strict', tt: 'strict', fb: 'strict' },
+    platformSettings: { yt: 'strict', ig: 'strict', tt: 'strict', fb: 'strict', li: 'strict' },
     isDarkMode: true,
     playSound: true,
     timer: { end: null, type: 'work' },
     session: { allowedCount: 0, allowUntil: 0, platform: null },
-    popupVisibility: { yt: true, ig: true, tt: true, fb: true },
+    popupVisibility: { yt: true, ig: true, tt: true, fb: true, li: true },
     visualHideHidden: true,
-    restrictHidden: true
+    restrictHidden: true,
+    visualHiding: {
+        igStories: true,
+        fbStories: true,
+        ytShortsNav: true,
+        igReelsNav: true,
+        fbReelsNav: true,
+        liFeed: true,
+        liPuzzles: true,
+        liAddFeed: true
+    }
+};
+
+const FocusState = {
+    get isWork() {
+        return CONFIG.timer.end && CONFIG.timer.end > Date.now() && CONFIG.timer.type === 'work';
+    },
+    get isBreak() {
+        return CONFIG.timer.end && CONFIG.timer.end > Date.now() && CONFIG.timer.type === 'break';
+    },
+    get isTimerActive() {
+        return CONFIG.timer.end && CONFIG.timer.end > Date.now();
+    },
+    get shouldBlock() {
+        return this.isWork || (CONFIG.isFocusMode && !this.isBreak);
+    }
 };
 
 const Utils = {
     intervals: [],
     videoLockInterval: null,
+    _debugEnabled: false,
+    _lastDebugState: {},
+
+    isDebugEnabled: function () {
+        return this._debugEnabled;
+    },
+
+    debugLog: function (platform, payload) {
+        if (!this._debugEnabled) return;
+        const key = platform + JSON.stringify(payload);
+        if (this._lastDebugState[platform] === key) return;
+        this._lastDebugState[platform] = key;
+        console.log(`[FocusTube][${platform}]`, payload);
+    },
 
     ensureBody: function (callback) {
         if (document.body) {
@@ -50,6 +90,21 @@ const Utils = {
         return { isWork: isActive && CONFIG.timer.type === 'work', isBreak: isActive && CONFIG.timer.type === 'break' };
     },
 
+    isSessionAllowed: function (platform) {
+        return CONFIG.session.allowUntil && CONFIG.session.allowUntil > Date.now() && CONFIG.session.platform === platform;
+    },
+
+    clearSession: function () {
+        CONFIG.session.allowUntil = 0;
+        CONFIG.session.platform = null;
+    },
+
+    setAllowWindow: function (platform, minutes = 5) {
+        CONFIG.session.allowUntil = Date.now() + (minutes * 60 * 1000);
+        CONFIG.session.platform = platform;
+    },
+
+
     logStat: function () {
         if (window !== window.top) return;
         const now = Date.now();
@@ -59,6 +114,19 @@ const Utils = {
             const newCount = (res.ft_stats_blocked || 0) + 1;
             chrome.storage.local.set({ ft_stats_blocked: newCount });
         });
+    },
+
+    applyVisualHidingClasses: function () {
+        if (!document.body) return;
+        const active = FocusState.shouldBlock;
+        document.body.classList.toggle('ft-hide-ig-stories', active && CONFIG.visualHiding.igStories);
+        document.body.classList.toggle('ft-hide-fb-stories', active && CONFIG.visualHiding.fbStories);
+        document.body.classList.toggle('ft-hide-yt-shorts-nav', active && CONFIG.visualHiding.ytShortsNav);
+        document.body.classList.toggle('ft-hide-ig-reels-nav', active && CONFIG.visualHiding.igReelsNav);
+        document.body.classList.toggle('ft-hide-fb-reels-nav', active && CONFIG.visualHiding.fbReelsNav);
+        document.body.classList.toggle('ft-hide-li-feed', active && CONFIG.visualHiding.liFeed);
+        document.body.classList.toggle('ft-hide-li-puzzles', active && CONFIG.visualHiding.liPuzzles);
+        document.body.classList.toggle('ft-hide-li-addfeed', active && CONFIG.visualHiding.liAddFeed);
     },
 
     lockVideo: function () {
@@ -251,7 +319,7 @@ const UI = {
 };
 
 (function () {
-    chrome.storage.local.get(['focusMode', 'platformSettings', 'darkMode', 'ft_timer_end', 'ft_timer_type', 'playSound', 'popup_visible_yt', 'popup_visible_ig', 'popup_visible_tt', 'popup_visible_fb', 'restrictHiddenPlatforms', 'visualHideHiddenPlatforms'], (res) => {
+    chrome.storage.local.get(['focusMode', 'platformSettings', 'darkMode', 'ft_timer_end', 'ft_timer_type', 'playSound', 'popup_visible_yt', 'popup_visible_ig', 'popup_visible_tt', 'popup_visible_fb', 'popup_visible_li', 'restrictHiddenPlatforms', 'visualHideHiddenPlatforms', 'hide_ig_stories', 'hide_fb_stories', 'hide_yt_shorts_nav', 'hide_ig_reels_nav', 'hide_fb_reels_nav', 'hide_li_feed', 'hide_li_puzzles', 'hide_li_addfeed', 'ft_debug'], (res) => {
         if (chrome.runtime.lastError) return;
         CONFIG.isFocusMode = res.focusMode !== false;
         if (res.platformSettings) {
@@ -262,6 +330,7 @@ const UI = {
                 if (res.popup_visible_ig === false) CONFIG.platformSettings.ig = 'allow';
                 if (res.popup_visible_tt === false) CONFIG.platformSettings.tt = 'allow';
                 if (res.popup_visible_fb === false) CONFIG.platformSettings.fb = 'allow';
+                if (res.popup_visible_li === false) CONFIG.platformSettings.li = 'allow';
             }
         }
         CONFIG.isDarkMode = res.darkMode !== false;
@@ -275,9 +344,29 @@ const UI = {
             yt: res.popup_visible_yt !== false,
             ig: res.popup_visible_ig !== false,
             tt: res.popup_visible_tt !== false,
-            fb: res.popup_visible_fb !== false
+            fb: res.popup_visible_fb !== false,
+            li: res.popup_visible_li !== false
         };
 
+        CONFIG.visualHiding = {
+            igStories: res.hide_ig_stories !== false,
+            fbStories: res.hide_fb_stories !== false,
+            ytShortsNav: res.hide_yt_shorts_nav !== false,
+            igReelsNav: res.hide_ig_reels_nav !== false,
+            fbReelsNav: res.hide_fb_reels_nav !== false,
+            liFeed: res.hide_li_feed !== false,
+            liPuzzles: res.hide_li_puzzles !== false,
+            liAddFeed: res.hide_li_addfeed !== false
+        };
+
+        Utils._debugEnabled = res.ft_debug === true;
+
+        Utils.ensureBody(() => {
+            Utils.toggleFocusClass(CONFIG.isFocusMode);
+            Utils.applyVisualHidingClasses();
+        });
+
+        window.__ftSettingsReady = true;
         document.dispatchEvent(new CustomEvent('ft-settings-ready'));
     });
 
@@ -286,7 +375,7 @@ const UI = {
     });
 
     chrome.storage.onChanged.addListener((changes) => {
-        if (changes.focusMode) CONFIG.isFocusMode = changes.focusMode.newValue;
+        if (changes.focusMode) { CONFIG.isFocusMode = changes.focusMode.newValue; Utils.toggleFocusClass(CONFIG.isFocusMode); Utils.applyVisualHidingClasses(); }
         if (changes.platformSettings) {
             CONFIG.platformSettings = changes.platformSettings.newValue;
 
@@ -334,10 +423,22 @@ const UI = {
                 }
             });
         }
+
+        if (changes.hide_ig_stories) { CONFIG.visualHiding.igStories = changes.hide_ig_stories.newValue !== false; Utils.applyVisualHidingClasses(); }
+        if (changes.hide_fb_stories) { CONFIG.visualHiding.fbStories = changes.hide_fb_stories.newValue !== false; Utils.applyVisualHidingClasses(); }
+        if (changes.hide_yt_shorts_nav) { CONFIG.visualHiding.ytShortsNav = changes.hide_yt_shorts_nav.newValue !== false; Utils.applyVisualHidingClasses(); }
+        if (changes.hide_ig_reels_nav) { CONFIG.visualHiding.igReelsNav = changes.hide_ig_reels_nav.newValue !== false; Utils.applyVisualHidingClasses(); }
+        if (changes.hide_fb_reels_nav) { CONFIG.visualHiding.fbReelsNav = changes.hide_fb_reels_nav.newValue !== false; Utils.applyVisualHidingClasses(); }
+        if (changes.hide_li_feed) { CONFIG.visualHiding.liFeed = changes.hide_li_feed.newValue !== false; Utils.applyVisualHidingClasses(); }
+        if (changes.hide_li_puzzles) { CONFIG.visualHiding.liPuzzles = changes.hide_li_puzzles.newValue !== false; Utils.applyVisualHidingClasses(); }
+        if (changes.hide_li_addfeed) { CONFIG.visualHiding.liAddFeed = changes.hide_li_addfeed.newValue !== false; Utils.applyVisualHidingClasses(); }
+
         if (changes.darkMode) { CONFIG.isDarkMode = changes.darkMode.newValue; UI.updateTheme(); }
         if (changes.playSound) CONFIG.playSound = changes.playSound.newValue;
         if (changes.ft_timer_end) CONFIG.timer.end = changes.ft_timer_end.newValue;
         if (changes.ft_timer_type) CONFIG.timer.type = changes.ft_timer_type.newValue;
+        if (changes.ft_timer_end || changes.ft_timer_type) Utils.applyVisualHidingClasses();
+        if (changes.ft_debug) Utils._debugEnabled = changes.ft_debug.newValue === true;
     });
 
     chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
