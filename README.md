@@ -19,16 +19,6 @@
 
 **FocusTube** is a Manifest V3 browser extension designed to stop doomscrolling in its tracks. Unlike basic element blockers, it uses **Session-Aware Logic** to handle modern Single Page Applications (SPAs), ensuring that distractions remain blocked even as you navigate, without breaking the rest of the site.
 
-## New in v2.1.0
-
-Focused on stability, clarity, and cross-platform polish:
-
-*   **Instagram feed reels hiding:** Stronger detection (including video-only cards), dedicated toggle, and nav/story guards.
-*   **Review prompt refresh:** Notification-style card with centered actions; “Later” snoozes for +20 blocks, “Rate Us” dismisses for good; popup resizes to avoid overlap.
-*   **Timer lock messaging:** Clear lock banners in options/popup and stricter mode locking while a timer runs.
-*   **Tutorial disabled temporarily:** Misaligned tour removed from autoplay; code remains for later re-enable.
-*   **Manifest split:** `chrome-manifest.json` for Chromium, `manifest.json` for Firefox so both paths are testable without edits to Firefox build.
-
 ## Features
 
 ### Behavioral Intervention
