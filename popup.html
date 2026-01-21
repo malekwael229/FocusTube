@@ -9,41 +9,20 @@
 <body class="focustube-popup-body dark-mode preload">
 
     <div id="tutorial-overlay" class="tutorial-overlay hidden">
-        <div class="tutorial-content">
-            <div class="tutorial-slides">
-                <div class="tutorial-slide active" data-slide="0">
-                    <div class="tutorial-icon">
-                        <img src="icons/icon128.png" alt="FocusTube" width="48" height="48">
-                    </div>
-                    <h3>Welcome to FocusTube</h3>
-                    <p>Block distracting content and stay focused on what matters.</p>
-                </div>
-                <div class="tutorial-slide" data-slide="1">
-                    <div class="tutorial-icon">🛡️</div>
-                    <h3>Blocking Modes</h3>
-                    <p><strong>Strict</strong>: Block instantly<br><strong>Warn</strong>: Ask
-                        first<br><strong>Passive</strong>: Visual only</p>
-                </div>
-                <div class="tutorial-slide" data-slide="2">
-                    <div class="tutorial-icon">⏱️</div>
-                    <h3>Focus Timer</h3>
-                    <p>Start a session to lock settings and enforce strict blocking.</p>
-                </div>
-                <div class="tutorial-slide" data-slide="3">
-                    <div class="tutorial-icon">⚙️</div>
-                    <h3>Customization</h3>
-                    <p>Click the settings gear to customize durations, colors, and which elements to hide.</p>
-                </div>
+        <div class="tutorial-backdrop"></div>
+        <div id="tutorial-spotlight" class="tutorial-spotlight"></div>
+        <div id="tutorial-tooltip" class="tutorial-tooltip">
+            <div class="tutorial-tooltip-content">
+                <div id="tutorial-icon-container" class="tutorial-icon"></div>
+                <h4 id="tutorial-title"></h4>
+                <p id="tutorial-description"></p>
             </div>
-            <div class="tutorial-dots">
-                <span class="tutorial-dot active" data-dot="0"></span>
-                <span class="tutorial-dot" data-dot="1"></span>
-                <span class="tutorial-dot" data-dot="2"></span>
-                <span class="tutorial-dot" data-dot="3"></span>
-            </div>
-            <div class="tutorial-buttons">
+            <div class="tutorial-tooltip-actions">
                 <button id="tutorialSkip" class="tutorial-btn-skip">Skip</button>
                 <button id="tutorialNext" class="tutorial-btn-next">Next</button>
+            </div>
+            <div class="tutorial-tooltip-progress">
+                <span id="tutorial-step-indicator">1 of 7</span>
             </div>
         </div>
     </div>
@@ -56,131 +35,157 @@
         </div>
     </div>
 
-    <div id="main-view">
-        <div class="header-row">
-            <div class="title-group">
-                <h2>FocusTube</h2>
-                <div id="githubBtn" class="icon-btn" title="Open Source Code">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path
-                            d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
-                        </path>
-                    </svg>
-                </div>
-                <div id="settingsBtn" class="icon-btn" title="Settings">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path
-                            d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-                        <circle cx="12" cy="12" r="3" />
-                    </svg>
-                </div>
-            </div>
-            <div class="header-toggle">
-                <span id="toggleLockedLabel" class="locked-label hidden">LOCKED</span>
-                <label class="switch">
-                    <input type="checkbox" id="mainToggle" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
-
-        <div class="platform-grid">
-            <div class="platform-grid-row">
-                <button class="platform-icon" data-platform="yt" title="YouTube">
-                    <svg viewBox="0 0 24 24" width="28" height="28">
-                        <path fill="currentColor"
-                            d="M23.5 6.2c-.3-1-1-1.8-2-2.1C19.8 3.5 12 3.5 12 3.5s-7.8 0-9.5.6c-1 .3-1.7 1.1-2 2.1C0 7.9 0 12 0 12s0 4.1.5 5.8c.3 1 1 1.8 2 2.1 1.7.6 9.5.6 9.5.6s7.8 0 9.5-.6c1-.3 1.7-1.1 2-2.1.5-1.7.5-5.8.5-5.8s0-4.1-.5-5.8zM9.5 15.5v-7l6.4 3.5-6.4 3.5z" />
-                    </svg>
-                    <span class="platform-mode-badge">S</span>
-                </button>
-                <button class="platform-icon" data-platform="ig" title="Instagram">
-                    <svg viewBox="0 0 24 24" width="28" height="28">
-                        <path fill="currentColor"
-                            d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.3 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .3-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.3-1-.4-2.2-.1-1.3-.1-1.7-.1-4.9s0-3.6.1-4.9c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.3 2.2-.4 1.3-.1 1.7-.1 4.9-.1M12 0C8.7 0 8.3 0 7 .1 5.7.2 4.8.3 4 .6c-.9.3-1.6.7-2.3 1.4C1 2.7.6 3.4.3 4.3.1 5.1 0 6 0 7.3 0 8.6 0 9 0 12.3s0 3.7.1 5c.1 1.3.2 2.2.5 3 .3.9.7 1.6 1.4 2.3.7.7 1.4 1.1 2.3 1.4.8.3 1.7.4 3 .5 1.3.1 1.7.1 5 .1s3.7 0 5-.1c1.3-.1 2.2-.2 3-.5.9-.3 1.6-.7 2.3-1.4.7-.7 1.1-1.4 1.4-2.3.3-.8.4-1.7.5-3 .1-1.3.1-1.7.1-5s0-3.7-.1-5c-.1-1.3-.2-2.2-.5-3-.3-.9-.7-1.6-1.4-2.3C21.6 1 20.9.6 20 .3c-.8-.3-1.7-.4-3-.5C15.7 0 15.3 0 12 0zm0 5.8a6.2 6.2 0 100 12.4 6.2 6.2 0 000-12.4zM12 16a4 4 0 110-8 4 4 0 010 8zm6.4-10.8a1.4 1.4 0 100 2.8 1.4 1.4 0 000-2.8z" />
-                    </svg>
-                    <span class="platform-mode-badge">S</span>
-                </button>
-            </div>
-            <div class="platform-grid-row">
-                <button class="platform-icon" data-platform="tt" title="TikTok">
-                    <svg viewBox="0 0 24 24" width="28" height="28">
-                        <path fill="currentColor"
-                            d="M19.3 7.3c-1.4-.1-2.7-.7-3.6-1.6-.9-.9-1.5-2.1-1.6-3.4h-3.2v13.3c0 1.7-1.4 3.1-3.1 3.1s-3.1-1.4-3.1-3.1 1.4-3.1 3.1-3.1c.3 0 .6 0 .9.1V9.2c-.3 0-.6-.1-.9-.1-3.5 0-6.4 2.9-6.4 6.4s2.9 6.4 6.4 6.4 6.4-2.9 6.4-6.4V10c1.3.9 2.9 1.4 4.5 1.4V8.1c-.5.1-1 .2-1.5.2v-1z" />
-                    </svg>
-                    <span class="platform-mode-badge">S</span>
-                </button>
-                <button class="platform-icon" data-platform="fb" title="Facebook">
-                    <svg viewBox="0 0 24 24" width="28" height="28">
-                        <path fill="currentColor"
-                            d="M24 12c0-6.6-5.4-12-12-12S0 5.4 0 12c0 6 4.4 11 10.1 11.9v-8.4H7.1V12h3v-2.7c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v2.9h-1.5c-1.5 0-2 .9-2 1.9V12h3.3l-.5 3.5h-2.8v8.4C19.6 23 24 18 24 12z" />
-                    </svg>
-                    <span class="platform-mode-badge">S</span>
-                </button>
-            </div>
-            <div class="platform-grid-row platform-grid-row-center">
-                <button class="platform-icon" data-platform="li" title="LinkedIn">
-                    <svg viewBox="0 0 24 24" width="28" height="28">
-                        <path fill="currentColor"
-                            d="M20.4 20.4h-3.5v-5.6c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9v5.7H9.4V9h3.4v1.6h.1c.5-.9 1.6-1.8 3.4-1.8 3.6 0 4.3 2.4 4.3 5.5v6.1zM5.3 7.4c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm1.8 13H3.5V9h3.5v11.4zM22.2 0H1.8C.8 0 0 .8 0 1.8v20.4c0 1 .8 1.8 1.8 1.8h20.4c1 0 1.8-.8 1.8-1.8V1.8c0-1-.8-1.8-1.8-1.8z" />
-                    </svg>
-                    <span class="platform-mode-badge">S</span>
-                </button>
-            </div>
-        </div>
-
-        <div class="timer-section-compact">
-            <div id="timerTypeLabel" class="timer-type-label hidden">Focus</div>
-            <div id="timerDisplay" class="timer-display-compact hidden">00:00</div>
-            <div class="timer-controls-compact">
-                <button id="timerBtn" class="timer-btn-compact">Start Timer</button>
-                <button id="breakBtn" class="timer-btn-compact break-btn hidden">Take Break</button>
-            </div>
-        </div>
-
-        <div class="footer-compact">
-            <div class="stats-compact">
-                <span id="statShorts">0</span> blocked · <span id="statTime">0m</span> saved
-            </div>
-        </div>
-    </div>
-
-    <div id="platform-detail" class="platform-detail hidden">
-        <div class="detail-header">
-            <button id="backBtn" class="back-btn">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M15 18l-6-6 6-6" />
-                </svg>
-            </button>
-            <span id="detailTitle" class="detail-title">YouTube</span>
-        </div>
-        <div class="detail-content">
-            <div class="mode-options-detail">
-                <div class="mode-option-detail" data-value="strict">
-                    <div class="mode-radio"></div>
-                    <div class="mode-info">
-                        <span class="mode-name">Strict Mode</span>
-                        <span class="mode-desc">Immediately redirect away</span>
-                    </div>
-                </div>
-                <div class="mode-option-detail" data-value="warn">
-                    <div class="mode-radio"></div>
-                    <div class="mode-info">
-                        <span class="mode-name">Warn Mode</span>
-                        <span class="mode-desc">Show warning overlay first</span>
-                    </div>
-                </div>
-                <div class="mode-option-detail" data-value="allow">
-                    <div class="mode-radio"></div>
-                    <div class="mode-info">
-                        <span class="mode-name">Passive Mode</span>
-                        <span class="mode-desc">Visual hiding only, no blocking</span>
+    <div id="popupControls">
+        <div id="main-view">
+            <div class="header-row">
+                <div class="title-group">
+                    <h2>FocusTube</h2>
+                    <div class="inline-toggle">
+                        <span id="extensionStatusLabel" class="inline-toggle-label">Enabled</span>
+                        <label class="switch">
+                            <input type="checkbox" id="enabledToggle" checked>
+                            <span class="slider"></span>
+                        </label>
                     </div>
                 </div>
             </div>
 
-            <div id="platformSettings" class="platform-settings">
+            <div class="control-row">
+                <div class="control-text" style="width: 100%; text-align: center;">
+                    <div class="control-title">Hide UI distractions</div>
+                </div>
+                <div class="control-toggle">
+                    <span id="toggleLockedLabel" class="locked-label hidden">LOCKED</span>
+                    <label class="switch">
+                        <input type="checkbox" id="mainToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="platform-grid">
+                <div class="platform-grid-row">
+                    <button class="platform-icon" data-platform="yt" title="YouTube" aria-label="YouTube settings">
+                        <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+                            <path fill="currentColor"
+                                d="M23.5 6.2c-.3-1-1-1.8-2-2.1C19.8 3.5 12 3.5 12 3.5s-7.8 0-9.5.6c-1 .3-1.7 1.1-2 2.1C0 7.9 0 12 0 12s0 4.1.5 5.8c.3 1 1 1.8 2 2.1 1.7.6 9.5.6 9.5.6s7.8 0 9.5-.6c1-.3 1.7-1.1 2-2.1.5-1.7.5-5.8.5-5.8s0-4.1-.5-5.8zM9.5 15.5v-7l6.4 3.5-6.4 3.5z" />
+                        </svg>
+                        <span class="platform-mode-badge" aria-hidden="true">S</span>
+                    </button>
+                    <button class="platform-icon" data-platform="ig" title="Instagram" aria-label="Instagram settings">
+                        <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+                            <path fill="currentColor"
+                                d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.3 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .3-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.3-1-.4-2.2-.1-1.3-.1-1.7-.1-4.9s0-3.6.1-4.9c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.3 2.2-.4 1.3-.1 1.7-.1 4.9-.1M12 0C8.7 0 8.3 0 7 .1 5.7.2 4.8.3 4 .6c-.9.3-1.6.7-2.3 1.4C1 2.7.6 3.4.3 4.3.1 5.1 0 6 0 7.3 0 8.6 0 9 0 12.3s0 3.7.1 5c.1 1.3.2 2.2.5 3 .3.9.7 1.6 1.4 2.3.7.7 1.4 1.1 2.3 1.4.8.3 1.7.4 3 .5 1.3.1 1.7.1 5 .1s3.7 0 5-.1c1.3-.1 2.2-.2 3-.5.9-.3 1.6-.7 2.3-1.4.7-.7 1.1-1.4 1.4-2.3.3-.8.4-1.7.5-3 .1-1.3.1-1.7.1-5s0-3.7-.1-5c-.1-1.3-.2-2.2-.5-3-.3-.9-.7-1.6-1.4-2.3C21.6 1 20.9.6 20 .3c-.8-.3-1.7-.4-3-.5C15.7 0 15.3 0 12 0zm0 5.8a6.2 6.2 0 100 12.4 6.2 6.2 0 000-12.4zM12 16a4 4 0 110-8 4 4 0 010 8zm6.4-10.8a1.4 1.4 0 100 2.8 1.4 1.4 0 000-2.8z" />
+                        </svg>
+                        <span class="platform-mode-badge" aria-hidden="true">S</span>
+                    </button>
+                </div>
+                <div class="platform-grid-row">
+                    <button class="platform-icon" data-platform="tt" title="TikTok" aria-label="TikTok settings">
+                        <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+                            <path fill="currentColor"
+                                d="M19.3 7.3c-1.4-.1-2.7-.7-3.6-1.6-.9-.9-1.5-2.1-1.6-3.4h-3.2v13.3c0 1.7-1.4 3.1-3.1 3.1s-3.1-1.4-3.1-3.1 1.4-3.1 3.1-3.1c.3 0 .6 0 .9.1V9.2c-.3 0-.6-.1-.9-.1-3.5 0-6.4 2.9-6.4 6.4s2.9 6.4 6.4 6.4 6.4-2.9 6.4-6.4V10c1.3.9 2.9 1.4 4.5 1.4V8.1c-.5.1-1 .2-1.5.2v-1z" />
+                        </svg>
+                        <span class="platform-mode-badge" aria-hidden="true">S</span>
+                    </button>
+                    <button class="platform-icon" data-platform="fb" title="Facebook" aria-label="Facebook settings">
+                        <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+                            <path fill="currentColor"
+                                d="M24 12c0-6.6-5.4-12-12-12S0 5.4 0 12c0 6 4.4 11 10.1 11.9v-8.4H7.1V12h3v-2.7c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v2.9h-1.5c-1.5 0-2 .9-2 1.9V12h3.3l-.5 3.5h-2.8v8.4C19.6 23 24 18 24 12z" />
+                        </svg>
+                        <span class="platform-mode-badge" aria-hidden="true">S</span>
+                    </button>
+                </div>
+                <div class="platform-grid-row platform-grid-row-center">
+                    <button class="platform-icon" data-platform="li" title="LinkedIn" aria-label="LinkedIn settings">
+                        <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+                            <path fill="currentColor"
+                                d="M20.4 20.4h-3.5v-5.6c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9v5.7H9.4V9h3.4v1.6h.1c.5-.9 1.6-1.8 3.4-1.8 3.6 0 4.3 2.4 4.3 5.5v6.1zM5.3 7.4c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm1.8 13H3.5V9h3.5v11.4zM22.2 0H1.8C.8 0 0 .8 0 1.8v20.4c0 1 .8 1.8 1.8 1.8h20.4c1 0 1.8-.8 1.8-1.8V1.8c0-1-.8-1.8-1.8-1.8z" />
+                        </svg>
+                        <span class="platform-mode-badge" aria-hidden="true">S</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="timer-section-compact">
+                <div id="timerTypeLabel" class="timer-type-label hidden">Focus</div>
+                <div id="timerDisplay" class="timer-display-compact hidden">00:00</div>
+                <div class="timer-controls-compact">
+                    <button id="timerBtn" class="timer-btn-compact">Start Timer</button>
+                    <div id="breakWrapper" class="break-wrapper hidden">
+                        <button id="breakBtn" class="timer-btn-compact break-btn">Take Break</button>
+                        <button id="skipBreakBtn" class="skip-btn" title="Skip Break" aria-label="Skip break">
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5"
+                                fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-compact">
+                <div class="stats-compact">
+                    <span id="statShorts">0</span> blocked · <span id="statTime">0m</span> saved
+                </div>
+                <div class="footer-actions">
+                    <button id="githubBtn" class="icon-btn" title="Open Source Code" aria-label="View source code on GitHub">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path
+                                d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+                            </path>
+                        </svg>
+                    </button>
+                    <button id="settingsBtn" class="icon-btn" title="Settings" aria-label="Open settings">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path
+                                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l-.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l-.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="platform-detail" class="platform-detail hidden">
+            <div class="detail-header">
+                <button id="backBtn" class="back-btn" aria-label="Go back to main view">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                </button>
+                <span id="detailTitle" class="detail-title">YouTube</span>
+            </div>
+            <div class="detail-content">
+                <div class="mode-options-detail">
+                    <div class="mode-option-detail" data-value="strict">
+                        <div class="mode-radio"></div>
+                        <div class="mode-info">
+                            <span class="mode-name">Strict Mode</span>
+                            <span class="mode-desc">Block access completely</span>
+                        </div>
+                    </div>
+                    <div class="mode-option-detail" data-value="warn">
+                        <div class="mode-radio"></div>
+                        <div class="mode-info">
+                            <span class="mode-name">Warn Mode</span>
+                            <span class="mode-desc">Show a warning before entering</span>
+                        </div>
+                    </div>
+                    <div class="mode-option-detail" data-value="allow">
+                        <div class="mode-radio"></div>
+                        <div class="mode-info">
+                            <span class="mode-name">Passive Mode</span>
+                            <span class="mode-desc">Normal browsing</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="platformSettings" class="platform-settings">
+                </div>
             </div>
         </div>
     </div>

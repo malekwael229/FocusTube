@@ -30,6 +30,11 @@
             --destructive: hsl(0 72% 51%);
             --border: hsl(228 12% 20%);
             --radius: 0.625rem;
+
+            /* Premium Polish Tokens */
+            --font-stack: "Inter", "SF Pro Text", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         html {
@@ -42,12 +47,14 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            font-family: var(--font-stack);
             background: var(--background);
             color: var(--foreground);
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .container {
@@ -80,7 +87,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.2s var(--ease-smooth);
             border: none;
             color: var(--foreground);
         }
@@ -132,7 +139,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s var(--ease-spring);
             border: none;
             color: var(--foreground);
         }
@@ -257,7 +264,7 @@
             background: hsl(228 12% 18% / 0.4);
             border: 1px solid transparent;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s var(--ease-smooth);
             text-align: left;
             color: var(--foreground);
             margin-bottom: 0.5rem;
@@ -422,10 +429,11 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.625rem 0.5rem;
+            padding: 0.75rem 0.5rem;
             margin: 0 -0.5rem;
             border-radius: 0.5rem;
-            transition: background 0.2s;
+            transition: background 0.2s var(--ease-smooth);
+            gap: 1rem;
         }
 
         .setting-row:hover {
@@ -454,6 +462,10 @@
             display: none !important;
         }
 
+        .hidden {
+            display: none !important;
+        }
+
         .setting-info {
             flex: 1;
             padding-right: 1rem;
@@ -467,6 +479,15 @@
             font-size: 0.75rem;
             color: var(--muted-foreground);
             margin-top: 0.125rem;
+        }
+
+        body.ft-disabled .options-dim {
+            opacity: 0.5;
+            filter: grayscale(0.15);
+        }
+
+        body.ft-disabled .header {
+            opacity: 0.6;
         }
 
         .toggle-switch {
@@ -490,8 +511,9 @@
             right: 0;
             bottom: 0;
             background: var(--muted);
-            transition: 0.2s;
+            transition: background 0.2s var(--ease-smooth);
             border-radius: 9999px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
         }
 
         .toggle-slider::before {
@@ -500,11 +522,12 @@
             height: 1.25rem;
             width: 1.25rem;
             left: 0.125rem;
-            bottom: 0.125rem;
+            top: 50%;
+            transform: translateY(-50%);
             background: var(--background);
-            transition: 0.2s;
+            transition: transform 0.25s var(--ease-spring);
             border-radius: 50%;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .toggle-input:checked+.toggle-slider {
@@ -512,7 +535,7 @@
         }
 
         .toggle-input:checked+.toggle-slider::before {
-            transform: translateX(1.25rem);
+            transform: translate(1.25rem, -50%);
         }
 
         .toggle {
@@ -522,8 +545,9 @@
             background: var(--muted);
             border-radius: 9999px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.2s var(--ease-smooth);
             flex-shrink: 0;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
         }
 
         .toggle.on {
@@ -536,18 +560,19 @@
 
         .toggle-thumb {
             position: absolute;
-            top: 0.125rem;
+            top: 50%;
             left: 0.125rem;
+            transform: translateY(-50%);
             width: 1.25rem;
             height: 1.25rem;
             background: var(--background);
             border-radius: 50%;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-            transition: transform 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.25s var(--ease-spring);
         }
 
         .toggle.on .toggle-thumb {
-            transform: translateX(1.25rem);
+            transform: translate(1.25rem, -50%);
         }
 
         .select-wrapper {
@@ -920,6 +945,89 @@
         .animate-slide-out {
             animation: slideOut 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
+
+        /* Timer Active Pill Notice */
+        .timer-active-pill {
+            display: none;
+            align-items: center;
+            width: fit-content;
+            gap: 0.375rem;
+            padding: 0.25rem 0.625rem;
+            margin: 0.75rem auto 0;
+            border-radius: 9999px;
+            background: linear-gradient(135deg, hsl(204 100% 65% / 0.12), hsl(183 100% 50% / 0.08));
+            border: 1px solid hsl(204 100% 65% / 0.25);
+            animation: pillSlideIn 0.35s var(--ease-spring);
+        }
+
+        .timer-active-pill.visible {
+            display: flex;
+        }
+
+        /* Disabled/locked state for toggles */
+        .disabled-look {
+            opacity: 0.5;
+            pointer-events: none;
+            cursor: not-allowed;
+        }
+
+        .disabled-look .toggle-track {
+            background: var(--secondary) !important;
+        }
+
+        .timer-active-pill.fade-out {
+            animation: pillFadeOut 0.25s ease-out forwards;
+        }
+
+        .timer-active-pill-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--primary);
+            box-shadow: 0 0 8px hsl(204 100% 65% / 0.6);
+            animation: dotPulse 1.5s ease-in-out infinite;
+        }
+
+        .timer-active-pill-label {
+            font-size: 0.625rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--primary);
+        }
+
+        @keyframes pillSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pillFadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes dotPulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.6;
+                transform: scale(1.2);
+            }
+        }
     </style>
 </head>
 
@@ -936,7 +1044,7 @@
     <div class="container">
         <header class="header">
             <div class="header-left">
-                <button class="icon-btn">
+                <button class="icon-btn" id="headerBackBtn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                         stroke-linejoin="round">
                         <path d="m12 19-7-7 7-7" />
@@ -946,7 +1054,7 @@
                 <h1 class="title">FocusTube Options</h1>
             </div>
             <div class="header-right">
-                <button class="icon-btn">
+                <button class="icon-btn" id="headerGithubBtn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                         stroke-linejoin="round">
                         <path
@@ -957,350 +1065,358 @@
             </div>
         </header>
 
-        <div class="card platform-grid" id="platformGrid">
-            <div class="platform-icons" id="platformIcons">
-                <button class="platform-btn animate-scale-in" data-platform="yt" style="animation-delay: 0ms">
-                    <svg viewBox="0 0 24 24">
-                        <path fill="currentColor"
-                            d="M23.5 6.2c-.3-1-1-1.8-2-2.1C19.8 3.5 12 3.5 12 3.5s-7.8 0-9.5.6c-1 .3-1.7 1.1-2 2.1C0 7.9 0 12 0 12s0 4.1.5 5.8c.3 1 1 1.8 2 2.1 1.7.6 9.5.6 9.5.6s7.8 0 9.5-.6c1-.3 1.7-1.1 2-2.1.5-1.7.5-5.8.5-5.8s0-4.1-.5-5.8zM9.5 15.5v-7l6.4 3.5-6.4 3.5z" />
-                    </svg>
-                    <span class="platform-badge badge-red" id="badge-yt">S</span>
-                </button>
-                <button class="platform-btn animate-scale-in" data-platform="ig" style="animation-delay: 50ms">
-                    <svg viewBox="0 0 24 24">
-                        <path fill="currentColor"
-                            d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.3 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .3-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.3-1-.4-2.2-.1-1.3-.1-1.7-.1-4.9s0-3.6.1-4.9c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.3 2.2-.4 1.3-.1 1.7-.1 4.9-.1M12 0C8.7 0 8.3 0 7 .1 5.7.2 4.8.3 4 .6c-.9.3-1.6.7-2.3 1.4C1 2.7.6 3.4.3 4.3.1 5.1 0 6 0 7.3 0 8.6 0 9 0 12.3s0 3.7.1 5c.1 1.3.2 2.2.5 3 .3.9.7 1.6 1.4 2.3.7.7 1.4 1.1 2.3 1.4.8.3 1.7.4 3 .5 1.3.1 1.7.1 5 .1s3.7 0 5-.1c1.3-.1 2.2-.2 3-.5.9-.3 1.6-.7 2.3-1.4.7-.7 1.1-1.4 1.4-2.3.3-.8.4-1.7.5-3 .1-1.3.1-1.7.1-5s0-3.7-.1-5c-.1-1.3-.2-2.2-.5-3-.3-.9-.7-1.6-1.4-2.3C21.6 1 20.9.6 20 .3c-.8-.3-1.7-.4-3-.5C15.7 0 15.3 0 12 0zm0 5.8a6.2 6.2 0 100 12.4 6.2 6.2 0 000-12.4zM12 16a4 4 0 110-8 4 4 0 010 8zm6.4-10.8a1.4 1.4 0 100 2.8 1.4 1.4 0 000-2.8z" />
-                    </svg>
-                    <span class="platform-badge badge-red" id="badge-ig">S</span>
-                </button>
-                <button class="platform-btn animate-scale-in" data-platform="tt" style="animation-delay: 100ms">
-                    <svg viewBox="0 0 24 24">
-                        <path fill="currentColor"
-                            d="M19.3 7.3c-1.4-.1-2.7-.7-3.6-1.6-.9-.9-1.5-2.1-1.6-3.4h-3.2v13.3c0 1.7-1.4 3.1-3.1 3.1s-3.1-1.4-3.1-3.1 1.4-3.1 3.1-3.1c.3 0 .6 0 .9.1V9.2c-.3 0-.6-.1-.9-.1-3.5 0-6.4 2.9-6.4 6.4s2.9 6.4 6.4 6.4 6.4-2.9 6.4-6.4V10c1.3.9 2.9 1.4 4.5 1.4V8.1c-.5.1-1 .2-1.5.2v-1z" />
-                    </svg>
-                    <span class="platform-badge badge-red" id="badge-tt">S</span>
-                </button>
-                <button class="platform-btn animate-scale-in" data-platform="fb" style="animation-delay: 150ms">
-                    <svg viewBox="0 0 24 24">
-                        <path fill="currentColor"
-                            d="M24 12c0-6.6-5.4-12-12-12S0 5.4 0 12c0 6 4.4 11 10.1 11.9v-8.4H7.1V12h3v-2.7c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v2.9h-1.5c-1.5 0-2 .9-2 1.9V12h3.3l-.5 3.5h-2.8v8.4C19.6 23 24 18 24 12z" />
-                    </svg>
-                    <span class="platform-badge badge-red" id="badge-fb">S</span>
-                </button>
-                <button class="platform-btn animate-scale-in" data-platform="li" style="animation-delay: 200ms">
-                    <svg viewBox="0 0 24 24">
-                        <path fill="currentColor"
-                            d="M20.4 20.4h-3.5v-5.6c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9v5.7H9.4V9h3.4v1.6h.1c.5-.9 1.6-1.8 3.4-1.8 3.6 0 4.3 2.4 4.3 5.5v6.1zM5.3 7.4c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm1.8 13H3.5V9h3.5v11.4zM22.2 0H1.8C.8 0 0 .8 0 1.8v20.4c0 1 .8 1.8 1.8 1.8h20.4c1 0 1.8-.8 1.8-1.8V1.8c0-1-.8-1.8-1.8-1.8z" />
-                    </svg>
-                    <span class="platform-badge badge-red" id="badge-li">S</span>
-                </button>
+        
+
+        <div id="optionsDimmer" class="options-dim">
+            <div class="card platform-grid" id="platformGrid">
+                <div class="platform-icons" id="platformIcons">
+                    <button class="platform-btn animate-scale-in" data-platform="yt" style="animation-delay: 0ms">
+                        <svg viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                d="M23.5 6.2c-.3-1-1-1.8-2-2.1C19.8 3.5 12 3.5 12 3.5s-7.8 0-9.5.6c-1 .3-1.7 1.1-2 2.1C0 7.9 0 12 0 12s0 4.1.5 5.8c.3 1 1 1.8 2 2.1 1.7.6 9.5.6 9.5.6s7.8 0 9.5-.6c1-.3 1.7-1.1 2-2.1.5-1.7.5-5.8.5-5.8s0-4.1-.5-5.8zM9.5 15.5v-7l6.4 3.5-6.4 3.5z" />
+                        </svg>
+                        <span class="platform-badge badge-red" id="badge-yt">S</span>
+                    </button>
+                    <button class="platform-btn animate-scale-in" data-platform="ig" style="animation-delay: 50ms">
+                        <svg viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.3 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .3-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.3-1-.4-2.2-.1-1.3-.1-1.7-.1-4.9s0-3.6.1-4.9c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.3 2.2-.4 1.3-.1 1.7-.1 4.9-.1M12 0C8.7 0 8.3 0 7 .1 5.7.2 4.8.3 4 .6c-.9.3-1.6.7-2.3 1.4C1 2.7.6 3.4.3 4.3.1 5.1 0 6 0 7.3 0 8.6 0 9 0 12.3s0 3.7.1 5c.1 1.3.2 2.2.5 3 .3.9.7 1.6 1.4 2.3.7.7 1.4 1.1 2.3 1.4.8.3 1.7.4 3 .5 1.3.1 1.7.1 5 .1s3.7 0 5-.1c1.3-.1 2.2-.2 3-.5.9-.3 1.6-.7 2.3-1.4.7-.7 1.1-1.4 1.4-2.3.3-.8.4-1.7.5-3 .1-1.3.1-1.7.1-5s0-3.7-.1-5c-.1-1.3-.2-2.2-.5-3-.3-.9-.7-1.6-1.4-2.3C21.6 1 20.9.6 20 .3c-.8-.3-1.7-.4-3-.5C15.7 0 15.3 0 12 0zm0 5.8a6.2 6.2 0 100 12.4 6.2 6.2 0 000-12.4zM12 16a4 4 0 110-8 4 4 0 010 8zm6.4-10.8a1.4 1.4 0 100 2.8 1.4 1.4 0 000-2.8z" />
+                        </svg>
+                        <span class="platform-badge badge-red" id="badge-ig">S</span>
+                    </button>
+                    <button class="platform-btn animate-scale-in" data-platform="tt" style="animation-delay: 100ms">
+                        <svg viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                d="M19.3 7.3c-1.4-.1-2.7-.7-3.6-1.6-.9-.9-1.5-2.1-1.6-3.4h-3.2v13.3c0 1.7-1.4 3.1-3.1 3.1s-3.1-1.4-3.1-3.1 1.4-3.1 3.1-3.1c.3 0 .6 0 .9.1V9.2c-.3 0-.6-.1-.9-.1-3.5 0-6.4 2.9-6.4 6.4s2.9 6.4 6.4 6.4 6.4-2.9 6.4-6.4V10c1.3.9 2.9 1.4 4.5 1.4V8.1c-.5.1-1 .2-1.5.2v-1z" />
+                        </svg>
+                        <span class="platform-badge badge-red" id="badge-tt">S</span>
+                    </button>
+                    <button class="platform-btn animate-scale-in" data-platform="fb" style="animation-delay: 150ms">
+                        <svg viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                d="M24 12c0-6.6-5.4-12-12-12S0 5.4 0 12c0 6 4.4 11 10.1 11.9v-8.4H7.1V12h3v-2.7c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v2.9h-1.5c-1.5 0-2 .9-2 1.9V12h3.3l-.5 3.5h-2.8v8.4C19.6 23 24 18 24 12z" />
+                        </svg>
+                        <span class="platform-badge badge-red" id="badge-fb">S</span>
+                    </button>
+                    <button class="platform-btn animate-scale-in" data-platform="li" style="animation-delay: 200ms">
+                        <svg viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                d="M20.4 20.4h-3.5v-5.6c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9v5.7H9.4V9h3.4v1.6h.1c.5-.9 1.6-1.8 3.4-1.8 3.6 0 4.3 2.4 4.3 5.5v6.1zM5.3 7.4c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm1.8 13H3.5V9h3.5v11.4zM22.2 0H1.8C.8 0 0 .8 0 1.8v20.4c0 1 .8 1.8 1.8 1.8h20.4c1 0 1.8-.8 1.8-1.8V1.8c0-1-.8-1.8-1.8-1.8z" />
+                        </svg>
+                        <span class="platform-badge badge-red" id="badge-li">S</span>
+                    </button>
+                </div>
+                <p class="platform-hint">Click a platform to configure blocking mode</p>
+                <div class="timer-active-pill" id="timerActivePill">
+                    <span class="timer-active-pill-dot"></span>
+                    <span class="timer-active-pill-label">Timer Active — Modes Locked</span>
+                </div>
             </div>
-            <p class="platform-hint">Click a platform to configure blocking mode</p>
+
+            <div class="card platform-detail" id="platformDetail">
+                <div class="detail-header">
+                    <button class="icon-btn" id="backBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m15 18-6-6 6-6" />
+                        </svg>
+                    </button>
+                    <span id="detailIcon"></span>
+                    <span id="detailName"></span>
+                </div>
+                <div class="section-label">Blocking Mode</div>
+                <div id="modeButtons"></div>
+                <div id="visualHidingSection" style="display: none; margin-top: 1.25rem;">
+                    <div class="section-label">Visual Hiding</div>
+                    <div id="settingsToggles"></div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="card stat-card">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="stat-value" id="totalBlocked">0</div>
+                        <div class="stat-label">Total Blocked</div>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="stat-value" id="timeSaved">0m</div>
+                        <div class="stat-label">Time Saved</div>
+                    </div>
+                </div>
+            </div>
+
+            <section class="settings-section card">
+                <div class="section-bar bar-blue"></div>
+                <div class="section-content">
+                    <h2 class="section-title">Focus Timer</h2>
+                    <p class="section-desc">Configure your focus session preferences</p>
+
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Focus Duration</div>
+                            <div class="setting-desc">Length of each focus session</div>
+                        </div>
+                        <select class="select-dropdown custom-select" id="focusDuration">
+                            <option value="15">15 minutes</option>
+                            <option value="25" selected>25 minutes</option>
+                            <option value="30">30 minutes</option>
+                            <option value="45">45 minutes</option>
+                            <option value="60">60 minutes</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Break Duration</div>
+                            <div class="setting-desc">Length of break between sessions</div>
+                        </div>
+                        <select class="select-dropdown custom-select" id="breakDuration">
+                            <option value="5" selected>5 minutes</option>
+                            <option value="10">10 minutes</option>
+                            <option value="15">15 minutes</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Auto-start Breaks</div>
+                            <div class="setting-desc">Automatically start break timer after focus ends</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autoStartBreaks" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-row setting-nested">
+                        <div class="setting-info">
+                            <div class="setting-label">Show Break Button</div>
+                            <div class="setting-desc">Display "Take Break" button in popup during focus</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="showBreakButton" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Play Sound</div>
+                            <div class="setting-desc">Play notification sound when timer ends</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="playSound" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Lock Settings During Timer</div>
+                            <div class="setting-desc">Prevent changes while Focus Timer is active</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="lockSettings" class="toggle-input">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <section class="settings-section card">
+                <div class="section-bar bar-orange"></div>
+                <div class="section-content">
+                    <h2 class="section-title">Popup Visibility</h2>
+                    <p class="section-desc">Choose which platforms appear in the popup</p>
+
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Show YouTube</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="popup_visible_yt" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Show Instagram</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="popup_visible_ig" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Show TikTok</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="popup_visible_tt" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Show Facebook</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="popup_visible_fb" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Show LinkedIn</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="popup_visible_li" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Restrict Hidden Platforms</div>
+                            <div class="setting-desc">Apply blocking rules even if hidden from popup</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="restrictHiddenPlatforms" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Visual Hiding on Hidden</div>
+                            <div class="setting-desc">Hide distracting elements on hidden platforms</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="visualHideHiddenPlatforms" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <section class="settings-section card">
+                <div class="section-bar bar-orange"></div>
+                <div class="section-content">
+                    <h2 class="section-title">Notifications</h2>
+                    <p class="section-desc">Manage alerts and reminders</p>
+
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">System Notifications</div>
+                            <div class="setting-desc">Show notifications when timer ends</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="showNotifications" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <section class="settings-section card">
+                <div class="section-bar bar-teal"></div>
+                <div class="section-content">
+                    <h2 class="section-title">Data & Privacy</h2>
+                    <p class="section-desc">Manage your data and statistics</p>
+                    <input type="file" id="importFile" accept=".json" style="display: none;">
+
+                    <div class="action-btns">
+                        <button class="action-btn" id="importData">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" x2="12" y1="3" y2="15" />
+                            </svg>
+                            Import
+                        </button>
+                        <button class="action-btn" id="exportData">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" x2="12" y1="15" y2="3" />
+                            </svg>
+                            Export
+                        </button>
+                        <button class="action-btn" id="resetSettings">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                                <path d="M3 3v5h5" />
+                            </svg>
+                            Reset
+                        </button>
+                        <button class="action-btn danger" id="clearData">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                            </svg>
+                            Clear All
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card about-section">
+                <h2 class="about-title">FocusTube</h2>
+                <p class="about-version">Version 2.1.0</p>
+                <div class="about-btns">
+                    <button class="action-btn" id="starRepo">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <polygon
+                                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                        </svg>
+                        Star Repo
+                    </button>
+                    <button class="action-btn" id="rateUs">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M7.5 4.27 11.75 3 13 7.5l4.25-1.27.75 4.5-4 1.5.75 4.77-4.25-2.5-4.25 2.5.75-4.77-4-1.5.75-4.5Z" />
+                            <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z" />
+                        </svg>
+                        Rate Us
+                    </button>
+                    <button class="action-btn" id="reportIssue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                            <line x1="4" x2="4" y1="22" y2="15" />
+                        </svg>
+                        Report Issue
+                    </button>
+                </div>
+                <p class="about-desc">
+                    An open-source browser extension that helps you stay focused by blocking distracting short-form
+                    video
+                    content.
+                </p>
+            </section>
+
+            <div style="height: 1.5rem;"></div>
         </div>
-
-        <div class="card platform-detail" id="platformDetail">
-            <div class="detail-header">
-                <button class="icon-btn" id="backBtn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="m15 18-6-6 6-6" />
-                    </svg>
-                </button>
-                <span id="detailIcon"></span>
-                <span id="detailName"></span>
-            </div>
-            <div class="section-label">Blocking Mode</div>
-            <div id="modeButtons"></div>
-            <div id="visualHidingSection" style="display: none; margin-top: 1.25rem;">
-                <div class="section-label">Visual Hiding</div>
-                <div id="settingsToggles"></div>
-            </div>
-        </div>
-
-        <div class="stats-grid">
-            <div class="card stat-card">
-                <div class="stat-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path
-                            d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
-                    </svg>
-                </div>
-                <div>
-                    <div class="stat-value" id="totalBlocked">0</div>
-                    <div class="stat-label">Total Blocked</div>
-                </div>
-            </div>
-            <div class="card stat-card">
-                <div class="stat-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10" />
-                        <polyline points="12 6 12 12 16 14" />
-                    </svg>
-                </div>
-                <div>
-                    <div class="stat-value" id="timeSaved">0m</div>
-                    <div class="stat-label">Time Saved</div>
-                </div>
-            </div>
-        </div>
-
-        <section class="settings-section card">
-            <div class="section-bar bar-blue"></div>
-            <div class="section-content">
-                <h2 class="section-title">Focus Timer</h2>
-                <p class="section-desc">Configure your focus session preferences</p>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Focus Duration</div>
-                        <div class="setting-desc">Length of each focus session</div>
-                    </div>
-                    <select class="select-dropdown custom-select" id="focusDuration">
-                        <option value="15">15 minutes</option>
-                        <option value="25" selected>25 minutes</option>
-                        <option value="30">30 minutes</option>
-                        <option value="45">45 minutes</option>
-                        <option value="60">60 minutes</option>
-                    </select>
-                </div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Break Duration</div>
-                        <div class="setting-desc">Length of break between sessions</div>
-                    </div>
-                    <select class="select-dropdown custom-select" id="breakDuration">
-                        <option value="5" selected>5 minutes</option>
-                        <option value="10">10 minutes</option>
-                        <option value="15">15 minutes</option>
-                    </select>
-                </div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Auto-start Breaks</div>
-                        <div class="setting-desc">Automatically start break timer after focus ends</div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="autoStartBreaks" class="toggle-input" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-
-                <div class="setting-row setting-nested">
-                    <div class="setting-info">
-                        <div class="setting-label">Show Break Button</div>
-                        <div class="setting-desc">Display "Take Break" button in popup during focus</div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="showBreakButton" class="toggle-input" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Play Sound</div>
-                        <div class="setting-desc">Play notification sound when timer ends</div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="playSound" class="toggle-input" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-
-            </div>
-        </section>
-
-        <section class="settings-section card">
-            <div class="section-bar bar-orange"></div>
-            <div class="section-content">
-                <h2 class="section-title">Popup Visibility</h2>
-                <p class="section-desc">Choose which platforms appear in the popup</p>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Show YouTube</div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="popup_visible_yt" class="toggle-input" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Show Instagram</div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="popup_visible_ig" class="toggle-input" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Show TikTok</div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="popup_visible_tt" class="toggle-input" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Show Facebook</div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="popup_visible_fb" class="toggle-input" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Show LinkedIn</div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="popup_visible_li" class="toggle-input" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Restrict Hidden Platforms</div>
-                        <div class="setting-desc">Apply blocking rules even if hidden from popup</div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="restrictHiddenPlatforms" class="toggle-input" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Visual Hiding on Hidden</div>
-                        <div class="setting-desc">Hide distracting elements on hidden platforms</div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="visualHideHiddenPlatforms" class="toggle-input" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-            </div>
-        </section>
-
-        <section class="settings-section card">
-            <div class="section-bar bar-teal"></div>
-            <div class="section-content">
-                <h2 class="section-title">Blocking Behavior</h2>
-                <p class="section-desc">Control how FocusTube handles distracting content</p>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Lock Settings During Timer</div>
-                        <div class="setting-desc">Prevent changes while Focus Timer is active</div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="lockSettings" class="toggle-input">
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-            </div>
-        </section>
-
-        <section class="settings-section card">
-            <div class="section-bar bar-orange"></div>
-            <div class="section-content">
-                <h2 class="section-title">Notifications</h2>
-                <p class="section-desc">Manage alerts and reminders</p>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">System Notifications</div>
-                        <div class="setting-desc">Show notifications when timer ends</div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="showNotifications" class="toggle-input" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-            </div>
-        </section>
-
-        <section class="settings-section card">
-            <div class="section-bar bar-teal"></div>
-            <div class="section-content">
-                <h2 class="section-title">Data & Privacy</h2>
-                <p class="section-desc">Manage your data and statistics</p>
-                <input type="file" id="importFile" accept=".json" style="display: none;">
-
-                <div class="action-btns">
-                    <button class="action-btn" id="importData">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                            <polyline points="17 8 12 3 7 8" />
-                            <line x1="12" x2="12" y1="3" y2="15" />
-                        </svg>
-                        Import
-                    </button>
-                    <button class="action-btn" id="exportData">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                            <polyline points="7 10 12 15 17 10" />
-                            <line x1="12" x2="12" y1="15" y2="3" />
-                        </svg>
-                        Export
-                    </button>
-                    <button class="action-btn" id="resetSettings">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                            <path d="M3 3v5h5" />
-                        </svg>
-                        Reset
-                    </button>
-                    <button class="action-btn danger" id="clearData">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 6h18" />
-                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                        </svg>
-                        Clear All
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <section class="card about-section">
-            <h2 class="about-title">FocusTube</h2>
-            <p class="about-version">Version 2.0.0</p>
-            <div class="about-btns">
-                <button class="action-btn" id="starRepo">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <polygon
-                            points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                    </svg>
-                    Star Repo
-                </button>
-                <button class="action-btn" id="reportIssue">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
-                        <line x1="4" x2="4" y1="22" y2="15" />
-                    </svg>
-                    Report Issue
-                </button>
-            </div>
-            <p class="about-desc">
-                An open-source browser extension that helps you stay focused by blocking distracting short-form video
-                content.
-            </p>
-        </section>
-
-        <div style="height: 1.5rem;"></div>
     </div>
 
     <script src="options.js"></script>

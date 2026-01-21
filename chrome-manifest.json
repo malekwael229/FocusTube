@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "FocusTube: Distraction Blocker",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "description": "Stop Doomscrolling. Block YouTube Shorts, Instagram Reels, TikTok, Facebook, and LinkedIn.",
     "permissions": [
         "storage",
@@ -35,54 +35,14 @@
                 "*://*.linkedin.com/*"
             ],
             "css": [
-                "styles.css"
+                "content.css"
             ],
             "js": [
-                "content-common.js"
-            ],
-            "run_at": "document_start"
-        },
-        {
-            "matches": [
-                "*://*.youtube.com/*"
-            ],
-            "js": [
-                "content-yt.js"
-            ],
-            "run_at": "document_start"
-        },
-        {
-            "matches": [
-                "*://*.instagram.com/*"
-            ],
-            "js": [
-                "content-ig.js"
-            ],
-            "run_at": "document_start"
-        },
-        {
-            "matches": [
-                "*://*.tiktok.com/*"
-            ],
-            "js": [
-                "content-tt.js"
-            ],
-            "run_at": "document_start"
-        },
-        {
-            "matches": [
-                "*://*.facebook.com/*"
-            ],
-            "js": [
-                "content-fb.js"
-            ],
-            "run_at": "document_start"
-        },
-        {
-            "matches": [
-                "*://*.linkedin.com/*"
-            ],
-            "js": [
+                "content-common.js",
+                "content-yt.js",
+                "content-ig.js",
+                "content-tt.js",
+                "content-fb.js",
                 "content-li.js"
             ],
             "run_at": "document_start"
@@ -94,7 +54,11 @@
                 "icons/*.png"
             ],
             "matches": [
-                "<all_urls>"
+                "*://*.youtube.com/*",
+                "*://*.instagram.com/*",
+                "*://*.tiktok.com/*",
+                "*://*.facebook.com/*",
+                "*://*.linkedin.com/*"
             ]
         }
     ],

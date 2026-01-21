@@ -1,21 +1,19 @@
 {
-    "manifest_version": 3,
+    "manifest_version": 2,
     "name": "FocusTube: Distraction Blocker",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "description": "Stop Doomscrolling. Block YouTube Shorts, Instagram Reels, TikTok, Facebook, and LinkedIn.",
     "permissions": [
         "storage",
         "alarms",
-        "notifications"
-    ],
-    "host_permissions": [
+        "notifications",
         "*://*.youtube.com/*",
         "*://*.instagram.com/*",
         "*://*.tiktok.com/*",
         "*://*.facebook.com/*",
         "*://*.linkedin.com/*"
     ],
-    "action": {
+    "browser_action": {
         "default_popup": "popup.html"
     },
     "options_ui": {
@@ -23,7 +21,9 @@
         "open_in_tab": true
     },
     "background": {
-        "service_worker": "background.js"
+        "scripts": [
+            "background.js"
+        ]
     },
     "content_scripts": [
         {
@@ -35,7 +35,7 @@
                 "*://*.linkedin.com/*"
             ],
             "css": [
-                "styles.css"
+                "content.css"
             ],
             "js": [
                 "content-common.js"
@@ -89,18 +89,22 @@
         }
     ],
     "web_accessible_resources": [
-        {
-            "resources": [
-                "icons/*.png"
-            ],
-            "matches": [
-                "<all_urls>"
-            ]
-        }
+        "icons/*.png"
     ],
     "icons": {
         "16": "icons/icon128.png",
         "48": "icons/icon128.png",
         "128": "icons/icon128.png"
+    },
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "focustube@malekwael.com",
+            "strict_min_version": "121.0",
+            "data_collection_permissions": {
+                "required": [
+                    "none"
+                ]
+            }
+        }
     }
 }

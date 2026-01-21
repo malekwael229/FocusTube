@@ -1,110 +1,110 @@
 {
-  "manifest_version": 2,
-  "name": "FocusTube: Distraction Blocker",
-  "version": "2.0.0",
-  "description": "Stop Doomscrolling. Block YouTube Shorts, Instagram Reels, TikTok, Facebook, and LinkedIn.",
-  "permissions": [
-    "storage",
-    "alarms",
-    "notifications",
-    "*://*.youtube.com/*",
-    "*://*.instagram.com/*",
-    "*://*.tiktok.com/*",
-    "*://*.facebook.com/*",
-    "*://*.linkedin.com/*"
-  ],
-  "browser_action": {
-    "default_popup": "popup.html"
-  },
-  "options_ui": {
-    "page": "options.html",
-    "open_in_tab": true
-  },
-  "background": {
-    "scripts": [
-      "background.js"
-    ]
-  },
-  "content_scripts": [
-    {
-      "matches": [
+    "manifest_version": 2,
+    "name": "FocusTube: Distraction Blocker",
+    "version": "2.1.0",
+    "description": "Stop Doomscrolling. Block YouTube Shorts, Instagram Reels, TikTok, Facebook, and LinkedIn.",
+    "permissions": [
+        "storage",
+        "alarms",
+        "notifications",
         "*://*.youtube.com/*",
         "*://*.instagram.com/*",
         "*://*.tiktok.com/*",
         "*://*.facebook.com/*",
         "*://*.linkedin.com/*"
-      ],
-      "css": [
-        "styles.css"
-      ],
-      "js": [
-        "content-common.js"
-      ],
-      "run_at": "document_start"
+    ],
+    "browser_action": {
+        "default_popup": "popup.html"
     },
-    {
-      "matches": [
-        "*://*.youtube.com/*"
-      ],
-      "js": [
-        "content-yt.js"
-      ],
-      "run_at": "document_start"
+    "options_ui": {
+        "page": "options.html",
+        "open_in_tab": true
     },
-    {
-      "matches": [
-        "*://*.instagram.com/*"
-      ],
-      "js": [
-        "content-ig.js"
-      ],
-      "run_at": "document_start"
-    },
-    {
-      "matches": [
-        "*://*.tiktok.com/*"
-      ],
-      "js": [
-        "content-tt.js"
-      ],
-      "run_at": "document_start"
-    },
-    {
-      "matches": [
-        "*://*.facebook.com/*"
-      ],
-      "js": [
-        "content-fb.js"
-      ],
-      "run_at": "document_start"
-    },
-    {
-      "matches": [
-        "*://*.linkedin.com/*"
-      ],
-      "js": [
-        "content-li.js"
-      ],
-      "run_at": "document_start"
-    }
-  ],
-  "web_accessible_resources": [
-    "icons/*.png"
-  ],
-  "icons": {
-    "16": "icons/icon128.png",
-    "48": "icons/icon128.png",
-    "128": "icons/icon128.png"
-  },
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "focustube@malekwael.com",
-      "strict_min_version": "121.0",
-      "data_collection_permissions": {
-        "required": [
-          "none"
+    "background": {
+        "scripts": [
+            "background.js"
         ]
-      }
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.youtube.com/*",
+                "*://*.instagram.com/*",
+                "*://*.tiktok.com/*",
+                "*://*.facebook.com/*",
+                "*://*.linkedin.com/*"
+            ],
+            "css": [
+                "content.css"
+            ],
+            "js": [
+                "content-common.js"
+            ],
+            "run_at": "document_start"
+        },
+        {
+            "matches": [
+                "*://*.youtube.com/*"
+            ],
+            "js": [
+                "content-yt.js"
+            ],
+            "run_at": "document_start"
+        },
+        {
+            "matches": [
+                "*://*.instagram.com/*"
+            ],
+            "js": [
+                "content-ig.js"
+            ],
+            "run_at": "document_start"
+        },
+        {
+            "matches": [
+                "*://*.tiktok.com/*"
+            ],
+            "js": [
+                "content-tt.js"
+            ],
+            "run_at": "document_start"
+        },
+        {
+            "matches": [
+                "*://*.facebook.com/*"
+            ],
+            "js": [
+                "content-fb.js"
+            ],
+            "run_at": "document_start"
+        },
+        {
+            "matches": [
+                "*://*.linkedin.com/*"
+            ],
+            "js": [
+                "content-li.js"
+            ],
+            "run_at": "document_start"
+        }
+    ],
+    "web_accessible_resources": [
+        "icons/*.png"
+    ],
+    "icons": {
+        "16": "icons/icon128.png",
+        "48": "icons/icon128.png",
+        "128": "icons/icon128.png"
+    },
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "focustube@malekwael.com",
+            "strict_min_version": "121.0",
+            "data_collection_permissions": {
+                "required": [
+                    "none"
+                ]
+            }
+        }
     }
-  }
 }

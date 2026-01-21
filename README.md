@@ -10,7 +10,7 @@
   [Installation](#installation) • [Features](#features) • [Configuration](#configuration) • [Technical Details](#technical-details)
   
   ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-  ![Version](https://img.shields.io/badge/version-2.0.0-green.svg)
+  ![Version](https://img.shields.io/badge/version-2.1.0-green.svg)
   ![Firefox](https://img.shields.io/badge/firefox-compatible-orange.svg)
   
 </div>
@@ -19,52 +19,47 @@
 
 **FocusTube** is a Manifest V3 browser extension designed to stop doomscrolling in its tracks. Unlike basic element blockers, it uses **Session-Aware Logic** to handle modern Single Page Applications (SPAs), ensuring that distractions remain blocked even as you navigate, without breaking the rest of the site.
 
-## New in v2.0.0
+## New in v2.1.0
 
-*   **LinkedIn Support:** Added LinkedIn blocking and visual hiding, including Feed, Puzzles, and Add to Your Feed controls.
-*   **Expanded Visual Hiding:** New per-platform toggles for YouTube Shorts navigation, Instagram Reels and Stories, and Facebook Reels and Stories.
-*   **Popup Redesign:** Compact control center with platform icon grid, mode badges, per-platform detail panels, onboarding tutorial, and review prompt.
-*   **Timer Improvements:** Clear work and break states, manual break start when auto-start is off, and stricter lock behavior for the master toggle and modes.
-*   **Break Behavior:** Breaks disable visual hiding and overlays for consistent passive behavior.
-*   **Options Refresh:** Reorganized sections, added per-platform visual hiding controls, and removed the Appearance section and show-stats toggle.
-*   **Packaging Updates:** Updated manifests and permissions, including LinkedIn host permissions, with version bump to 2.0.0.
+Focused on stability, clarity, and cross-platform polish:
 
----
+*   **Instagram feed reels hiding:** Stronger detection (including video-only cards), dedicated toggle, and nav/story guards.
+*   **Review prompt refresh:** Notification-style card with centered actions; “Later” snoozes for +20 blocks, “Rate Us” dismisses for good; popup resizes to avoid overlap.
+*   **Timer lock messaging:** Clear lock banners in options/popup and stricter mode locking while a timer runs.
+*   **Tutorial disabled temporarily:** Misaligned tour removed from autoplay; code remains for later re-enable.
+*   **Manifest split:** `chrome-manifest.json` for Chromium, `manifest.json` for Firefox so both paths are testable without edits to Firefox build.
 
 ## Features
 
 ### Behavioral Intervention
-*   **Strict Mode:**
-    *   **YouTube, Instagram, Facebook:** Instantly redirects you to safe pages (Feed/Messages) if you create a "Shorts" session.
-    *   **TikTok:** Blocks the entire feed with a full-screen focus overlay.
-*   **Soft Mode:** Presents a "Warning" overlay. You must consciously click "Watch Anyway" to proceed (5-minute timeout).
-*   **Passive Mode:** No active blocking, but visual clutter (like the Shorts shelf or Reels tab) remains hidden to prevent rabbit holes.
+*   **Strict Mode:** Blocks distracting surfaces; redirects or overlays to keep you out.
+*   **Warn Mode:** Shows an interstitial; you must click “Watch Anyway” to proceed.
+*   **Passive Mode:** No blocking, but hides visual traps (Shorts/Reels tabs) to reduce rabbit holes.
 
 ### Visual Cleaning
-*   **YouTube:** Removes Shorts shelf, Sidebar recommendations, and chip filters.
-*   **Instagram:** Hides "Reels" and "Explore" tabs from the navigation bar.
-*   **Facebook:** Hides the "Reels & Short Videos" shelf from the main feed.
+*   **YouTube:** Hide Shorts button and Shorts shelves.
+*   **Instagram:** Hide Reels tab, explore, stories, and feed reels (toggleable).
+*   **Facebook:** Hide Reels nav link and stories.
 
 ### Productivity Tools
-*   **Customizable Timer:** Built-in Pomodoro timer with adjustable Focus/Break intervals.
-*   **Lockdown Security:** Prevents self-sabotage. When the timer is running, the extension **locks itself**—you cannot disable blocking or switch modes until the timer ends.
-*   **Dashboard:** Tracks "Shorts Blocked", "Time Saved", and "Sessions Completed" in real-time.
+*   **Customizable Timer:** Built-in Focus/Break timer with auto-lock of mode switches while active.
+*   **Dashboard:** Tracks “Shorts Blocked” and “Time Saved.”
 
 ---
 
 ## Installation
 
 ### Official Stores
-*   **Microsoft Edge:** *[Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)* (v2.0.0)
-*   **Firefox Add-ons:** *[Download from Firefox Add-ons](https://addons.mozilla.org/addon/focus-tube/)* (v2.0.0)
-*   **Chrome Web Store:** *[Download from Chrome Web Store](https://chromewebstore.google.com/detail/focustube-distraction-blo/ppdjgkniggbikifojmkindmbhppmoell?authuser=1&hl=en)* (v2.0.0)
+*   **Microsoft Edge:** *[Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)* (v2.1.0)
+*   **Firefox Add-ons:** *[Download from Firefox Add-ons](https://addons.mozilla.org/addon/focus-tube/)* (v2.1.0)
+*   **Chrome Web Store:** *[Download from Chrome Web Store](https://chromewebstore.google.com/detail/focustube-distraction-blo/ppdjgkniggbikifojmkindmbhppmoell?authuser=1&hl=en)* (v2.1.0)
 
 ### Manual Installation (Developer Mode)
 
 1.  **Clone or Download** this repository.
-2.  **Rename Manifest:**
+2.  **Pick Manifest:**
     *   **Chrome/Edge/Brave:** Rename `chrome-manifest.json` to `manifest.json`.
-    *   **Firefox:** Rename `firefox-manifest.json` to `manifest.json`.
+    *   **Firefox:** Use the provided `manifest.json`.
 3.  **Load Extension:**
     *   **Chrome/Edge:** Go to `chrome://extensions` → Enable **Developer Mode** (top right) → Click **Load unpacked** → Select the folder.
     *   **Firefox:** Go to `about:debugging#/runtime/this-firefox` → Click **Load Temporary Add-on...** → Select the `manifest.json` file.

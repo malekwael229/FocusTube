@@ -1,0 +1,270 @@
+body.focus-mode-active.ft-platform-yt.ft-hide-yt-shorts-shelves ytd-rich-shelf-renderer[is-shorts],
+body.focus-mode-active.ft-platform-yt.ft-hide-yt-shorts-shelves ytd-rich-shelf-renderer[is-shorts=""],
+body.focus-mode-active.ft-platform-yt.ft-hide-yt-shorts-shelves ytd-reel-shelf-renderer,
+body.focus-mode-active.ft-platform-yt.ft-hide-yt-shorts-shelves .reel-item-endpoint,
+body.focus-mode-active.ft-platform-yt.ft-hide-yt-shorts-shelves yt-tab-shape[tab-title="Shorts"] {
+    display: none !important;
+}
+body.focus-mode-active.ft-platform-yt.ft-hide-yt-shorts-nav ytd-guide-entry-renderer a[title="Shorts"],
+body.focus-mode-active.ft-platform-yt.ft-hide-yt-shorts-nav ytd-mini-guide-entry-renderer a[title="Shorts"],
+body.focus-mode-active.ft-platform-yt.ft-hide-yt-shorts-nav ytd-guide-entry-renderer a[href="/shorts"],
+body.focus-mode-active.ft-platform-yt.ft-hide-yt-shorts-nav ytd-mini-guide-entry-renderer a[href="/shorts"] {
+    display: none !important;
+}
+body.ft-platform-yt.ft-yt-logo-fix ytd-masthead #logo,
+body.ft-platform-yt.ft-yt-logo-fix ytd-masthead #logo-icon,
+body.ft-platform-yt.ft-yt-logo-fix ytd-masthead ytd-logo,
+body.ft-platform-yt.ft-yt-logo-fix ytd-masthead ytd-topbar-logo-renderer,
+body.ft-platform-yt.ft-yt-logo-fix ytd-masthead #start {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: inline-flex !important;
+}
+body.ft-platform-yt.ft-yt-logo-fix ytd-masthead #logo-icon,
+body.ft-platform-yt.ft-yt-logo-fix ytd-masthead #logo-icon svg,
+body.ft-platform-yt.ft-yt-logo-fix ytd-masthead ytd-logo {
+    color: var(--yt-spec-text-primary, #0f0f0f) !important;
+}
+html[dark] body.ft-platform-yt.ft-yt-logo-fix ytd-masthead #logo-icon,
+html[dark] body.ft-platform-yt.ft-yt-logo-fix ytd-masthead #logo-icon svg,
+html[dark] body.ft-platform-yt.ft-yt-logo-fix ytd-masthead ytd-logo {
+    color: var(--yt-spec-text-primary, #f1f1f1) !important;
+}
+body.ft-platform-yt.ft-yt-logo-fix ytd-masthead #logo-icon,
+body.ft-platform-yt.ft-yt-logo-fix ytd-masthead #logo-icon .yt-icon-shape,
+body.ft-platform-yt.ft-yt-logo-fix ytd-masthead #logo-icon svg {
+    height: 100% !important;
+    width: auto !important;
+    display: flex !important;
+}
+body.ft-hide-ig-reels-nav.ft-platform-ig a[href^="/reels/"],
+body.ft-hide-ig-reels-nav.ft-platform-ig a[href^="/explore/"],
+body.ft-hide-ig-reels-nav.ft-platform-ig nav a[href="/reels/"],
+body.ft-hide-ig-reels-nav.ft-platform-ig nav a[href="/explore/"],
+body.ft-hide-ig-reels-nav.ft-platform-ig nav svg[aria-label*="Reel"] {
+    display: none !important;
+}
+body.ft-hide-fb-reels-nav.ft-platform-fb a[aria-label="Reels"],
+body.ft-hide-fb-reels-nav.ft-platform-fb a[aria-label="Watch Reels"],
+body.ft-hide-fb-reels-nav.ft-platform-fb a[href="/reels/"],
+body.ft-hide-fb-reels-nav.ft-platform-fb a[href^="/reels/"] {
+    display: none !important;
+}
+body.ft-hide-fb-stories.ft-platform-fb [aria-label="Stories"] [role="button"],
+body.ft-hide-fb-stories.ft-platform-fb [aria-label="Story tray"] [role="button"],
+body.ft-hide-fb-stories.ft-platform-fb [aria-label="See more stories"],
+body.ft-hide-fb-stories.ft-platform-fb [aria-label="Next card"],
+body.ft-hide-fb-stories.ft-platform-fb [aria-label="Previous card"] {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+.focus-tube-warning {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-color: rgba(255, 255, 255, 0.98);
+    z-index: 2147483647 !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+    pointer-events: auto !important;
+    isolation: auto !important;
+    user-select: none !important;
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .focus-tube-warning {
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+    }
+}
+.focus-tube-warning.dark {
+    background-color: rgba(0, 0, 0, 0.98) !important;
+}
+.focus-tube-warning.dark h1 {
+    color: #ffffff !important;
+}
+.focus-tube-warning.dark p {
+    color: #a0a0a0 !important;
+}
+.focus-tube-card {
+    text-align: center;
+    max-width: 480px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    font-family: inherit !important;
+    position: relative;
+    z-index: 2147483647 !important;
+    pointer-events: auto !important;
+    user-select: none !important;
+}
+.focus-tube-icon-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 22px;
+    margin-bottom: 32px;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border: none;
+    filter: drop-shadow(0 10px 15px rgba(79, 172, 254, 0.4));
+    user-select: none !important;
+    -webkit-user-drag: none;
+}
+.focus-tube-card h1 {
+    font-size: 24px !important;
+    margin: 0 0 12px 0 !important;
+    color: #1d1d1f !important;
+    font-weight: 600 !important;
+    font-family: inherit !important;
+    user-select: none !important;
+}
+.focus-tube-card p {
+    font-size: 16px !important;
+    margin: 0 0 32px 0 !important;
+    color: #6e6e73 !important;
+    line-height: 1.5;
+    font-family: inherit !important;
+    max-width: 400px;
+    user-select: none !important;
+}
+.focus-tube-btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    align-items: center;
+    pointer-events: auto !important;
+}
+.focus-tube-btn {
+    padding: 12px 32px !important;
+    font-size: 15px !important;
+    border-radius: 99px !important;
+    cursor: pointer !important;
+    border: none !important;
+    transition: all 0.2s;
+    font-family: inherit;
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 2147483647;
+}
+.focus-tube-btn-primary {
+    background: #007aff !important;
+    color: white !important;
+}
+.focus-tube-btn-secondary {
+    background: #f2f2f7 !important;
+    color: #1d1d1f !important;
+}
+.focus-tube-warning.dark .focus-tube-btn-secondary {
+    background: #2c2c2e !important;
+    color: #ffffff !important;
+}
+html.ft-scroll-lock,
+body.ft-scroll-lock {
+    overflow: hidden !important;
+    height: 100% !important;
+}
+.ft-linkedin-overlay-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+    filter: drop-shadow(0 4px 8px rgba(79, 172, 254, 0.3));
+}
+.ft-linkedin-overlay h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    color: #1d1d1f;
+}
+.ft-linkedin-overlay.dark h3 {
+    color: #fff;
+}
+.ft-linkedin-overlay p {
+    font-size: 13px;
+    color: #6e6e73;
+    margin: 0 0 16px 0;
+}
+.ft-linkedin-overlay.dark p {
+    color: #a0a0a0;
+}
+.ft-linkedin-overlay-btn {
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    border-radius: 99px;
+    background: #007aff;
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.ft-linkedin-overlay-btn:hover {
+    opacity: 0.85;
+}
+.ft-linkedin-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 24px;
+    text-align: center;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    border: 1px solid #e0e0e0;
+    overflow: hidden;
+    user-select: none !important;
+}
+.ft-linkedin-overlay.dark {
+    background: #1b1f23;
+    border-color: #38434f;
+}
+body.ft-platform-li main.scaffold-layout__main,
+body.ft-platform-li aside.scaffold-layout__aside {
+    position: relative;
+}
+.ft-stories-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(79, 172, 254, 0.95) 0%, rgba(0, 242, 254, 0.95) 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    z-index: 100;
+    border-radius: 8px;
+    overflow: hidden;
+    max-height: 100%;
+    box-sizing: border-box;
+    user-select: none !important;
+}
+.ft-stories-overlay.dark {
+    background: linear-gradient(135deg, rgba(30, 30, 30, 0.98) 0%, rgba(40, 40, 40, 0.98) 100%);
+    border: 1px solid rgba(79, 172, 254, 0.3);
+}
+.ft-stories-overlay-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
