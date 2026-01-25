@@ -90,8 +90,16 @@ const Utils = {
             this.videoLockInterval = null;
         }
     },
+    injectStyle: function (css) {
+        if (!css) return null;
+        const style = document.createElement('style');
+        style.classList.add('ft-injected-style');
+        style.textContent = css;
+        (document.head || document.documentElement).appendChild(style);
+        return style;
+    },
     clearInjectedStyles: function () {
-        document.querySelectorAll('style[data-ft-style], style[id^="ft-style"], style#ft-style').forEach(el => el.remove());
+        document.querySelectorAll('.ft-injected-style').forEach(el => el.remove());
     },
     clearInjectedElements: function () {
         const ids = [
@@ -376,7 +384,6 @@ const Utils = {
 const UI = {
     overlayId: 'focus-tube-warning-overlay',
     persistenceObserver: null,
-    videoLockInterval: null,
     isOverlayNeeded: false,
     create: function (type, platform, onAllow, onBack) {
         if (!Utils.isExtensionEnabled()) return;
@@ -471,23 +478,14 @@ const UI = {
             }
         });
         this.persistenceObserver.observe(target, { childList: true });
-        if (this.videoLockInterval) clearInterval(this.videoLockInterval);
         if (Site.isTT() || Site.isFB() || type === 'warn') {
             Utils.lockVideo();
-            this.videoLockInterval = setInterval(() => {
-                if (!this.isOverlayNeeded) { clearInterval(this.videoLockInterval); return; }
-                Utils.lockVideo();
-            }, 500);
         }
     },
     remove: function () {
         if (this.persistenceObserver) {
             this.persistenceObserver.disconnect();
             this.persistenceObserver = null;
-        }
-        if (this.videoLockInterval) {
-            clearInterval(this.videoLockInterval);
-            this.videoLockInterval = null;
         }
         this.isOverlayNeeded = false;
         const overlay = document.getElementById(this.overlayId);

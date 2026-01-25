@@ -1,5 +1,6 @@
 const YouTube = {
     isRedirecting: false,
+    _scheduledHiding: null,
     initialized: false,
     observer: null,
     lastUrl: '',
@@ -177,6 +178,13 @@ const YouTube = {
         this.restoreHidden(this.hiddenFocusElements);
     },
     applyInlineHiding: function () {
+        if (this._scheduledHiding) return;
+        this._scheduledHiding = requestAnimationFrame(() => {
+            this._scheduledHiding = null;
+            this._performInlineHiding();
+        });
+    },
+    _performInlineHiding: function () {
         const shouldHide = FocusState.shouldBlock && Utils.shouldApplyVisualHiding('yt');
         if (!shouldHide) {
             this.clearInlineHiding();
