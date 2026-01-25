@@ -90,8 +90,16 @@ const Utils = {
             this.videoLockInterval = null;
         }
     },
+    injectStyle: function (css) {
+        if (!css) return null;
+        const style = document.createElement('style');
+        style.classList.add('ft-injected-style');
+        style.textContent = css;
+        (document.head || document.documentElement).appendChild(style);
+        return style;
+    },
     clearInjectedStyles: function () {
-        document.querySelectorAll('style[data-ft-style], style[id^="ft-style"], style#ft-style').forEach(el => el.remove());
+        document.querySelectorAll('.ft-injected-style').forEach(el => el.remove());
     },
     clearInjectedElements: function () {
         const ids = [
