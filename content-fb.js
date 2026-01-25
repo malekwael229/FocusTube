@@ -139,12 +139,12 @@ const Facebook = {
                 else Utils.restoreInlineStyle(container, 'display');
             }
         }
-        selectors.forEach(sel => {
-            document.querySelectorAll(sel).forEach(el => {
+        if (selectors.length > 0) {
+            document.querySelectorAll(selectors.join(',')).forEach(el => {
                 if (shouldHide) Utils.setInlineStyle(el, 'display', 'none', 'important');
                 else Utils.restoreInlineStyle(el, 'display');
             });
-        });
+        }
         if (shouldHide) {
             const navTargets = document.querySelectorAll(
                 '[role="navigation"] a[href*="/reel/"], [role="navigation"] a[href*="/reels/"], [role="navigation"] a[aria-label*="Reel"],' +
