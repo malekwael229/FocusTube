@@ -1,89 +1,134 @@
 <div align="center">
-  <img width="1400" height="560" alt="focustube-promotional-tile-1400x560" src="https://github.com/user-attachments/assets/7cb5e68f-e575-40da-8084-333c4f26c7e2" />
+  <img width="1400" height="560" alt="FocusTube promotional tile" src="https://github.com/user-attachments/assets/7cb5e68f-e575-40da-8084-333c4f26c7e2" />
 
   # FocusTube: Distraction Blocker
-  
-  **Stop Doomscrolling. Reclaim Your Focus.**
-  
-  **Blocks YouTube Shorts, Instagram Reels, TikTok, and Facebook Reels.**
 
-  [Installation](#installation) • [Features](#features) • [Configuration](#configuration) • [Technical Details](#technical-details)
-  
+  **A privacy-first browser extension for reducing distracting social video and feed surfaces.**
+
+  **Supports YouTube Shorts, Instagram Reels, TikTok, Facebook Reels, and LinkedIn feed controls.**
+
+  [Installation](#installation) • [Features](#features) • [Configuration](#configuration) • [Project Impact](#project-impact) • [Technical Highlights](#technical-highlights) • [Privacy](#privacy)
+
   ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-  ![Version](https://img.shields.io/badge/version-2.1.0-green.svg)
+  ![Version](https://img.shields.io/badge/version-2.2.0-green.svg)
   ![Firefox](https://img.shields.io/badge/firefox-compatible-orange.svg)
-  
 </div>
 
 ---
 
-**FocusTube** is a Manifest V3 browser extension designed to stop doomscrolling in its tracks. Unlike basic element blockers, it uses **Session-Aware Logic** to handle modern Single Page Applications (SPAs), ensuring that distractions remain blocked even as you navigate, without breaking the rest of the site.
+**FocusTube** is an open-source browser extension built and maintained to help users reduce doomscrolling and stay focused. It blocks or hides distracting areas on supported platforms while keeping all settings and usage data local to the browser.
+
+The project supports Chromium browsers with a Manifest V3 build and Firefox with a separate compatibility manifest.
 
 ## Features
 
-### Behavioral Intervention
-*   **Strict Mode:** Blocks distracting surfaces; redirects or overlays to keep you out.
-*   **Warn Mode:** Shows an interstitial; you must click “Watch Anyway” to proceed.
-*   **Passive Mode:** No blocking, but hides visual traps (Shorts/Reels tabs) to reduce rabbit holes.
+### Blocking Modes
 
-### Visual Cleaning
-*   **YouTube:** Hide Shorts button and Shorts shelves.
-*   **Instagram:** Hide Reels tab, explore, stories, and feed reels (toggleable).
-*   **Facebook:** Hide Reels nav link and stories.
+- **Strict Mode:** Blocks distracting surfaces by redirecting or showing a blocking overlay.
+- **Warn Mode:** Shows an interstitial before access where supported.
+- **Passive Mode:** Allows normal browsing while visual hiding controls can still reduce distracting entry points.
+
+### Supported Surfaces
+
+- **YouTube:** Blocks Shorts URLs and can hide Shorts navigation/shelves.
+- **Instagram:** Blocks Reels/Explore paths and can hide Reels navigation and Stories.
+- **TikTok:** Blocks common feed/video surfaces while allowing safer areas such as messages and settings.
+- **Facebook:** Blocks Reels paths and can hide Reels navigation and Stories.
+- **LinkedIn:** Can hide the main feed and "Add to your feed" sidebar card.
 
 ### Productivity Tools
-*   **Customizable Timer:** Built-in Focus/Break timer with auto-lock of mode switches while active.
-*   **Dashboard:** Tracks “Shorts Blocked” and “Time Saved.”
+
+- Built-in focus/break timer.
+- Optional browser notifications when timers complete.
+- Local blocked-count and time-saved estimates.
+- Popup and options pages for browser-local configuration.
 
 ---
 
 ## Installation
 
 ### Official Stores
-*   **Microsoft Edge:** *[Download from Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)* (v2.1.0)
-*   **Firefox Add-ons:** *[Download from Firefox Add-ons](https://addons.mozilla.org/addon/focus-tube/)* (v2.1.0)
-*   **Chrome Web Store:** *[Download from Chrome Web Store](https://chromewebstore.google.com/detail/focustube-distraction-blo/ppdjgkniggbikifojmkindmbhppmoell?authuser=1&hl=en)* (v2.1.0)
 
-### Manual Installation (Developer Mode)
+- **Chrome Web Store:** [FocusTube](https://chromewebstore.google.com/detail/focustube-distraction-blo/ppdjgkniggbikifojmkindmbhppmoell)
+- **Microsoft Edge Add-ons:** [FocusTube](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)
+- **Firefox Add-ons:** [FocusTube](https://addons.mozilla.org/addon/focus-tube/)
 
-1.  **Clone or Download** this repository.
-2.  **Pick Manifest:**
-    *   **Chrome/Edge/Brave:** Rename `chrome-manifest.json` to `manifest.json`.
-    *   **Firefox:** Use the provided `manifest.json`.
-3.  **Load Extension:**
-    *   **Chrome/Edge:** Go to `chrome://extensions` → Enable **Developer Mode** (top right) → Click **Load unpacked** → Select the folder.
-    *   **Firefox:** Go to `about:debugging#/runtime/this-firefox` → Click **Load Temporary Add-on...** → Select the `manifest.json` file.
+### Manual Installation
+
+Clone or download this repository, then choose the manifest for your browser.
+
+#### Chrome, Edge, Brave, and other Chromium browsers
+
+The Chromium build uses **Manifest V3**.
+
+1. Copy or rename `chrome-manifest.json` to `manifest.json`.
+2. Open `chrome://extensions` or `edge://extensions`.
+3. Enable **Developer mode**.
+4. Click **Load unpacked**.
+5. Select the repository folder containing the renamed `manifest.json`.
+
+#### Firefox
+
+The Firefox build currently uses **Manifest V2** for compatibility.
+
+1. Copy or rename `firefox-manifest.json` to `manifest.json`.
+2. Open `about:debugging#/runtime/this-firefox`.
+3. Click **Load Temporary Add-on...**.
+4. Select the copied/renamed `manifest.json` file.
+
+Firefox temporary add-ons are removed when the browser restarts. Reload the manifest from `about:debugging` when testing changes.
 
 ---
 
 ## Configuration
 
-Click the extension icon to access the **Control Center**:
-*   **Master Toggle:** Global On/Off (Locked during active Timer).
-*   **Platform Cards:** Click to expand and configure modes (Strict/Soft/Passive) for each site.
-*   **Settings (⚙️):** Click the gear icon to access the Options Dashboard for timer customization and data management.
+Click the extension icon to open the popup:
+
+- Toggle FocusTube on or off.
+- Toggle visual distraction hiding.
+- Configure each supported platform.
+- Start or stop the focus/break timer.
+- Open the options page for timer settings, platform visibility, import/export, and reset controls.
 
 ---
 
-## Technical Details
+## Project Impact
 
-*   **Architecture:** **Manifest V3** with modular content scripts (Split Architecture).
-*   **Performance:** Uses `MutationObserver` and `requestAnimationFrame` for responsive, low-overhead DOM manipulation.
-*   **Compatibility:** Cross-browser support for Chromium (Chrome, Edge, Brave) and Gecko (Firefox).
-*   **Privacy:** **100% Local.** No analytics, no tracking, no external servers.
+- Published on Chrome Web Store, Microsoft Edge Add-ons, and Firefox Add-ons.
+- Open-source MIT-licensed project.
+- Privacy-first: no extension-side analytics or remote backend; settings stay in browser storage.
+
+---
+
+## Technical Highlights
+
+- Browser extension APIs for storage, alarms, notifications, popup UI, options UI, and content scripts.
+- Cross-browser manifests for Chromium and Firefox.
+- Site-specific content scripts for YouTube, Instagram, TikTok, Facebook, and LinkedIn.
+- Shared DOM utilities for overlays, visual hiding, timer state, and SPA updates.
+- `MutationObserver`, browser navigation events, and timer-driven messaging for dynamic single-page applications.
+- Local browser storage for preferences, timer state, stats, and import/export data.
 
 ---
 
-## Privacy Policy
+## Privacy
 
-FocusTube is a privacy-first, open-source project.
+FocusTube is designed to run locally in the browser.
 
-*   **No Data Collection:** This extension does not collect, store, transmit, or sell any user data.
-*   **Local Storage:** All preferences (timer settings, stats, active modes) are stored locally on your device using the browser's `storage.local` API.
-*   **No Analytics:** We do not use Google Analytics or any third-party tracking scripts.
-*   **No External Servers:** The extension does not communicate with any external servers.
+- **No analytics or tracking:** The extension code does not include analytics SDKs or telemetry calls.
+- **No remote backend:** The extension does not send browsing data or settings to a project-controlled server.
+- **Local storage:** Preferences, timer state, stats, and settings backups use browser-local APIs such as `chrome.storage.local`.
+- **User-opened links only:** The popup/options UI can open GitHub or store listing pages when the user clicks related buttons.
 
 ---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup and testing notes.
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for reporting security or privacy issues.
 
 ## License
 
