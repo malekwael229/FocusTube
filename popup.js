@@ -9,12 +9,11 @@ const githubBtn = document.getElementById("githubBtn");
 const settingsBtn = document.getElementById("settingsBtn");
 const statShorts = document.getElementById("statShorts");
 const statTime = document.getElementById("statTime");
+const popupControls = document.getElementById("popupControls");
 const mainView = document.getElementById("main-view");
 const platformDetail = document.getElementById("platform-detail");
 const backBtn = document.getElementById("backBtn");
 const detailTitle = document.getElementById("detailTitle");
-const msg = (key, substitutions) =>
-  globalThis.FT_I18N?.message(key, substitutions) || "";
 let settings = {
   yt: "strict",
   ig: "strict",
@@ -26,11 +25,11 @@ let currentPlatform = null;
 let timerInterval = null;
 let timerEndTime = null;
 const PLATFORM_NAMES = {
-  yt: msg("platformYoutube"),
-  ig: msg("platformInstagram"),
-  tt: msg("platformTiktok"),
-  fb: msg("platformFacebook"),
-  li: msg("platformLinkedin"),
+  yt: "YouTube",
+  ig: "Instagram",
+  tt: "TikTok",
+  fb: "Facebook",
+  li: "LinkedIn",
 };
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => document.body.classList.remove("preload"), 100);
@@ -49,6 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
       "popup_visible_tt",
       "popup_visible_fb",
       "popup_visible_li",
+      "ft_timer_duration",
       "tutorialCompleted",
       "showBreakButton",
       "autoStartBreaks",
@@ -67,7 +67,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (enabledToggle) enabledToggle.checked = isEnabled;
       toggle.checked = result.focusMode !== false;
       applyExtensionEnabledState(isEnabled);
-      timerBtn.textContent = msg("startTimer");
+      const duration = parseInt(result.ft_timer_duration) || 25;
+      timerBtn.innerText = `Start Timer`;
       const isDark = resolveDarkMode(result.darkMode);
       applyTheme(isDark);
       if (result.platformSettings) {
@@ -91,18 +92,20 @@ document.addEventListener("DOMContentLoaded", () => {
             applyExtensionEnabledState(isEnabled);
           }
           if (changes.ft_timer_end || changes.ft_timer_type) {
-            chrome.storage.local.get(["ft_timer_end", "ft_timer_type"], (res) => {
-              if (chrome.runtime.lastError) {
-                void chrome.runtime.lastError;
-                return;
-              }
-              if (res.ft_timer_end && res.ft_timer_end > Date.now()) {
-                setBreakPromptVisible(false);
-                startTimerDisplay(res.ft_timer_end, res.ft_timer_type);
-              } else {
-                resetTimerUI();
-              }
-            });
+            const newEnd = changes.ft_timer_end
+              ? changes.ft_timer_end.newValue
+              : null;
+            const newType = changes.ft_timer_type
+              ? changes.ft_timer_type.newValue
+              : null;
+            if (newEnd && newEnd > Date.now()) {
+              setBreakPromptVisible(false);
+              chrome.storage.local.get(["ft_timer_type"], (res) => {
+                startTimerDisplay(newEnd, newType || res.ft_timer_type);
+              });
+            } else if (changes.ft_timer_end) {
+              resetTimerUI();
+            }
           }
           if (
             changes.ft_work_session_ended &&
@@ -134,22 +137,14 @@ document.addEventListener("DOMContentLoaded", () => {
 function applyExtensionEnabledState(isEnabled) {
   document.body.classList.toggle("ft-disabled", !isEnabled);
   if (extensionStatusLabel)
-    extensionStatusLabel.textContent = isEnabled
-      ? msg("enabled")
-      : msg("disabled");
+    extensionStatusLabel.textContent = isEnabled ? "Enabled" : "Disabled";
 }
 function updateStats(blocked) {
-  if (statShorts)
-    statShorts.textContent = msg("blockedCount", [String(blocked)]);
+  if (statShorts) statShorts.textContent = blocked;
   if (statTime) {
     const mins = blocked || 0;
-    const time = mins < 60
-      ? msg("minutesCompact", [String(mins)])
-      : msg(
-          "hoursMinutesCompact",
-          [String(Math.floor(mins / 60)), String(mins % 60)],
-        );
-    statTime.textContent = msg("timeSavedCompact", [time]);
+    if (mins < 60) statTime.textContent = `${mins}m`;
+    else statTime.textContent = `${Math.floor(mins / 60)}h ${mins % 60}m`;
   }
 }
 function applyTheme(isDark) {
@@ -163,28 +158,6 @@ function setBreakPromptVisible(isVisible) {
   const breakWrapper = document.getElementById("breakWrapper");
   if (breakWrapper) breakWrapper.classList.toggle("hidden", !isVisible);
   if (breakBtn) breakBtn.classList.toggle("hidden", !isVisible);
-}
-function reconcileBreakState() {
-  chrome.storage.local.get(
-    ["ft_timer_end", "ft_timer_type", "ft_work_session_ended", "autoStartBreaks", "showBreakButton"],
-    (res) => {
-      if (chrome.runtime.lastError) {
-        void chrome.runtime.lastError;
-        return;
-      }
-      if (res.ft_timer_end && res.ft_timer_end > Date.now()) {
-        setBreakPromptVisible(false);
-        startTimerDisplay(res.ft_timer_end, res.ft_timer_type);
-        return;
-      }
-      resetTimerUI();
-      setBreakPromptVisible(
-        res.ft_work_session_ended === true &&
-          res.autoStartBreaks === false &&
-          res.showBreakButton !== false,
-      );
-    },
-  );
 }
 function updateAllPlatformIcons() {
   chrome.storage.local.get(["ft_timer_end", "ft_timer_type"], (res) => {
@@ -210,9 +183,9 @@ function updatePlatformVisibility(visibility) {
   let currentRow = null;
   let itemsInRow = 0;
   const rows = [];
-  const totalVisible = visiblePlatforms.length;
-  const targetPerRow = 2;
   visiblePlatforms.forEach((platform, index) => {
+    const totalVisible = visiblePlatforms.length;
+    const targetPerRow = 2;
     let inLastRow = false;
     if (totalVisible <= 2) {
       inLastRow = true;
@@ -251,17 +224,18 @@ function createPlatformButton(platform) {
     fb: "M24 12c0-6.6-5.4-12-12-12S0 5.4 0 12c0 6 4.4 11 10.1 11.9v-8.4H7.1V12h3v-2.7c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v2.9h-1.5c-1.5 0-2 .9-2 1.9V12h3.3l-.5 3.5h-2.8v8.4C19.6 23 24 18 24 12z",
     li: "M20.4 20.4h-3.5v-5.6c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9v5.7H9.4V9h3.4v1.6h.1c.5-.9 1.6-1.8 3.4-1.8 3.6 0 4.3 2.4 4.3 5.5v6.1zM5.3 7.4c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm1.8 13H3.5V9h3.5v11.4zM22.2 0H1.8C.8 0 0 .8 0 1.8v20.4c0 1 .8 1.8 1.8 1.8h20.4c1 0 1.8-.8 1.8-1.8V1.8c0-1-.8-1.8-1.8-1.8z",
   };
+  const titles = {
+    yt: "YouTube",
+    ig: "Instagram",
+    tt: "TikTok",
+    fb: "Facebook",
+    li: "LinkedIn",
+  };
   const btn = document.createElement("button");
   btn.className = "platform-icon";
   btn.dataset.platform = platform;
-  btn.title = PLATFORM_NAMES[platform];
-  btn.setAttribute(
-    "aria-label",
-    msg(
-      "platformSettings",
-      [PLATFORM_NAMES[platform]],
-    ),
-  );
+  btn.title = titles[platform];
+  btn.setAttribute("aria-label", `${titles[platform]} settings`);
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 24 24");
   svg.setAttribute("width", "28");
@@ -288,25 +262,27 @@ function updatePlatformIcon(icon, mode) {
 }
 const PLATFORM_SETTINGS = {
   yt: [
-    { key: "hide_yt_shorts_nav", labelKey: "hideShortsButton" },
-    { key: "hide_yt_shorts_shelves", labelKey: "hideShortsShelves" },
-    { key: "hide_yt_most_relevant_shelf", labelKey: "hideMostRelevantShelfShort" },
+    { key: "hide_yt_shorts_nav", label: "Hide Shorts Button" },
+    { key: "hide_yt_shorts_shelves", label: "Hide Shorts Shelves" },
+    { key: "hide_yt_most_relevant_shelf", label: 'Hide "Most Relevant"' },
   ],
   ig: [
-    { key: "hide_ig_stories", labelKey: "hideStories" },
-    { key: "hide_ig_reels_nav", labelKey: "hideReelsButton" },
+    { key: "hide_ig_stories", label: "Hide Stories" },
+    { key: "hide_ig_reels_nav", label: "Hide Reels Button" },
+    { key: "hide_ig_suggested", label: "Hide posts you don't follow" },
   ],
   fb: [
-    { key: "hide_fb_stories", labelKey: "hideStories" },
-    { key: "hide_fb_reels_nav", labelKey: "hideReelsButton" },
+    { key: "hide_fb_stories", label: "Hide Stories" },
+    { key: "hide_fb_reels_nav", label: "Hide Reels Button" },
     {
       key: "hide_fb_people_you_might_know",
-      labelKey: "hidePeopleYouMightKnow",
+      label: "Hide People You Might Know",
     },
   ],
   li: [
-    { key: "hide_li_feed", labelKey: "hideFeed" },
-    { key: "hide_li_addfeed", labelKey: "hideAddToFeedShort" },
+    { key: "hide_li_feed", label: "Cover the whole feed" },
+    { key: "hide_li_addfeed", label: "Hide follow suggestions" },
+    { key: "hide_li_suggested", label: "Hide posts outside your network" },
   ],
   tt: [],
 };
@@ -333,16 +309,16 @@ function showPlatformDetail(platform) {
       if (desc) {
         if (platform === "li") {
           if (modeVal === "strict")
-            desc.textContent = msg("modeLinkedinStrictDescription");
+            desc.textContent = "Hides feed & distracting elements";
           if (modeVal === "warn")
-            desc.textContent = msg("modeLinkedinWarnDescription");
-          if (modeVal === "allow") desc.textContent = msg("modeLinkedinPassiveDescription");
+            desc.textContent = 'Hides feed, allows "View Anyway"';
+          if (modeVal === "allow") desc.textContent = "Does not hide anything";
         } else if (modeVal === "allow") {
-          desc.textContent = msg("modePassiveDescription");
+          desc.textContent = "Normal browsing";
         } else if (modeVal === "warn") {
-          desc.textContent = msg("modeWarnDescription");
+          desc.textContent = "Show warning overlay first";
         } else if (modeVal === "strict") {
-          desc.textContent = msg("modeStrictDescription");
+          desc.textContent = "Block access completely";
         }
       }
     });
@@ -387,14 +363,13 @@ function showPlatformDetail(platform) {
           row.className = "platform-setting-row";
           const label = document.createElement("span");
           label.className = "platform-setting-label";
-          label.textContent = msg(toggle.labelKey);
+          label.textContent = toggle.label;
           const switchLabel = document.createElement("label");
           switchLabel.className = "mini-switch";
           const input = document.createElement("input");
           input.type = "checkbox";
           input.dataset.key = toggle.key;
           input.checked = isChecked;
-          input.setAttribute("aria-label", msg(toggle.labelKey));
           const slider = document.createElement("span");
           slider.className = "mini-slider";
           switchLabel.append(input, slider);
@@ -437,26 +412,7 @@ function hidePlatformDetail() {
 function setupEventListeners() {
   if (enabledToggle) {
     enabledToggle.addEventListener("change", () => {
-      const enabled = enabledToggle.checked;
-      chrome.runtime.sendMessage(
-        { action: "setExtensionEnabled", enabled },
-        (response) => {
-          if (chrome.runtime.lastError || !response || response.enabled !== enabled) {
-            void chrome.runtime.lastError;
-            chrome.storage.local.get(["ft_enabled"], (res) => {
-              if (chrome.runtime.lastError) {
-                void chrome.runtime.lastError;
-                return;
-              }
-              const durableEnabled = res.ft_enabled !== false;
-              enabledToggle.checked = durableEnabled;
-              applyExtensionEnabledState(durableEnabled);
-            });
-            return;
-          }
-          applyExtensionEnabledState(enabled);
-        },
-      );
+      chrome.storage.local.set({ ft_enabled: enabledToggle.checked });
     });
   }
   toggle.addEventListener("change", () => {
@@ -489,24 +445,8 @@ function setupEventListeners() {
   });
   timerBtn.addEventListener("click", () => {
     if (timerBtn.classList.contains("active")) {
-      chrome.runtime.sendMessage({ action: "stopTimer" }, (response) => {
-        if (response && response.stopped === true) {
-          resetTimerUI();
-          return;
-        }
-        void chrome.runtime.lastError;
-        chrome.storage.local.get(["ft_timer_end", "ft_timer_type"], (res) => {
-          if (chrome.runtime.lastError) {
-            void chrome.runtime.lastError;
-            return;
-          }
-          if (res.ft_timer_end && res.ft_timer_end > Date.now()) {
-            startTimerDisplay(res.ft_timer_end, res.ft_timer_type);
-          } else {
-            resetTimerUI();
-          }
-        });
-      });
+      chrome.runtime.sendMessage({ action: "stopTimer" });
+      resetTimerUI();
     } else {
       chrome.storage.local.get(["ft_timer_duration"], (res) => {
         const duration = parseInt(res.ft_timer_duration) || 25;
@@ -526,40 +466,21 @@ function setupEventListeners() {
     breakBtn.addEventListener("click", () => {
       chrome.storage.local.get(["breakDuration"], (res) => {
         const duration = parseInt(res.breakDuration) || 5;
+        chrome.storage.local.remove("ft_work_session_ended");
+        setBreakPromptVisible(false);
         chrome.runtime.sendMessage(
           { action: "startBreak", duration },
           (response) => {
-            if (response && Number.isFinite(response.end) && response.end > Date.now()) {
-              setBreakPromptVisible(false);
+            if (response && response.end)
               startTimerDisplay(response.end, "break");
-              return;
-            }
-            void chrome.runtime.lastError;
-            reconcileBreakState();
           },
         );
       });
     });
     if (skipBreakBtn) {
       skipBreakBtn.addEventListener("click", () => {
-        chrome.runtime.sendMessage({ action: "dismissEndedPrompt" }, (response) => {
-          if (response && response.dismissed === true) {
-            setBreakPromptVisible(false);
-            return;
-          }
-          void chrome.runtime.lastError;
-          chrome.storage.local.get(["ft_work_session_ended"], (res) => {
-            if (chrome.runtime.lastError) {
-              void chrome.runtime.lastError;
-              return;
-            }
-            if (res.ft_work_session_ended === true) {
-              setBreakPromptVisible(true);
-            } else {
-              setBreakPromptVisible(false);
-            }
-          });
-        });
+        chrome.storage.local.remove("ft_work_session_ended");
+        setBreakPromptVisible(false);
       });
     }
   }
@@ -607,7 +528,7 @@ function cleanup() {
 }
 function startTimerDisplay(endTime, type) {
   timerBtn.classList.add("active");
-  timerBtn.textContent = msg("stopTimer");
+  timerBtn.innerText = "Stop Timer";
   timerDisplay.classList.remove("hidden", "break");
   timerEndTime = endTime;
   if (type === "break") {
@@ -654,8 +575,9 @@ function resetTimerUI() {
       return;
     }
     timerBtn.classList.remove("active");
-    chrome.storage.local.get(["focusMode"], (res2) => {
-      timerBtn.textContent = msg("startTimer");
+    chrome.storage.local.get(["ft_timer_duration", "focusMode"], (res2) => {
+      const duration = parseInt(res2.ft_timer_duration) || 25;
+      timerBtn.innerText = `Start Timer`;
       toggle.checked = res2.focusMode !== false;
     });
     timerDisplay.classList.add("fade-out");
@@ -672,71 +594,63 @@ function resetTimerUI() {
 const TUTORIAL_STEPS = [
   {
     type: "modal",
-    title: msg("tutorialWelcomeTitle"),
-    description: msg(
-      "tutorialWelcomeDescription",
-    ),
+    title: "Welcome to FocusTube!",
+    description:
+      "Take a quick tour to learn how to stay focused and block distractions.",
     icon: "icons/icon128.png",
-    buttonText: msg("tutorialStart"),
+    buttonText: "Start Tour",
   },
   {
     type: "spotlight",
     target: ".platform-grid",
-    title: msg("tutorialPlatformsTitle"),
-    description: msg(
-      "tutorialPlatformsDescription",
-    ),
+    title: "Platform Controls",
+    description:
+      "Click any platform icon to change its blocking mode. Manage YouTube, Facebook, Instagram, TikTok, and LinkedIn.",
     position: "bottom",
-    buttonText: msg("tutorialNext"),
+    buttonText: "Next",
   },
   {
     type: "spotlight",
     target: ".platform-icon",
-    title: msg("tutorialModesTitle"),
-    description: msg(
-      "tutorialModesDescription",
-    ),
+    title: "Blocking Modes",
+    description:
+      "Each platform shows a badge: S (Strict) blocks always, W (Warn) asks before showing, P (Paused) allows access.",
     position: "bottom",
-    buttonText: msg("tutorialNext"),
+    buttonText: "Next",
   },
   {
     type: "spotlight",
     target: ".control-row",
-    title: msg("tutorialFocusTitle"),
-    description: msg(
-      "tutorialFocusDescription",
-    ),
+    title: "Focus Toggle",
+    description:
+      "Turn Focus Mode on or off with this switch. When enabled, your selected blocking rules take effect.",
     position: "top",
-    buttonText: msg("tutorialNext"),
+    buttonText: "Next",
   },
   {
     type: "spotlight",
     target: "#timerBtn",
-    title: msg("tutorialTimerTitle"),
-    description: msg(
-      "tutorialTimerDescription",
-    ),
+    title: "Timer Button",
+    description:
+      "Start a focus or break timer. Work sessions enforce strict blocking, while breaks allow free browsing.",
     position: "top",
-    buttonText: msg("tutorialNext"),
+    buttonText: "Next",
   },
   {
     type: "spotlight",
     target: "#settingsBtn",
-    title: msg("tutorialSettingsTitle"),
-    description: msg(
-      "tutorialSettingsDescription",
-    ),
+    title: "Settings",
+    description:
+      "Access advanced options, manage hidden elements, set schedules, and customize your focus experience.",
     position: "left",
-    buttonText: msg("tutorialNext"),
+    buttonText: "Next",
   },
   {
     type: "modal",
-    title: msg("tutorialCompleteTitle"),
-    description: msg(
-      "tutorialCompleteDescription",
-    ),
+    title: "You're All Set!",
+    description: "You know the basics. Stay focused and productive!",
     icon: "checkmark",
-    buttonText: msg("tutorialFinish"),
+    buttonText: "Finish",
   },
 ];
 const TutorialController = {
@@ -781,14 +695,11 @@ const TutorialController = {
     }
     const indicator = document.getElementById("tutorial-step-indicator");
     if (indicator) {
-      indicator.textContent = msg(
-        "tutorialProgress",
-        [String(index + 1), String(TUTORIAL_STEPS.length)],
-      );
+      indicator.textContent = `${index + 1} of ${TUTORIAL_STEPS.length}`;
     }
     const nextBtn = document.getElementById("tutorialNext");
     if (nextBtn) {
-      nextBtn.textContent = step.buttonText || msg("tutorialNext");
+      nextBtn.textContent = step.buttonText || "Next";
     }
     const title = document.getElementById("tutorial-title");
     const description = document.getElementById("tutorial-description");
