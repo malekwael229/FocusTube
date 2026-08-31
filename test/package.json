@@ -8,5 +8,5 @@
   "devDependencies": {
     "jsdom": "^29.1.1"
   },
-  "//": "jsdom 27 silently drops !important from setProperty(); 29 keeps it, as browsers do, which is what the height-preservation assertions rely on."
+  "//": "jsdom is pinned to ^29: version 27 silently drops !important from setProperty(), which is what the height-preservation assertions rely on, so it reports a failure no browser would."
 }

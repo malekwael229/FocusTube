@@ -348,5 +348,206 @@ console.log("\nrestore and gating");
   });
 }
 
+// ------------------------------------------------------- nested reposts
+// The case the unscoped search got wrong: you follow somebody, they reshare
+// a post from somebody you are not connected to, and the nested post's
+// Connect control was read as the outer post's - hiding a post from a person
+// you actually follow.
+console.log("\na repost of somebody you are not connected to");
+
+// Both captures are real; the repost is assembled from them rather than
+// hand-written, so the nested header is real markup with a real Connect
+// control in it.
+function graft(doc, outerPost, donorHTML, { keepCommentary = true } = {}) {
+  const donor = new JSDOM(`<main>${donorHTML}</main>`).window.document;
+  const identity = donor.querySelector(
+    'a[href*="/in/"] [aria-label], a[href*="/company/"] [aria-label]',
+  );
+  const connect = donor.querySelector('svg[id="connect-small"], svg[id="add-small"]');
+  assert.ok(identity && connect, "donor capture lost its header or its control");
+  // The smallest block holding both: the nested post's own author header.
+  let block = identity;
+  while (block && !block.contains(connect)) block = block.parentElement;
+  assert.ok(block, "no common ancestor for the donor header");
+
+  const body = outerPost.querySelector('[data-testid="expandable-text-box"]');
+  assert.ok(body, "outer capture has no body mark");
+  const anchor = keepCommentary ? body : null;
+  const nested = doc.importNode(block, true);
+  if (anchor) {
+    // A reshare with commentary: the nested post sits below the commentary.
+    anchor.parentNode.insertBefore(nested, anchor.nextSibling);
+  } else {
+    // A reshare with no commentary: no body mark at all, so the nested
+    // header is the only thing marking where the outer header ended.
+    body.parentNode.insertBefore(nested, body);
+    body.remove();
+  }
+  return nested;
+}
+
+{
+  const { doc, LIFeed } = makeEnv(feed([fixture("li-connection-post.html")]));
+  LIFeed.active = true;
+  LIFeed.ensureObserver();
+  const post = LIFeed.posts()[0];
+  const nested = graft(doc, post, fixture("li-connect-post.html"));
+
+  check("the repost really does carry a Connect control", () =>
+    assert.ok(post.querySelector('svg[id="connect-small"]')));
+  check("it belongs to the nested post, not the outer one", () =>
+    assert.ok(nested.querySelector('svg[id="connect-small"]')));
+  check("the outer header stops before it", () => {
+    const boundary = LIFeed.headerBoundary(post);
+    assert.ok(boundary, "no boundary found");
+    assert.equal(LIFeed.inHeader(boundary, nested), false);
+  });
+  check("so it is not read as the outer post's follow control", () =>
+    assert.equal(LIFeed.followButton(post), null));
+  check("and the repost is kept", () =>
+    assert.equal(LIFeed.classify(post), "keep"));
+  check("the outer author is still the one named", () =>
+    assert.equal(LIFeed.author(post), "Marcus Elliott"));
+}
+{
+  // The same repost with no commentary of its own, so there is no body mark
+  // to stop at. The second identity block is what has to do the work.
+  const { doc, LIFeed } = makeEnv(feed([fixture("li-connection-post.html")]));
+  LIFeed.active = true;
+  LIFeed.ensureObserver();
+  const post = LIFeed.posts()[0];
+  graft(doc, post, fixture("li-connect-post.html"), { keepCommentary: false });
+
+  check("with no commentary there is no body mark", () =>
+    assert.equal(post.querySelector('[data-testid="expandable-text-box"]'), null));
+  check("the second author identity bounds the header instead", () => {
+    const boundary = LIFeed.headerBoundary(post);
+    assert.ok(boundary, "fell back to an unbounded search");
+    assert.equal(boundary.getAttribute("aria-label"), "Dana Whitfield  2nd");
+  });
+  check("the nested Connect control is still not the outer post's", () =>
+    assert.equal(LIFeed.followButton(post), null));
+  check("and this repost is kept too", () =>
+    assert.equal(LIFeed.classify(post), "keep"));
+}
+{
+  // The scoping must not cost us the real case: a post from somebody outside
+  // your network still has its own Follow control, in its own header.
+  const { LIFeed } = makeEnv(feed([fixture("li-outside-network-post.html")]));
+  LIFeed.active = true;
+  LIFeed.ensureObserver();
+  const post = LIFeed.posts()[0];
+  check("a stranger's own Follow control is still found", () =>
+    assert.ok(LIFeed.followButton(post)));
+  check("and the post is still hidden", () =>
+    assert.equal(LIFeed.classify(post), "suggested"));
+}
+{
+  // A promoted post nested inside a repost must not make the outer post an ad
+  // either - headerLabels reads to the same boundary.
+  const { doc, LIFeed } = makeEnv(feed([fixture("li-connection-post.html")]));
+  LIFeed.active = true;
+  LIFeed.ensureObserver();
+  const post = LIFeed.posts()[0];
+  const body = post.querySelector('[data-testid="expandable-text-box"]');
+  const nested = doc.importNode(
+    new JSDOM(`<main>${fixture("li-promoted-post.html")}</main>`).window.document
+      .querySelector('[role="listitem"]'),
+    true,
+  );
+  body.parentNode.insertBefore(nested, body.nextSibling);
+  check("a nested promoted post does not make the outer post an ad", () =>
+    assert.equal(LIFeed.classify(post), "keep"));
+}
+
+// --------------------------------------------- a control that paints late
+console.log("\na Follow control that paints late");
+{
+  const { doc, LIFeed } = makeEnv(feed([fixture("li-connection-post.html")]));
+  LIFeed.active = true;
+  LIFeed.ensureObserver();
+  LIFeed.tick();
+  const post = LIFeed.posts()[0];
+  check("judged 'keep' while the control is not there yet", () =>
+    assert.equal(post.dataset.ftLiClass, "keep"));
+
+  // LinkedIn paints the Follow control into the header a moment later.
+  const donor = new JSDOM(`<main>${fixture("li-outside-network-post.html")}</main>`)
+    .window.document;
+  const control = donor.querySelector('svg[id="add-small"]').closest("button, a");
+  assert.ok(control, "donor capture lost its Follow control");
+  const boundary = LIFeed.headerBoundary(post);
+  boundary.parentNode.insertBefore(doc.importNode(control, true), boundary);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  LIFeed.tick();
+  check("the cached verdict is retired and the post hidden", () =>
+    assert.equal(post.dataset.ftLiClass, "suggested"));
+  check("churn below the header leaves the verdict alone", () =>
+    assert.equal(
+      LIFeed.headerChurn(post, { addedNodes: [post.querySelector('[data-testid="expandable-text-box"]')] }),
+      false,
+    ));
+  check("our own stub is not treated as churn", () =>
+    assert.equal(
+      LIFeed.isOwnMutation({ addedNodes: [post.querySelector(".ft-li-stub")] }),
+      true,
+    ));
+}
+
+// --------------------------------------------------- recycled feed nodes
+console.log("\nLinkedIn recycling a feed item for a different post");
+{
+  const { doc, LIFeed } = makeEnv(feed([fixture("li-outside-network-post.html")]));
+  LIFeed.active = true;
+  LIFeed.ensureObserver();
+  LIFeed.tick();
+  const item = LIFeed.posts()[0];
+  check("the outside-network post is collapsed", () => {
+    assert.equal(item.dataset.ftLiClass, "suggested");
+    assert.ok(item.classList.contains("ft-li-collapsed"));
+  });
+  const wasKey = item.dataset.ftLiKey;
+  check("the verdict is keyed to the post, not just the element", () =>
+    assert.ok(wasKey, "no identity recorded"));
+
+  // The same element, now holding a post from a connection.
+  const holder = doc.createElement("div");
+  holder.innerHTML = fixture("li-connection-post.html");
+  const replacement = holder.querySelector('[role="listitem"]');
+  item.setAttribute("componentkey", replacement.getAttribute("componentkey"));
+  item.replaceChildren(...replacement.childNodes);
+  LIFeed.tick();
+  check("the previous post's verdict is not carried over", () =>
+    assert.equal(item.dataset.ftLiClass, "keep"));
+  check("the element is restored rather than left collapsed", () => {
+    assert.equal(item.classList.contains("ft-li-collapsed"), false);
+    assert.equal(item.querySelector(".ft-li-stub"), null);
+    assert.equal(LIFeed.collapsed.has(item), false);
+  });
+}
+
+// ------------------------------------------------ audio behind a collapse
+console.log("\ncollapsing a post stops its video");
+{
+  const { doc, LIFeed } = makeEnv(feed([fixture("li-outside-network-post.html")]));
+  LIFeed.active = true;
+  LIFeed.ensureObserver();
+  const post = LIFeed.posts()[0];
+  const video = doc.createElement("video");
+  let paused = false;
+  Object.defineProperty(video, "paused", { get: () => paused });
+  video.pause = () => { paused = true; };
+  post.appendChild(video);
+  LIFeed.tick();
+  check("the post is collapsed", () =>
+    assert.ok(post.classList.contains("ft-li-collapsed")));
+  check("and its video is paused, not merely hidden", () =>
+    assert.equal(video.paused, true));
+  paused = false;
+  LIFeed.tick();
+  check("playback restarting after a re-render is caught on the next pass", () =>
+    assert.equal(video.paused, true));
+}
+
 console.log(failures ? `\n${failures} FAILURE(S)` : "\nall green");
 process.exit(failures ? 1 : 0);

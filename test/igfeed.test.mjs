@@ -584,7 +584,11 @@ console.log("\nfollow control is not just any short-text button");
   IGFeed.ensureObserver();
   const art = doc.querySelector("article");
   const boundary = IGFeed.postChrome(art);
-  const author = IGFeed.authorLink(art);
+  // Found here rather than via IGFeed, so the setup does not lean on the
+  // method under test.
+  const author = [...art.querySelectorAll('a[href^="/"]')].find((a) =>
+    /^\/[A-Za-z0-9._]+\/$/.test(a.getAttribute("href")),
+  );
 
   // Put a control in the chrome, just above the action bar, and ask whether
   // the classifier reads it as a follow control.
