@@ -34,7 +34,7 @@ function makeEnv(bodyHTML) {
     isFocusMode: true,
     platformSettings: { li: "warn" },
     session: {},
-    visualHiding: { liSuggested: true, liFeed: true, liAddFeed: true },
+    visualHiding: { liSuggested: true, liFeed: true, liAddFeed: true, liActivity: true },
   };
   const FocusState = { shouldBlock: true, isWork: false, isBreak: false, isTimerActive: false };
   const Utils = {
@@ -155,7 +155,7 @@ console.log("real LinkedIn markup (2026-08-30 capture)");
   LIFeed.tick();
   check("connection kept, outside-network hidden, promoted hidden", () =>
     assert.deepEqual(posts.map((p) => p.dataset.ftLiClass),
-      ["keep", "suggested", "ad"]));
+      ["keep", "activity", "ad"]));
   check("only the two are collapsed", () =>
     assert.deepEqual(posts.map((p) => p.classList.contains("ft-li-collapsed")),
       [false, true, true]));
@@ -201,7 +201,7 @@ console.log("\nthe two cases that got through");
   });
   LIFeed.tick();
   check("the post is hidden", () => {
-    assert.equal(post.dataset.ftLiClass, "suggested");
+    assert.equal(post.dataset.ftLiClass, "activity");
     assert.ok(post.classList.contains("ft-li-collapsed"));
   });
   check("the author is the post author, not whoever reacted to it", () =>
@@ -440,7 +440,7 @@ function graft(doc, outerPost, donorHTML, { keepCommentary = true } = {}) {
   check("a stranger's own Follow control is still found", () =>
     assert.ok(LIFeed.followButton(post)));
   check("and the post is still hidden", () =>
-    assert.equal(LIFeed.classify(post), "suggested"));
+    assert.equal(LIFeed.classify(post), "activity"));
 }
 {
   // A promoted post nested inside a repost must not make the outer post an ad
@@ -481,7 +481,7 @@ console.log("\na Follow control that paints late");
   await new Promise((resolve) => setTimeout(resolve, 0));
   LIFeed.tick();
   check("the cached verdict is retired and the post hidden", () =>
-    assert.equal(post.dataset.ftLiClass, "suggested"));
+    assert.equal(post.dataset.ftLiClass, "activity"));
   check("churn below the header leaves the verdict alone", () =>
     assert.equal(
       LIFeed.headerChurn(post, { addedNodes: [post.querySelector('[data-testid="expandable-text-box"]')] }),
@@ -503,7 +503,7 @@ console.log("\nLinkedIn recycling a feed item for a different post");
   LIFeed.tick();
   const item = LIFeed.posts()[0];
   check("the outside-network post is collapsed", () => {
-    assert.equal(item.dataset.ftLiClass, "suggested");
+    assert.equal(item.dataset.ftLiClass, "activity");
     assert.ok(item.classList.contains("ft-li-collapsed"));
   });
   const wasKey = item.dataset.ftLiKey;
@@ -612,6 +612,69 @@ console.log("\nan author with an avatar label and a repeated name block");
     assert.equal(LIFeed.followButton(post), null));
   check("so the repost stays visible", () =>
     assert.equal(LIFeed.classify(post), "keep"));
+}
+
+// ------------------------------------------------------------- the two modes
+// What reached you because somebody you know reacted to it is a different
+// thing from what the feed guessed on its own, so the two are separable.
+console.log("\nfriends only, or friends plus their activity");
+{
+  const { doc, LIFeed, CONFIG } = makeEnv(feed([
+    fixture("li-connection-post.html"),        // a connection's own post
+    fixture("li-outside-network-post.html"),   // "Followed by ..." - surfaced
+    fixture("li-follow-post.html"),            // "From your activity" - guessed
+    fixture("li-promoted-post.html"),          // an ad
+  ]));
+  LIFeed.active = true;
+  LIFeed.ensureObserver();
+  const posts = LIFeed.posts();
+  LIFeed.tick();
+
+  check("each post is judged by what it is, not by the setting", () =>
+    assert.deepEqual(posts.map((p) => p.dataset.ftLiClass),
+      ["keep", "activity", "suggested", "ad"]));
+  check("the surfacing line is what separates the middle two", () => {
+    assert.equal(LIFeed.surfacedByPerson(posts[1]), true);
+    assert.equal(LIFeed.surfacedByPerson(posts[2]), false);
+  });
+  check("friends only: everything but the connection's post is hidden", () =>
+    assert.deepEqual(posts.map((p) => p.classList.contains("ft-li-collapsed")),
+      [false, true, true, true]));
+  check("the activity block says why it is there", () =>
+    assert.equal(posts[1].querySelector(".ft-li-stub h3").textContent,
+      "Someone in your network reacted to this"));
+
+  CONFIG.visualHiding.liActivity = false;
+  LIFeed.tick();
+  check("plus activity: the reacted-to post comes back", () =>
+    assert.deepEqual(posts.map((p) => p.classList.contains("ft-li-collapsed")),
+      [false, false, true, true]));
+  check("its block is taken away with it", () =>
+    assert.equal(posts[1].querySelector(".ft-li-stub"), null));
+  check("the guess and the ad stay hidden", () => {
+    assert.ok(posts[2].classList.contains("ft-li-collapsed"));
+    assert.ok(posts[3].classList.contains("ft-li-collapsed"));
+  });
+
+  CONFIG.visualHiding.liActivity = true;
+  LIFeed.tick();
+  check("switching back hides it again, with no stale verdict", () => {
+    assert.equal(posts[1].dataset.ftLiClass, "activity");
+    assert.ok(posts[1].classList.contains("ft-li-collapsed"));
+  });
+  check("a connection's own post is untouched in either mode", () => {
+    // It has no Follow control, so it never reaches the activity branch at
+    // all - whatever else is in its header.
+    assert.equal(posts[0].dataset.ftLiClass, "keep");
+    assert.equal(posts[0].classList.contains("ft-li-collapsed"), false);
+    CONFIG.visualHiding.liActivity = false;
+    LIFeed.tick();
+    assert.equal(posts[0].classList.contains("ft-li-collapsed"), false);
+    CONFIG.visualHiding.liActivity = true;
+  });
+  check("the author's own avatar link is not read as a surfacing link", () =>
+    // li-follow-post carries one profile - the author's, twice over.
+    assert.equal(LIFeed.surfacedByPerson(posts[2]), false));
 }
 
 console.log(failures ? `\n${failures} FAILURE(S)` : "\nall green");

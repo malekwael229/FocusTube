@@ -296,6 +296,7 @@ const PLATFORM_SETTINGS = {
     { key: "hide_li_feed", label: "Cover the whole feed" },
     { key: "hide_li_addfeed", label: "Hide follow suggestions" },
     { key: "hide_li_suggested", label: "Hide posts outside your network" },
+    { key: "hide_li_activity", label: "Hide what your network reacted to" },
   ],
   tt: [],
 };

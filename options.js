@@ -28,6 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
     hide_li_feed: true,
     hide_li_addfeed: true,
     hide_li_suggested: false,
+    hide_li_activity: true,
     showBreakButton: true,
     accentColor: "#4facfe",
   };
@@ -698,6 +699,11 @@ const platforms = {
         id: "hide_li_suggested",
         label: "Hide posts outside your network",
         desc: "Replaces posts from people you are not connected to, and promoted posts, with a placeholder. Leaves the rest of the feed alone",
+      },
+      {
+        id: "hide_li_activity",
+        label: "Hide what your network reacted to",
+        desc: "Also hides posts that reached you because somebody you know liked or commented on them. Turn this off to keep your network's activity and hide only suggestions and ads. Needs the setting above",
       },
     ],
   },

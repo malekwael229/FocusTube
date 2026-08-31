@@ -38,6 +38,7 @@ const LinkedIn = {
         changes.hide_li_feed ||
         changes.hide_li_addfeed ||
         changes.hide_li_suggested ||
+        changes.hide_li_activity ||
         changes.popup_visible_li ||
         changes.restrictHiddenPlatforms ||
         changes.visualHideHiddenPlatforms
@@ -623,8 +624,11 @@ const LIFeed = {
         }
         delete post.dataset.ftLiReveal;
       }
-      const kind = this.classify(post);
+      let kind = this.classify(post);
       if (kind === "pending") return;
+      // "Show my network's activity too" lets the reacted-to posts through
+      // while suggestions and promoted posts stay hidden.
+      if (kind === "activity" && !CONFIG.visualHiding.liActivity) kind = "keep";
       if (kind === "keep") {
         if (this.collapsed.has(post)) this.restore(post);
         return;
@@ -720,6 +724,37 @@ const LIFeed = {
       if (control.querySelector(selector)) return control;
     }
     return null;
+  },
+  surfacedByPerson: function (post) {
+    // The line above the author - "Dana Whitfield likes this", "... commented"
+    // - names somebody and links to their profile. "From your activity" is the
+    // feed's own guess and carries no such link, which is what separates the
+    // two without reading either of them.
+    const author = this.identities(post)[0];
+    if (!author) return false;
+    const authorLink = author.closest("a");
+    // The author's own avatar is a profile link too, and it sits above their
+    // name - so position alone says every post was surfaced by somebody. It
+    // is a different profile that makes it somebody else's doing.
+    const mine = authorLink ? this.profilePath(authorLink) : null;
+    const links = post.querySelectorAll('a[href*="/in/"], a[href*="/company/"]');
+    for (const link of links) {
+      if (link.contains(author)) break;
+      if (
+        !(link.compareDocumentPosition(author) & Node.DOCUMENT_POSITION_FOLLOWING)
+      ) {
+        break;
+      }
+      const path = this.profilePath(link);
+      if (path && path !== mine) return true;
+    }
+    return false;
+  },
+  profilePath: function (link) {
+    const match = (link.getAttribute("href") || "").match(
+      /\/(in|company)\/([^/?#]+)/,
+    );
+    return match ? match[1] + "/" + decodeURIComponent(match[2]) : null;
   },
   isOwnMutation: function (record) {
     for (const node of record.addedNodes) {
@@ -849,8 +884,14 @@ const LIFeed = {
       return "ad";
     }
     if (rendered && this.followButton(post)) {
-      post.dataset.ftLiClass = "suggested";
-      return "suggested";
+      // Told apart because the two are wanted by different people: a post
+      // somebody in your network reacted to is at least connected to you,
+      // while a bare suggestion is the feed guessing. Which of them is hidden
+      // is decided in tick() from the setting, not here, so toggling the
+      // setting cannot leave a stale verdict behind.
+      const kind = this.surfacedByPerson(post) ? "activity" : "suggested";
+      post.dataset.ftLiClass = kind;
+      return kind;
     }
     // Fail open: nothing is judged until the post has actually painted.
     if (rendered) {
@@ -968,7 +1009,12 @@ const LIFeed = {
     icon.appendChild(slash);
     stub.appendChild(icon);
     const title = document.createElement("h3");
-    title.textContent = kind === "ad" ? "Promoted post" : "Not in your network";
+    title.textContent =
+      kind === "ad"
+        ? "Promoted post"
+        : kind === "activity"
+          ? "Someone in your network reacted to this"
+          : "Not in your network";
     stub.appendChild(title);
 
     const subtitle = document.createElement("p");
