@@ -287,3 +287,156 @@ body.ft-platform-li aside.scaffold-layout__aside {
   border-radius: 8px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
+
+/* Collapsed "suggested / sponsored" feed posts on Instagram.
+   The collapse itself is gated on the body class, so turning the setting off
+   reveals every post immediately, before any script has run. The inline
+   min-height set at collapse time holds the post's original height, so the
+   page never shortens under Instagram's infinite scroll. */
+body.ft-hide-ig-suggested.ft-platform-ig
+  article.ft-ig-collapsed
+  > *:not(.ft-ig-stub) {
+  display: none !important;
+}
+body.ft-hide-ig-suggested.ft-platform-ig article.ft-ig-collapsed {
+  /* No height is set on the post itself: Instagram blanks its style
+     attribute on re-render. The stub carries the height instead, and the
+     post takes it from the stub. */
+  display: block !important;
+  box-sizing: border-box !important;
+}
+.ft-ig-stub {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-sizing: border-box;
+  overflow: hidden;
+  user-select: none !important;
+}
+.ft-ig-stub.dark {
+  background: #1b1f23;
+  border-color: #38434f;
+}
+.ft-ig-stub-icon {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 auto;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 4px 8px rgba(79, 172, 254, 0.3));
+}
+.ft-ig-stub h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #1d1d1f;
+}
+.ft-ig-stub.dark h3 {
+  color: #fff;
+}
+.ft-ig-stub p {
+  font-size: 13px;
+  color: #6e6e73;
+  margin: 0 0 16px 0;
+  max-width: 320px;
+  overflow-wrap: anywhere;
+}
+.ft-ig-stub.dark p {
+  color: #a0a0a0;
+}
+.ft-ig-stub-btn {
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  border-radius: 99px;
+  background: #007aff;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.ft-ig-stub-btn:hover {
+  opacity: 0.85;
+}
+
+/* LinkedIn: posts from outside your network, and promoted posts. Same shape
+   as the Instagram blocks - the collapse is gated on the body class so
+   turning the setting off reveals everything before any script runs, and the
+   height lives on our own stub because LinkedIn blanks the style attribute on
+   its own nodes. */
+body.ft-hide-li-suggested.ft-platform-li
+  .ft-li-collapsed
+  > *:not(.ft-li-stub) {
+  display: none !important;
+}
+body.ft-hide-li-suggested.ft-platform-li .ft-li-collapsed {
+  display: block !important;
+  box-sizing: border-box !important;
+}
+.ft-li-stub {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-sizing: border-box;
+  overflow: hidden;
+  user-select: none !important;
+}
+.ft-li-stub.dark {
+  background: #1b1f23;
+  border-color: #38434f;
+}
+.ft-li-stub-icon {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 auto;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 4px 8px rgba(79, 172, 254, 0.3));
+}
+.ft-li-stub h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #1d1d1f;
+}
+.ft-li-stub.dark h3 {
+  color: #fff;
+}
+.ft-li-stub p {
+  font-size: 13px;
+  color: #6e6e73;
+  margin: 0 0 16px 0;
+  max-width: 320px;
+  overflow-wrap: anywhere;
+}
+.ft-li-stub.dark p {
+  color: #a0a0a0;
+}
+.ft-li-stub-btn {
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  border-radius: 99px;
+  background: #007aff;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.ft-li-stub-btn:hover {
+  opacity: 0.85;
+}

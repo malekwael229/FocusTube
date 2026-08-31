@@ -22,10 +22,13 @@ document.addEventListener("DOMContentLoaded", function () {
     hide_yt_shorts_shelves: true,
     hide_yt_most_relevant_shelf: true,
     hide_ig_reels_nav: true,
+    hide_ig_suggested: false,
     hide_fb_reels_nav: true,
     hide_fb_people_you_might_know: true,
     hide_li_feed: true,
     hide_li_addfeed: true,
+    hide_li_suggested: false,
+    hide_li_activity: true,
     showBreakButton: true,
     accentColor: "#4facfe",
   };
@@ -651,6 +654,11 @@ const platforms = {
         label: "Hide Reels Button",
         desc: "Hide the Reels tab in navigation",
       },
+      {
+        id: "hide_ig_suggested",
+        label: "Hide posts you don't follow",
+        desc: "Replaces suggested and sponsored posts in the feed with a placeholder. Leaves the rest of the feed alone",
+      },
     ],
   },
   tt: { name: "TikTok", settings: [] },
@@ -679,13 +687,23 @@ const platforms = {
     settings: [
       {
         id: "hide_li_feed",
-        label: "Hide Feed",
-        desc: "Hide the main feed section",
+        label: "Cover the whole feed",
+        desc: "Puts one panel over the entire feed. Independent of the setting below - this hides everything, that hides only what is not from your network",
       },
       {
         id: "hide_li_addfeed",
-        label: "Hide Add to Feed",
-        desc: "Hide suggested follows",
+        label: "Hide follow suggestions",
+        desc: 'Hides the "Add to your feed" box in the sidebar',
+      },
+      {
+        id: "hide_li_suggested",
+        label: "Hide posts outside your network",
+        desc: "Replaces posts from people you are not connected to, and promoted posts, with a placeholder. Leaves the rest of the feed alone",
+      },
+      {
+        id: "hide_li_activity",
+        label: "Hide what your network reacted to",
+        desc: "Also hides posts that reached you because somebody you know liked or commented on them. Turn this off to keep your network's activity and hide only suggestions and ads. Needs the setting above",
       },
     ],
   },

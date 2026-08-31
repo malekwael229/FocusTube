@@ -260,6 +260,19 @@ function updatePlatformIcon(icon, mode) {
     badge.textContent = mode === "strict" ? "S" : mode === "warn" ? "W" : "P";
   }
 }
+// hide_ig_suggested and hide_li_suggested ship off. They judge individual
+// posts, so a wrong call hides something the user wanted to see; every other
+// toggle here hides a whole fixed region and ships on.
+const DEFAULT_OFF_SETTINGS = new Set([
+  "hide_ig_suggested",
+  "hide_li_suggested",
+]);
+function settingIsOn(key, value) {
+  if (value === undefined || value === null) {
+    return !DEFAULT_OFF_SETTINGS.has(key);
+  }
+  return value !== false;
+}
 const PLATFORM_SETTINGS = {
   yt: [
     { key: "hide_yt_shorts_nav", label: "Hide Shorts Button" },
@@ -269,6 +282,7 @@ const PLATFORM_SETTINGS = {
   ig: [
     { key: "hide_ig_stories", label: "Hide Stories" },
     { key: "hide_ig_reels_nav", label: "Hide Reels Button" },
+    { key: "hide_ig_suggested", label: "Hide posts you don't follow" },
   ],
   fb: [
     { key: "hide_fb_stories", label: "Hide Stories" },
@@ -279,8 +293,10 @@ const PLATFORM_SETTINGS = {
     },
   ],
   li: [
-    { key: "hide_li_feed", label: "Hide Feed" },
-    { key: "hide_li_addfeed", label: 'Hide "Add to Your Feed"' },
+    { key: "hide_li_feed", label: "Cover the whole feed" },
+    { key: "hide_li_addfeed", label: "Hide follow suggestions" },
+    { key: "hide_li_suggested", label: "Hide posts outside your network" },
+    { key: "hide_li_activity", label: "Hide what your network reacted to" },
   ],
   tt: [],
 };
@@ -356,7 +372,7 @@ function showPlatformDetail(platform) {
       platformToggles.map((t) => t.key),
       (result) => {
         platformToggles.forEach((toggle) => {
-          const isChecked = result[toggle.key] !== false;
+          const isChecked = settingIsOn(toggle.key, result[toggle.key]);
           const row = document.createElement("div");
           row.className = "platform-setting-row";
           const label = document.createElement("span");
@@ -437,7 +453,7 @@ function setupEventListeners() {
         `.mini-switch input[data-key="${key}"]`,
       );
       if (toggle) {
-        toggle.checked = newValue !== false;
+        toggle.checked = settingIsOn(key, newValue);
       }
     }
   });
