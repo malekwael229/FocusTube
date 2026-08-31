@@ -1,0 +1,144 @@
+<!-- Captured from a live feed on 2026-08-31, reduced to the structure LIFeed
+     reads, names and photos replaced.
+
+     This is the shape that broke the classifier: ONE author accounts for
+     three matches of IDENTITY_MARK -
+
+       1. the avatar's <svg role="img" aria-label="View X's profile">, inside
+          a <figure> inside the profile link;
+       2. the name block, aria-label="X Verified Profile 3rd+";
+       3. the same block repeated as an empty div below the timestamp.
+
+     Read naively that looks like three people, which put the end of the
+     header above the author's own Follow control and classified the post
+     "keep". Every earlier LinkedIn fixture had been reduced to a single
+     aria-label per author, so the tests never saw it. -->
+<div class="aa13b50b" role="listitem" componentkey="expandedFIXTUREKEY70FeedType_MAIN_FEED_RELEVANCE">
+  <div class="d6c661b2">
+    <div class="aa13b50b" componentkey="FIXTUREKEY71">
+      <h2 class="_02484ad3"><span class="_88bdd49d">Feed post</span></h2>
+
+      <div class="f31191c8" componentkey="FIXTUREKEY72">
+        <div class="f28af954">
+          <div class="f28af954">
+            <p class="_02484ad3" componentkey="FIXTUREKEY73"><span>From your activity</span></p>
+          </div>
+        </div>
+        <button class="e9107c0a" type="button" aria-label="Open control menu for post by Harriet Vance" aria-expanded="false">
+          <span class="_0292dd26">
+            <svg xmlns="http://www.w3.org/2000/svg" id="overflow-web-ios-small" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 9.5A1.5 1.5 0 1 1 4.5 8 1.5 1.5 0 0 1 3 9.5"></path></svg>
+          </span>
+        </button>
+        <button class="e9107c0a" type="button" aria-label="Hide post by Harriet Vance">
+          <span class="_0292dd26">
+            <svg xmlns="http://www.w3.org/2000/svg" id="close-small" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M14 3.41 9.41 8 14 12.59 12.59 14 8 9.41 3.41 14 2 12.59 6.59 8 2 3.41 3.41 2 8 6.59 12.59 2z"></path></svg>
+          </span>
+        </button>
+      </div>
+
+      <hr role="presentation" class="_2fe43ed8">
+
+      <div class="_165051fc">
+        <div>
+          <div class="aed09def">
+            <!-- 1. the avatar. Its aria-label names the same person as the
+                 name block below, and it is not a second identity. -->
+            <a tabindex="0" class="_6d4b5353" href="https://www.linkedin.com/in/harriet-vance-ux/" componentkey="FIXTUREKEY74" aria-haspopup="dialog">
+              <figure class="_6c3b4bef" componentkey="FIXTUREKEY74">
+                <svg xmlns="http://www.w3.org/2000/svg" id="person-accent-4" viewBox="0 0 128 128" class="ac0c88fb" role="img" aria-label="View Harriet Vance’s profile"><path fill="#788fa5" d="M88.41 84.67a32 32 0 1 0-48.82 0 66.13 66.13 0 0 1 48.82 0"></path></svg>
+                <img class="ac0c88fb" alt="View Harriet Vance’s profile" src="https://example.invalid/media-70.jpg">
+              </figure>
+            </a>
+          </div>
+        </div>
+
+        <div class="f28af954">
+          <div class="aa13b50b">
+            <div class="_20837f7b">
+              <div class="aed09def">
+                <a tabindex="0" class="ca5608fc" href="https://www.linkedin.com/in/harriet-vance-ux/" componentkey="FIXTUREKEY75">
+                  <div class="f28af954" componentkey="FIXTUREKEY75">
+                    <div>
+                      <div class="aed09def">
+                        <!-- 2. the name block: the real identity. -->
+                        <div class="_01e54e47" aria-label="Harriet Vance Verified Profile 3rd+">
+                          <div class="f28af954">
+                            <div class="_1736033f">
+                              <p class="_02484ad3"><span>Harriet Vance</span></p>
+                            </div>
+                          </div>
+                          <div class="_1736033f">
+                            <p class="_02484ad3"><span><span class="_351f5ec9"> </span>• 3rd+</span></p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            </div>
+
+            <div class="_1736033f">
+              <p class="_02484ad3"><span>AI Product Lead &amp; Builder | Agentic Systems | Founder</span></p>
+            </div>
+
+            <div class="_1736033f">
+              <p class="_02484ad3" componentkey="FIXTUREKEY76"><span>1d •<span class="_351f5ec9"> </span><svg xmlns="http://www.w3.org/2000/svg" id="globe-americas-small" viewBox="0 0 16 16" width="16" height="16" role="img" aria-label="Visibility: Global"><path d="M8 1a7 7 0 1 0 7 7 7 7 0 0 0-7-7"></path></svg></span></p>
+            </div>
+
+            <!-- 3. the same identity again, empty, below the timestamp. -->
+            <a tabindex="0" class="ca5608fc" href="https://www.linkedin.com/in/harriet-vance-ux/" componentkey="FIXTUREKEY77">
+              <div class="f28af954" componentkey="FIXTUREKEY77" aria-label="Harriet Vance Verified Profile 3rd+"></div>
+            </a>
+          </div>
+        </div>
+
+        <div class="d6c661b2">
+          <div class="aed09def" componentkey="FIXTUREKEY78">
+            <div class="d6c661b2">
+              <button class="e9107c0a" type="button" componentkey="FIXTUREKEY79" aria-label="Follow Harriet Vance">
+                <span class="_0292dd26">
+                  <svg xmlns="http://www.w3.org/2000/svg" id="add-small" viewBox="0 0 16 16" width="16" height="16" class="_16d97409" aria-hidden="true"><path d="M14 9H9v5H7V9H2V7h5V2h2v5h5z"></path></svg>
+                  <div class="e5511fb8"><span class="_02484ad3"><span>Follow</span></span></div>
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="_02484ad3 _165051fc" componentkey="FIXTUREKEY80">
+        <span class="fa946b91" tabindex="-1" data-testid="expandable-text-box">Twenty years in, and I think it is finally time to make it official.<br><br>Who knows how long the window stays open.</span>
+      </p>
+
+      <hr role="presentation" class="_2fe43ed8">
+
+      <div class="e461bcb8">
+        <div class="_58b9df39">
+          <div class="_3488d9c4">
+            <div class="_08a64fc6">
+              <button class="e9107c0a" type="button" componentkey="FIXTUREKEY81" aria-label="Reaction button state: no reaction">
+                <span class="_0292dd26">
+                  <svg xmlns="http://www.w3.org/2000/svg" id="thumbs-up-outline-small" viewBox="0 0 16 16" width="16" height="16" class="_16d97409" aria-hidden="true"><path d="m12.91 7-2.25-2.57a8.2 8.2 0 0 1-1.5-2.55"></path></svg>
+                  <span class="_02484ad3">Like</span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <button class="e9107c0a" type="button" componentkey="FIXTUREKEY82">
+          <span class="_0292dd26">
+            <svg xmlns="http://www.w3.org/2000/svg" id="comment-small" viewBox="0 0 16 16" width="16" height="16" class="_16d97409" aria-hidden="true"><path d="M5 8h5v1H5z"></path></svg>
+            <div class="e5511fb8"><span class="_02484ad3"><span>Comment</span></span></div>
+          </span>
+        </button>
+        <a class="e9107c0a" href="https://www.linkedin.com/feed/" componentkey="FIXTUREKEY83">
+          <span class="_0292dd26">
+            <svg xmlns="http://www.w3.org/2000/svg" id="send-privately-small" viewBox="0 0 16 16" width="16" height="16" class="_16d97409" aria-hidden="true"><path d="M14 2 0 6.67l5 2.64 5.67-3.98L6.7 11l2.63 5z"></path></svg>
+            <div class="e5511fb8"><span class="_02484ad3"><span>Send</span></span></div>
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

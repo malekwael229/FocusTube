@@ -464,6 +464,10 @@ const LIFeed = {
   // author link, e.g. aria-label="Dana Whitfield  2nd". A reshared post
   // carries one of its own, which is how the outer post's header is told
   // apart from the header of the post nested inside it.
+  //
+  // Read through identities() rather than directly: one author accounts for
+  // several matches of this selector, and counting them as separate people
+  // is what has to be avoided.
   IDENTITY_MARK:
     'a[href*="/in/"] [aria-label], a[href*="/company/"] [aria-label]',
   MIN_COLLAPSED_HEIGHT: 260,
@@ -638,11 +642,37 @@ const LIFeed = {
     // every pass rather than only at collapse time.
     this.collapsed.forEach((post) => this.hushMedia(post));
   },
+  identities: function (post) {
+    // The people named in this post's headers, in document order, one entry
+    // each.
+    //
+    // A single author matches IDENTITY_MARK three times: the avatar carries
+    // aria-label="View X's profile" on the <svg> or <img> inside its
+    // <figure>, the name block carries "X Verified Profile 2nd", and LinkedIn
+    // repeats that block in an empty div below the timestamp. Treating those
+    // as three people put the end of the header above the author's own Follow
+    // control, so every post came out as "keep" and nothing was ever hidden.
+    //
+    // The avatar is dropped by shape and the repeat by label, which leaves one
+    // entry per person - so a second entry really does mean a second person,
+    // which is what a nested repost is.
+    const found = [];
+    const seen = new Set();
+    post.querySelectorAll(this.IDENTITY_MARK).forEach((el) => {
+      const tag = el.tagName ? el.tagName.toLowerCase() : "";
+      if (tag === "svg" || tag === "img" || el.closest("figure")) return;
+      const label = this.norm(el.getAttribute("aria-label"));
+      if (!label || seen.has(label)) return;
+      seen.add(label);
+      found.push(el);
+    });
+    return found;
+  },
   authorLink: function (post) {
     // The author link is the one carrying an identity block. Taking the first
     // profile link instead picks up the "... reshared this" line above the
     // post, which names whoever surfaced it rather than who wrote it.
-    const labelled = post.querySelector(this.IDENTITY_MARK);
+    const labelled = this.identities(post)[0];
     if (labelled) return labelled.closest("a");
     return post.querySelector('a[href*="/in/"], a[href*="/company/"]');
   },
@@ -659,8 +689,8 @@ const LIFeed = {
     // case the second identity covers; a reshare with commentary is caught by
     // whichever of the two comes first.
     const body = post.querySelector(this.BODY_MARK);
-    const identities = post.querySelectorAll(this.IDENTITY_MARK);
-    const nested = identities.length > 1 ? identities[1] : null;
+    const people = this.identities(post);
+    const nested = people.length > 1 ? people[1] : null;
     if (!body) return nested;
     if (!nested) return body;
     return body.compareDocumentPosition(nested) &
@@ -749,15 +779,23 @@ const LIFeed = {
     // Verified Profile 2nd". Taking the first profile link instead picks up
     // the "Followed by ..." line above the post, which names whoever surfaced
     // it rather than who wrote it.
-    const labelled = post.querySelector(this.IDENTITY_MARK);
+    const labelled = this.identities(post)[0];
     if (labelled) {
       // e.g. "Kirill Sadchikov  2nd", "ST Engineering Verified",
       // "Almaz Salyakhov, Open to work Verified Profile 2nd".
-      const label = this.norm(labelled.getAttribute("aria-label"))
-        .split(",")[0]
-        .replace(/\s*•?\s*(1st|2nd|3rd\+?)\s*$/i, "")
-        .replace(/\s+verified\s*$/i, "")
-        .trim();
+      // Trailing badge words, stripped one at a time because they stack:
+      // "Harriet Vance Verified Profile 3rd+", "Dr. Sybe Rispens Premium
+      // Profile 2nd". English-only, and only cosmetic - the worst case is a
+      // couple of extra words in the placeholder's caption.
+      let label = this.norm(labelled.getAttribute("aria-label")).split(",")[0];
+      let previous = null;
+      while (previous !== label) {
+        previous = label;
+        label = label
+          .replace(/\s*•?\s*(1st|2nd|3rd\+?)\s*$/i, "")
+          .replace(/\s+(verified|premium|profile)\s*$/i, "")
+          .trim();
+      }
       if (label) return label.slice(0, 60);
     }
     const links = post.querySelectorAll('a[href*="/in/"], a[href*="/company/"]');

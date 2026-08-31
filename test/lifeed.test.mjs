@@ -549,5 +549,70 @@ console.log("\ncollapsing a post stops its video");
     assert.equal(video.paused, true));
 }
 
+// ------------------------------------------- one author, three aria-labels
+// The live-feed shape that the earlier fixtures had been reduced past: an
+// author matches IDENTITY_MARK three times - avatar, name block, and the
+// repeat of the name block below the timestamp. Counting those as three
+// people ended the header above the author's own Follow control, so every
+// post on the feed classified as "keep" and nothing was hidden at all.
+console.log("\nan author with an avatar label and a repeated name block");
+{
+  const { LIFeed } = makeEnv(feed([fixture("li-follow-post.html")]));
+  LIFeed.active = true;
+  LIFeed.ensureObserver();
+  const post = LIFeed.posts()[0];
+
+  check("the selector really does match this author three times", () =>
+    assert.equal(post.querySelectorAll(LIFeed.IDENTITY_MARK).length, 3));
+  check("but they are all one person", () =>
+    assert.equal(LIFeed.identities(post).length, 1));
+  check("the avatar's own label is not counted", () => {
+    const avatar = post.querySelector("figure [aria-label]");
+    assert.ok(avatar, "fixture lost its avatar label");
+    assert.ok(!LIFeed.identities(post).includes(avatar));
+  });
+  check("so the header runs to the body, not to a phantom second person", () => {
+    const boundary = LIFeed.headerBoundary(post);
+    assert.equal(boundary, post.querySelector('[data-testid="expandable-text-box"]'));
+  });
+  check("the Follow control is found", () => {
+    const control = LIFeed.followButton(post);
+    assert.ok(control, "not found");
+    assert.ok(control.querySelector('svg[id="add-small"]'));
+  });
+  check("the post is hidden", () =>
+    assert.equal(LIFeed.classify(post), "suggested"));
+  check("the author is the writer, not the avatar's alt text", () =>
+    assert.equal(LIFeed.author(post), "Harriet Vance"));
+
+  LIFeed.tick();
+  check("and it actually collapses on a tick", () =>
+    assert.ok(post.classList.contains("ft-li-collapsed")));
+}
+{
+  // The scoping still has to hold: the same post with a repost grafted in
+  // below the commentary is a second real person, and must stay visible.
+  const { doc, LIFeed } = makeEnv(feed([fixture("li-connection-post.html")]));
+  LIFeed.active = true;
+  LIFeed.ensureObserver();
+  const post = LIFeed.posts()[0];
+  const donor = new JSDOM(`<main>${fixture("li-follow-post.html")}</main>`).window.document;
+  const identity = donor.querySelector('[aria-label="Harriet Vance Verified Profile 3rd+"]');
+  const connect = donor.querySelector('svg[id="add-small"]');
+  let block = identity;
+  while (block && !block.contains(connect)) block = block.parentElement;
+  const body = post.querySelector('[data-testid="expandable-text-box"]');
+  body.parentNode.insertBefore(doc.importNode(block, true), body.nextSibling);
+
+  check("a grafted repost is a genuinely second person", () =>
+    assert.equal(LIFeed.identities(post).length, 2));
+  check("the header stops at it or at the body, whichever comes first", () =>
+    assert.ok(LIFeed.headerBoundary(post)));
+  check("the nested Follow control is not the outer post's", () =>
+    assert.equal(LIFeed.followButton(post), null));
+  check("so the repost stays visible", () =>
+    assert.equal(LIFeed.classify(post), "keep"));
+}
+
 console.log(failures ? `\n${failures} FAILURE(S)` : "\nall green");
 process.exit(failures ? 1 : 0);
