@@ -345,17 +345,16 @@ const Instagram = {
  * exactly the people you follow. Everything here is local DOM work; no
  * network calls, no new permissions.
  *
- * Hidden posts are collapsed to a stub rather than removed, so the feed keeps
- * some height and Instagram's infinite scroll does not spin. If too many
- * posts in a row are filtered we stop filtering entirely and say so - the
- * feed has simply run out of people you follow.
+ * Hidden posts are collapsed to a stub rather than removed, and the stub
+ * keeps the height the post had, so the page never gets shorter than it was.
+ * Nothing here stops or throttles the feed: Instagram keeps paginating
+ * exactly as it would without the extension.
  * ------------------------------------------------------------------------ */
 const IGFeed = {
   COLLAPSED_CLASS: "ft-ig-collapsed",
   STUB_CLASS: "ft-ig-stub",
-  // A collapsed post keeps the height it had, so the page never gets shorter
-  // and Instagram's infinite scroll is not goaded into loading more. This is
-  // the whole defence against runaway pagination.
+  // A collapsed post keeps the height it had, so collapsing a run of posts
+  // cannot make the page shorter than it already was.
   MIN_COLLAPSED_HEIGHT: 400,
   MAX_COLLAPSE_PER_TICK: 8,
   MAX_STUB_REPAIRS: 3,
@@ -363,6 +362,7 @@ const IGFeed = {
   UNBOUNDED_SCAN: 20,
   MAX_BUTTON_TEXT: 24,
   ZERO_WIDTH: /[\u200B-\u200F\u202A-\u202E\u2060-\u2064\uFEFF\u00AD]/g,
+  HAS_LETTER: /\p{L}/u,
   SPONSORED_LABELS: ["sponsored", "paid partnership"],
   SUGGESTED_LABELS: [
     "suggested for you",
@@ -456,12 +456,20 @@ const IGFeed = {
         new MutationObserver((records) => {
           for (const record of records) {
             if (!record.addedNodes.length) continue;
+            // Our own stub going in is not news.
+            if (this.isOwnMutation(record)) continue;
             const target = record.target;
             const post =
               target && target.nodeType === 1 ? target.closest("article") : null;
-            // Video buffering, like counts, caption expansion - churn inside a
-            // post we have already judged tells us nothing new.
-            if (post && post.dataset.ftIgClass) continue;
+            if (post && post.dataset.ftIgClass) {
+              // Video buffering, like counts, caption expansion - churn below
+              // the post's chrome tells us nothing new. Churn inside the
+              // chrome is different: that is where a follow control or a
+              // "Sponsored" label appears when it paints late, so a verdict
+              // already stamped on this post has to be taken again.
+              if (!this.chromeChurn(post, record)) continue;
+              delete post.dataset.ftIgClass;
+            }
             this.schedule();
             return;
           }
@@ -569,6 +577,10 @@ const IGFeed = {
       run += 1;
     });
 
+    // Instagram restarts playback when it re-renders a post, so this is done
+    // every pass rather than only at collapse time.
+    this.collapsed.forEach((post) => this.hushMedia(post));
+
     // Written to the body every pass, so the state can be read from the page
     // console with `document.body.dataset.ftIgFeed` - no extension APIs, no
     // debug flag. Attribute writes do not feed back into our own observer,
@@ -591,6 +603,37 @@ const IGFeed = {
     };
     if (document.body) document.body.dataset.ftIgFeed = JSON.stringify(state);
     Utils.debugLog("ig-feed", state);
+  },
+  isOwnMutation: function (record) {
+    for (const node of record.addedNodes) {
+      if (node.nodeType === 1 && node.classList.contains(this.STUB_CLASS)) {
+        return true;
+      }
+    }
+    return false;
+  },
+  chromeChurn: function (post, record) {
+    const boundary = this.postChrome(post);
+    // No chrome boundary yet means the post is still painting; treat anything
+    // arriving as worth another look.
+    if (!boundary) return true;
+    for (const node of record.addedNodes) {
+      if (this.inChrome(boundary, node)) return true;
+    }
+    return false;
+  },
+  hushMedia: function (post) {
+    // Collapsing hides the post's children with display:none, which does not
+    // stop playback - a Reel in a post nobody can see would otherwise keep
+    // playing its audio. Instagram restarts playback on re-render, so this is
+    // run for every collapsed post on every pass, not only at collapse time.
+    post.querySelectorAll("video, audio").forEach((media) => {
+      try {
+        if (!media.paused) media.pause();
+      } catch (e) {
+        // A media element being torn down is not worth throwing a tick over.
+      }
+    });
   },
   postChrome: function (post) {
     // Feed posts carry no <header>. The like/comment/share <section> is the
@@ -621,33 +664,105 @@ const IGFeed = {
     }
     return labels;
   },
+  textLeaves: function (element) {
+    // How many separate runs of text the element holds. A follow control
+    // holds exactly one - the word itself, in whatever language. A header
+    // line, a collab byline or a menu row holds several.
+    let count = 0;
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    let node;
+    while ((node = walker.nextNode())) {
+      if (!this.norm(node.nodeValue)) continue;
+      count += 1;
+      if (count > 1) return count;
+    }
+    return count;
+  },
   followButton: function (post) {
     // A follow control in the post's own chrome is the plainest statement
     // Instagram makes that this is not somebody you follow - and it says it
     // in whatever language the interface is in, so there is no word list to
-    // keep up to date. Icon-only controls ("More options") and the counters
-    // in the action bar are excluded by the svg and boundary checks.
+    // keep up to date.
+    //
+    // "Short text in a button" on its own is far too broad a reading of that,
+    // though, so each test below rules out something else Instagram puts in a
+    // post header. What is left is a standalone, textual, non-link control
+    // offered after the account it applies to, which is what Follow is.
     const boundary = this.postChrome(post);
+    const author = this.authorLink(post);
     const controls = post.querySelectorAll('[role="button"], button');
     for (const control of controls) {
       if (!this.inChrome(boundary, control)) break;
-      if (control.querySelector("svg")) continue;
+      // Icon controls - "More options", the verified tick, the audio pill -
+      // and anything wrapping a link, an avatar or the timestamp.
+      if (control.querySelector("svg, a, img, time")) continue;
+      // The username, the location line and a collab post's "and N others"
+      // are links; a control nested inside one belongs to that link.
+      if (control.closest("a")) continue;
+      // A follow control is offered after the account it applies to. This is
+      // what keeps a control in the post's top bar from being read as one.
+      if (
+        author &&
+        !(
+          author.compareDocumentPosition(control) &
+          Node.DOCUMENT_POSITION_FOLLOWING
+        )
+      ) {
+        continue;
+      }
+      // One word, not a composite header line.
+      if (this.textLeaves(control) !== 1) continue;
       const text = this.norm(control.textContent);
-      if (text && text.length <= this.MAX_BUTTON_TEXT) return control;
+      if (!text || text.length > this.MAX_BUTTON_TEXT) continue;
+      // Counters, dots and separators carry no letters in any script.
+      if (!this.HAS_LETTER.test(text)) continue;
+      return control;
     }
     return null;
   },
-  author: function (post) {
+  authorLink: function (post) {
     const links = post.querySelectorAll('a[href^="/"]');
     for (const link of links) {
       const href = link.getAttribute("href") || "";
       if (this.NON_PROFILE_PATH.test(href)) continue;
-      const match = href.match(/^\/([A-Za-z0-9._]+)\/$/);
-      if (match) return match[1];
+      if (/^\/[A-Za-z0-9._]+\/$/.test(href)) return link;
     }
     return null;
   },
+  author: function (post) {
+    const link = this.authorLink(post);
+    if (!link) return null;
+    const match = (link.getAttribute("href") || "").match(
+      /^\/([A-Za-z0-9._]+)\/$/,
+    );
+    return match ? match[1] : null;
+  },
+  postKey: function (post) {
+    // Which post this element is currently showing. Instagram recycles feed
+    // nodes as you scroll, so a verdict stamped on the element has to be tied
+    // to the post it was a verdict about - otherwise a recycled node carries
+    // the previous post's answer onto a new one.
+    const time = post.querySelector("time[datetime]");
+    return (
+      (this.author(post) || "?") +
+      "|" +
+      (time ? time.getAttribute("datetime") || "?" : "?")
+    );
+  },
+  forget: function (post) {
+    // Everything decided about the post this element used to hold.
+    delete post.dataset.ftIgClass;
+    delete post.dataset.ftIgReveal;
+    delete post.dataset.ftIgGiveUp;
+    delete post.dataset.ftIgStubs;
+    if (this.collapsed.has(post)) this.restore(post);
+  },
   classify: function (post, pastDivider) {
+    const key = this.postKey(post);
+    // A post that has not painted yet keys as "?|?"; once it paints, the key
+    // changes and anything stamped in the meantime is dropped along with it.
+    if (post.dataset.ftIgKey && post.dataset.ftIgKey !== key) this.forget(post);
+    post.dataset.ftIgKey = key;
     const cached = post.dataset.ftIgClass;
     if (cached === "ad" || cached === "suggested") return cached;
     // A cached "keep" is only good while the post is still above the divider.
@@ -715,6 +830,7 @@ const IGFeed = {
     post.dataset.ftIgHeight = String(this.measureHeight(post));
     post.classList.add(this.COLLAPSED_CLASS);
     this.collapsed.add(post);
+    this.hushMedia(post);
     this.renderStub(post, kind);
   },
   restore: function (post) {
@@ -731,6 +847,18 @@ const IGFeed = {
     this.collapsed.clear();
     this.lastRevealAllowed = null;
     this.sawDivider = false;
+    // Switching the setting off retires every verdict, so switching it back
+    // on judges the feed as it is now rather than as it was.
+    // The verdicts go, so switching the setting back on judges the feed as it
+    // is now rather than as it was. ftIgReveal stays: "View Anyway" is the
+    // reader's decision about one post, and toggling the feature is not a
+    // retraction of it.
+    document.querySelectorAll("article[data-ft-ig-class]").forEach((post) => {
+      delete post.dataset.ftIgClass;
+      delete post.dataset.ftIgKey;
+      delete post.dataset.ftIgGiveUp;
+      delete post.dataset.ftIgStubs;
+    });
     document
       .querySelectorAll('article[data-ft-ig-below="1"]')
       .forEach((post) => delete post.dataset.ftIgBelow);

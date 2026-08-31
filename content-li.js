@@ -438,15 +438,16 @@ const LinkedIn = {
  * data attribute or a class, never an inline style. LinkedIn re-renders its
  * feed nodes and blanks their style attribute; attributes survive.
  *
- * Two signals, both structural rather than textual, because the interface is
- * not always in English:
- *   - a Follow control in the post header. LinkedIn only offers it for people
- *     you do not already follow, which is the question being asked. It is
- *     found by the plus icon it contains (svg id "add-small"), not by its
- *     label.
- *   - a call-to-action leaving LinkedIn directly. Organic posts route external
- *     links through linkedin.com/safety/go/; only promoted posts link straight
- *     out. Backed up by the "Promoted" label where the language matches.
+ * Two signals:
+ *   - a Follow or Connect control in the outer post's own header. LinkedIn
+ *     only offers it for people you are not already connected to, which is
+ *     the question being asked. It is found by the icon it contains (svg id
+ *     "add-small" or "connect-small") rather than by its label, so the
+ *     interface language does not matter. Scoped to the outer header, because
+ *     a reshared post nested in the body carries a header of its own.
+ *   - the "Promoted" label in that same header. This one is textual, so it
+ *     only catches an English interface; a promoted post that is not caught
+ *     is simply left alone.
  * ------------------------------------------------------------------------ */
 const LIFeed = {
   COLLAPSED_CLASS: "ft-li-collapsed",
@@ -459,11 +460,18 @@ const LIFeed = {
   // which is the only place a "Promoted" label is trustworthy - the caption
   // is not.
   BODY_MARK: '[data-testid="expandable-text-box"]',
+  // A post author's identity block: the aria-labelled element inside the
+  // author link, e.g. aria-label="Dana Whitfield  2nd". A reshared post
+  // carries one of its own, which is how the outer post's header is told
+  // apart from the header of the post nested inside it.
+  IDENTITY_MARK:
+    'a[href*="/in/"] [aria-label], a[href*="/company/"] [aria-label]',
   MIN_COLLAPSED_HEIGHT: 260,
   MAX_COLLAPSE_PER_TICK: 8,
   MAX_STUB_REPAIRS: 3,
   TICK_INTERVAL_MS: 100,
   PROMOTED_LABELS: ["promoted", "sponsored"],
+  UNBOUNDED_SCAN: 20,
 
   observer: null,
   root: null,
@@ -529,11 +537,20 @@ const LIFeed = {
           for (const record of records) {
             if (!record.addedNodes.length) continue;
             const target = record.target;
+            // Our own stub going in is not news.
+            if (this.isOwnMutation(record)) continue;
             const post =
               target && target.nodeType === 1
                 ? target.closest('[role="listitem"]')
                 : null;
-            if (post && post.dataset.ftLiClass) continue;
+            if (post && post.dataset.ftLiClass) {
+              // Churn in the body or the action bar tells us nothing new.
+              // Churn in the header does: that is where a Follow or Connect
+              // control, or a "Promoted" label, appears when it paints late,
+              // so a verdict already stamped on this post is taken again.
+              if (!this.headerChurn(post, record)) continue;
+              delete post.dataset.ftLiClass;
+            }
             this.schedule();
             return;
           }
@@ -616,34 +633,103 @@ const LIFeed = {
       this.collapse(post, kind);
       collapsedThisTick += 1;
     });
+
+    // LinkedIn restarts playback when it re-renders a post, so this is done
+    // every pass rather than only at collapse time.
+    this.collapsed.forEach((post) => this.hushMedia(post));
+  },
+  authorLink: function (post) {
+    // The author link is the one carrying an identity block. Taking the first
+    // profile link instead picks up the "... reshared this" line above the
+    // post, which names whoever surfaced it rather than who wrote it.
+    const labelled = post.querySelector(this.IDENTITY_MARK);
+    if (labelled) return labelled.closest("a");
+    return post.querySelector('a[href*="/in/"], a[href*="/company/"]');
+  },
+  headerBoundary: function (post) {
+    // Where the outer post's own header stops. Whichever comes first of:
+    //
+    //   the post body      - a caption saying "promoted" is not a label, and
+    //                        a reshared post sits below the commentary;
+    //   a second identity  - a reshared post carries its own author header,
+    //                        with its own Follow or Connect control, and that
+    //                        control says nothing about the outer post.
+    //
+    // A reshare with no commentary has no body mark, which is exactly the
+    // case the second identity covers; a reshare with commentary is caught by
+    // whichever of the two comes first.
+    const body = post.querySelector(this.BODY_MARK);
+    const identities = post.querySelectorAll(this.IDENTITY_MARK);
+    const nested = identities.length > 1 ? identities[1] : null;
+    if (!body) return nested;
+    if (!nested) return body;
+    return body.compareDocumentPosition(nested) &
+      Node.DOCUMENT_POSITION_PRECEDING
+      ? nested
+      : body;
+  },
+  inHeader: function (boundary, node) {
+    if (!boundary) return true;
+    return !!(
+      boundary.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_PRECEDING
+    );
   },
   followButton: function (post) {
     const selector = this.CONNECT_ICONS.map(
       (id) => 'svg[id="' + id + '"]',
     ).join(", ");
+    // Scoped to the outer post's header. Unscoped, resharing somebody you are
+    // not connected to would hide the post of the person you follow who
+    // reshared it, because the nested post's Connect control was read as the
+    // outer post's.
+    const boundary = this.headerBoundary(post);
     // A link, not only a button: "Connect" is rendered as an anchor.
     const controls = post.querySelectorAll("button, a");
     for (const control of controls) {
+      if (!this.inHeader(boundary, control)) break;
       if (control.querySelector(selector)) return control;
     }
     return null;
   },
+  isOwnMutation: function (record) {
+    for (const node of record.addedNodes) {
+      if (node.nodeType === 1 && node.classList.contains(this.STUB_CLASS)) {
+        return true;
+      }
+    }
+    return false;
+  },
+  headerChurn: function (post, record) {
+    const boundary = this.headerBoundary(post);
+    if (!boundary) return true;
+    for (const node of record.addedNodes) {
+      if (this.inHeader(boundary, node)) return true;
+    }
+    return false;
+  },
+  hushMedia: function (post) {
+    // Collapsing hides the post's children with display:none, which does not
+    // stop playback: a video in a post nobody can see would otherwise keep
+    // playing its audio.
+    post.querySelectorAll("video, audio").forEach((media) => {
+      try {
+        if (!media.paused) media.pause();
+      } catch (e) {
+        // A media element being torn down is not worth throwing a tick over.
+      }
+    });
+  },
   headerLabels: function (post) {
-    // Short text leaves above the post body. Scoped that way so a caption
-    // that happens to say "promoted" is not read as an ad label.
-    const body = post.querySelector(this.BODY_MARK);
+    // Short text leaves above the post body and above any nested repost.
+    // Scoped that way so neither a caption that happens to say "promoted" nor
+    // a reshared post's own "Promoted" label is read as this post's.
+    const boundary = this.headerBoundary(post);
     const labels = [];
     const walker = document.createTreeWalker(post, NodeFilter.SHOW_TEXT);
     let node;
     while ((node = walker.nextNode())) {
-      if (body) {
-        const pos = body.compareDocumentPosition(node);
-        const inside = !!(pos & Node.DOCUMENT_POSITION_CONTAINED_BY);
-        const before = !!(pos & Node.DOCUMENT_POSITION_PRECEDING);
-        if (inside || !before) break;
-      } else if (labels.length >= 20) {
-        break;
-      }
+      if (!this.inHeader(boundary, node)) break;
+      if (!boundary && labels.length >= this.UNBOUNDED_SCAN) break;
       const text = this.norm(node.nodeValue).toLowerCase();
       if (text && text.length <= 40) labels.push(text);
     }
@@ -663,9 +749,7 @@ const LIFeed = {
     // Verified Profile 2nd". Taking the first profile link instead picks up
     // the "Followed by ..." line above the post, which names whoever surfaced
     // it rather than who wrote it.
-    const labelled = post.querySelector(
-      'a[href*="/in/"] [aria-label], a[href*="/company/"] [aria-label]',
-    );
+    const labelled = post.querySelector(this.IDENTITY_MARK);
     if (labelled) {
       // e.g. "Kirill Sadchikov  2nd", "ST Engineering Verified",
       // "Almaz Salyakhov, Open to work Verified Profile 2nd".
@@ -683,7 +767,35 @@ const LIFeed = {
     }
     return null;
   },
+  postKey: function (post) {
+    // Which post this element is currently showing. LinkedIn recycles feed
+    // nodes as you scroll, so a verdict stamped on the element has to be tied
+    // to the post it was a verdict about - otherwise a recycled node carries
+    // the previous post's answer onto a new one.
+    //
+    // componentkey is LinkedIn's own per-post identity and is all we need
+    // when it is there; the author and the opening of the body stand in when
+    // it is not. The opening only, because it does not change when "see more"
+    // expands the rest.
+    const own = post.getAttribute("componentkey");
+    if (own) return own;
+    const link = this.authorLink(post);
+    const href = link ? (link.getAttribute("href") || "?").split("?")[0] : "?";
+    const body = post.querySelector(this.BODY_MARK);
+    return href + "|" + (body ? this.norm(body.textContent).slice(0, 60) : "");
+  },
+  forget: function (post) {
+    // Everything decided about the post this element used to hold.
+    delete post.dataset.ftLiClass;
+    delete post.dataset.ftLiReveal;
+    delete post.dataset.ftLiGiveUp;
+    delete post.dataset.ftLiStubs;
+    if (this.collapsed.has(post)) this.restore(post);
+  },
   classify: function (post) {
+    const key = this.postKey(post);
+    if (post.dataset.ftLiKey && post.dataset.ftLiKey !== key) this.forget(post);
+    post.dataset.ftLiKey = key;
     const cached = post.dataset.ftLiClass;
     if (cached === "ad" || cached === "suggested" || cached === "keep") {
       return cached;
@@ -717,6 +829,7 @@ const LIFeed = {
     post.dataset.ftLiHeight = String(this.measureHeight(post));
     post.classList.add(this.COLLAPSED_CLASS);
     this.collapsed.add(post);
+    this.hushMedia(post);
     this.renderStub(post, kind);
   },
   restore: function (post) {
@@ -732,6 +845,18 @@ const LIFeed = {
     [...this.collapsed].forEach((post) => this.restore(post));
     this.collapsed.clear();
     this.lastRevealAllowed = null;
+    // Switching the setting off retires every verdict, so switching it back
+    // on judges the feed as it is now rather than as it was.
+    // The verdicts go, so switching the setting back on judges the feed as it
+    // is now rather than as it was. ftLiReveal stays: "View Anyway" is the
+    // reader's decision about one post, and toggling the feature is not a
+    // retraction of it.
+    document.querySelectorAll("[data-ft-li-class]").forEach((post) => {
+      delete post.dataset.ftLiClass;
+      delete post.dataset.ftLiKey;
+      delete post.dataset.ftLiGiveUp;
+      delete post.dataset.ftLiStubs;
+    });
     document
       .querySelectorAll("." + this.COLLAPSED_CLASS)
       .forEach((post) => this.restore(post));

@@ -22,12 +22,12 @@ document.addEventListener("DOMContentLoaded", function () {
     hide_yt_shorts_shelves: true,
     hide_yt_most_relevant_shelf: true,
     hide_ig_reels_nav: true,
-    hide_ig_suggested: true,
+    hide_ig_suggested: false,
     hide_fb_reels_nav: true,
     hide_fb_people_you_might_know: true,
     hide_li_feed: true,
     hide_li_addfeed: true,
-    hide_li_suggested: true,
+    hide_li_suggested: false,
     showBreakButton: true,
     accentColor: "#4facfe",
   };
@@ -656,7 +656,7 @@ const platforms = {
       {
         id: "hide_ig_suggested",
         label: "Hide posts you don't follow",
-        desc: "Replaces suggested and sponsored posts in the feed with a placeholder, and ends the feed once Instagram runs out of people you follow",
+        desc: "Replaces suggested and sponsored posts in the feed with a placeholder. Leaves the rest of the feed alone",
       },
     ],
   },
