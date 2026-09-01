@@ -32,6 +32,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Lint JavaScript
+        run: npx --yes eslint@9.39.5 "*.js" "scripts/**/*.js"
+
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
