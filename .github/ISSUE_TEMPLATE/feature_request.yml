@@ -1,10 +1,10 @@
 name: Feature request
-description: Suggest a focused, privacy-preserving improvement
+description: Suggest an improvement
 title: "[Feature] "
 body:
   - type: markdown
     attributes:
-      value: FocusTube avoids telemetry, remote backends, unnecessary permissions, and unrelated complexity. Please explain the user problem before proposing implementation details.
+      value: Describe the problem first. FocusTube avoids telemetry, remote backends, and unnecessary permissions.
 
   - type: textarea
     id: problem
@@ -18,24 +18,12 @@ body:
     id: proposal
     attributes:
       label: Proposed behavior
-      description: Describe what FocusTube should do from the user's perspective.
+      description: What should FocusTube do from the user's perspective?
     validations:
       required: true
 
   - type: textarea
     id: alternatives
     attributes:
-      label: Alternatives considered
-      description: Optional. Mention workarounds or simpler approaches if relevant.
-
-  - type: checkboxes
-    id: constraints
-    attributes:
-      label: Project constraints
-      options:
-        - label: This request does not require analytics or telemetry.
-          required: true
-        - label: This request does not require a project-controlled remote backend.
-          required: true
-        - label: I understand new permissions require a clear documented need.
-          required: true
+      label: Alternatives or workarounds
+      description: Optional. Mention anything you already tried.
