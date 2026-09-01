@@ -39,11 +39,11 @@ function candidate() {
   const hashes = Object.fromEntries(files.map((file) => [file, digest(path.join(root, file))]));
   const buildRoot = path.join(root, "dist-release-builds");
   for (const browser of ["chromium", "firefox"]) {
-    const directory = path.join(buildRoot, "FocusTube-release-" + browser + "-v2.3.1");
+    const directory = path.join(buildRoot, "FocusTube-release-" + browser + "-v2.3.2");
     const sourceManifest = browser === "chromium" ? "chrome-manifest.json" : "firefox-manifest.json";
     if (JSON.stringify(JSON.parse(fs.readFileSync(path.join(root, sourceManifest)))) !== JSON.stringify(JSON.parse(fs.readFileSync(path.join(directory, "manifest.json"))))) throw new Error("Retained manifest differs from source");
     for (const file of runtimeFiles) if (digest(path.join(directory, file)) !== hashes[file]) throw new Error("Retained candidate differs from source: " + file);
-    hashes["dist-release-builds/FocusTube-release-" + browser + "-v2.3.1.zip"] = digest(path.join(buildRoot, "FocusTube-release-" + browser + "-v2.3.1.zip"));
+    hashes["dist-release-builds/FocusTube-release-" + browser + "-v2.3.2.zip"] = digest(path.join(buildRoot, "FocusTube-release-" + browser + "-v2.3.2.zip"));
   }
   return hashes;
 }
@@ -83,7 +83,7 @@ async function main() {
   try {
     for (const id of chosen) {
       const browser = available[id];
-      const buildDir = path.join(root, "dist-release-builds", "FocusTube-release-" + (id === "firefox" ? "firefox" : "chromium") + "-v2.3.1");
+      const buildDir = path.join(root, "dist-release-builds", "FocusTube-release-" + (id === "firefox" ? "firefox" : "chromium") + "-v2.3.2");
       const profileDir = path.join(local, "profiles", id);
       if (fs.existsSync(profileDir) && fs.lstatSync(profileDir).isSymbolicLink()) throw new Error("Profile must not be a symlink/junction");
       report.data.browsers.push({ name: browser.name, executablePath: browser.executablePath || null, profile: path.relative(root, profileDir) });
@@ -112,10 +112,10 @@ async function main() {
           continue;
         }
         const page = await session.newPage();
-        await report.case({ id: "extension-load", site: "extension", scope: "extension-ui", route: "popup.html", expected: "The exact 2.3.1 manifest is loaded" }, page, async () => {
+        await report.case({ id: "extension-load", site: "extension", scope: "extension-ui", route: "popup.html", expected: "The exact 2.3.2 manifest is loaded" }, page, async () => {
           await page.goto(session.extensionURL + "popup.html");
           const manifest = await page.evaluate(() => chrome.runtime.getManifest());
-          if (manifest.version !== "2.3.1") throw new Error("Wrong version loaded");
+          if (manifest.version !== "2.3.2") throw new Error("Wrong version loaded");
           const loadedHashes = await page.evaluate(async (files) => {
             const entries = [];
             for (const file of files) {

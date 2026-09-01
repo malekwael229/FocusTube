@@ -6,6 +6,10 @@ All notable project-facing changes are documented here.
 
 No unreleased changes yet.
 
+## [2.3.2] - 2026-09-01
+
+- Disabled Firefox private-window access so FocusTube does not persist data from private browsing sessions.
+
 ## [2.3.1] - 2026-09-01
 
 - Hardened timer recovery across Chromium service-worker and Firefox background restarts. Future alarms are restored, stale alarms cannot affect replacement timers, failed writes roll back safely, and completion side effects are deduplicated.

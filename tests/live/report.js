@@ -87,7 +87,7 @@ class Report {
     for (const record of this.data.cases) counts[record.status]++;
     this.data.counts = counts;
     fs.writeFileSync(path.join(this.directory, "results.json"), JSON.stringify(this.data, null, 2) + "\n");
-    const text = ["# FocusTube 2.3.1 Browser Validation", "", "Started: " + this.data.startedAt,
+    const text = ["# FocusTube 2.3.2 Browser Validation", "", "Started: " + this.data.startedAt,
       "", "PASS proves only the named scope. Fixtures, instrumented timers and live sites are not interchangeable.",
       "Run limits: " + JSON.stringify({ quick: this.data.quick, sitesOnly: this.data.sitesOnly, extensionOnly: this.data.extensionOnly, selectedSites: this.data.selectedSites }),
       "", "| Site | " + names.join(" | ") + " |", "| --- | " + names.map(() => "---").join(" | ") + " |",
