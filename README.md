@@ -8,6 +8,13 @@
   <p><strong>Supports YouTube Shorts, Instagram Reels, TikTok, Facebook Reels, and LinkedIn feed controls.</strong></p>
 
   <p>
+    <strong>Install:</strong>
+    <a href="https://chromewebstore.google.com/detail/focustube-distraction-blo/ppdjgkniggbikifojmkindmbhppmoell">Chrome</a> |
+    <a href="https://addons.mozilla.org/addon/focus-tube/">Firefox</a> |
+    <a href="https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog">Edge</a>
+  </p>
+
+  <p>
     <a href="#installation">Installation</a> |
     <a href="#features">Features</a> |
     <a href="#configuration">Configuration</a> |
