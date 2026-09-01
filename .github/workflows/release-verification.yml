@@ -1,0 +1,64 @@
+name: Release verification
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - "v*"
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Reproduce release packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run package reproducibility tests
+        run: npm run test:package
+
+      - name: Build release packages twice
+        run: |
+          node scripts/prepare-test-builds.js .tmp/release-a --zip --retain
+          node scripts/prepare-test-builds.js .tmp/release-b --zip --retain
+
+      - name: Verify manifest versions and byte-identical packages
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          chromium_version="$(node -p "require('./chrome-manifest.json').version")"
+          firefox_version="$(node -p "require('./firefox-manifest.json').version")"
+          test "$chromium_version" = "$firefox_version"
+
+          if [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
+            test "${GITHUB_REF_NAME#v}" = "$chromium_version"
+          fi
+
+          for browser in chromium firefox; do
+            first=".tmp/release-a/FocusTube-release-${browser}-v${chromium_version}.zip"
+            second=".tmp/release-b/FocusTube-release-${browser}-v${chromium_version}.zip"
+            test -f "$first"
+            test -f "$second"
+            cmp --silent "$first" "$second"
+            sha256sum "$first"
+          done

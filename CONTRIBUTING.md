@@ -32,6 +32,13 @@ Firefox uses `firefox-manifest.json`.
 3. Click **Load Temporary Add-on...**.
 4. Select the copied/renamed `manifest.json` file.
 
+## Contribution Process
+
+- Open an issue first when a change is large, changes permissions, changes privacy behavior, or affects several supported sites.
+- Submit code changes through a pull request rather than committing directly to `main`.
+- Keep each pull request focused on one problem or closely related set of changes.
+- Explain the problem, the proposed behavior, and the validation performed.
+
 ## Testing Changes
 
 Read [TESTING.md](TESTING.md) for automated commands, fixture boundaries, the Firefox restart limitation, and the browser matrix. Read [ARCHITECTURE.md](ARCHITECTURE.md) before changing manifest, background, content-script, storage, or messaging behavior.
@@ -47,6 +54,8 @@ Before submitting changes, manually test the affected browser and platform behav
 - Options page settings, import/export, reset, and clear-data flows.
 
 Run the focused checks for the change, then run `npm.cmd run test:all` on Windows or `npm run test:all` in a Unix-like shell when practical. The smoke runner is headful and requires an active desktop session.
+
+Major new functionality must add or update automated tests for the new behavior. Bug fixes should add a regression test when the failure can be reproduced reliably in the automated harness.
 
 Keep changes focused. Do not add analytics, tracking, remote servers, or new permissions unless there is a clear product need and it is documented.
 
@@ -69,3 +78,5 @@ When reporting a bug, please include:
 - Update README or other docs when user-facing behavior changes.
 - Avoid broad formatting mixed with behavior changes.
 - Do not add telemetry, tracking, remote configuration, or unnecessary permissions.
+- Do not commit secrets, credentials, private browsing data, or personal data.
+- Keep third-party dependencies minimal and document why a new dependency is required.
