@@ -8,6 +8,13 @@
   <p><strong>Supports YouTube Shorts, Instagram Reels, TikTok, Facebook Reels, and LinkedIn feed controls.</strong></p>
 
   <p>
+    <strong>Install:</strong>
+    <a href="https://chromewebstore.google.com/detail/focustube-distraction-blo/ppdjgkniggbikifojmkindmbhppmoell">Chrome</a> |
+    <a href="https://addons.mozilla.org/addon/focus-tube/">Firefox</a> |
+    <a href="https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog">Edge</a>
+  </p>
+
+  <p>
     <a href="#installation">Installation</a> |
     <a href="#features">Features</a> |
     <a href="#configuration">Configuration</a> |
@@ -74,7 +81,7 @@ Clone or download this repository, then choose the manifest for your browser.
 The Chromium build uses **Manifest V3**.
 
 1. Copy or rename `chrome-manifest.json` to `manifest.json`.
-2. Open `chrome://extensions` or `edge://extensions`.
+2. Open `chrome://extensions` or `edge://extensions/`.
 3. Enable **Developer mode**.
 4. Click **Load unpacked**.
 5. Select the repository folder containing the renamed `manifest.json`.
