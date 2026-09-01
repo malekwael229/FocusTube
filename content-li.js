@@ -347,9 +347,7 @@ const LinkedIn = {
     overlay.className = "ft-stories-overlay";
     overlay.dataset.ftDismiss = showDismiss ? "true" : "false";
     if (CONFIG.isDarkMode) overlay.classList.add("dark");
-    const icon = document.createElement("img");
-    icon.src = chrome.runtime.getURL("icons/icon48.png");
-    icon.className = "ft-stories-overlay-icon";
+    const icon = Utils.createBadge("ft-stories-overlay-icon");
     const text = document.createElement("span");
     text.textContent = title;
     overlay.appendChild(icon);
@@ -375,9 +373,7 @@ const LinkedIn = {
     overlay.id = id;
     overlay.className = "ft-linkedin-overlay";
     if (CONFIG.isDarkMode) overlay.classList.add("dark");
-    const icon = document.createElement("img");
-    icon.src = chrome.runtime.getURL("icons/icon128.png");
-    icon.className = "ft-linkedin-overlay-icon";
+    const icon = Utils.createBadge("ft-linkedin-overlay-icon");
     const h3 = document.createElement("h3");
     h3.textContent = title;
     const subtitle = document.createElement("p");

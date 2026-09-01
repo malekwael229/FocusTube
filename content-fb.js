@@ -1,6 +1,7 @@
 const Facebook = {
   initialized: false,
   observer: null,
+  pendingMutationTask: null,
   currentMode: "strict",
   storiesOverlayId: "ft-fb-stories-overlay",
   hiddenNavContainers: new Set(),
@@ -40,13 +41,17 @@ const Facebook = {
     if (!this.observer) {
       this.observer = Utils.trackObserver(
         new MutationObserver(() => {
-          this.runChecks();
+          this.scheduleMutationCheck();
         }),
       );
       this.observer.observe(document.body, { childList: true, subtree: true });
     }
   },
   disable: function () {
+    if (this.pendingMutationTask !== null) {
+      clearTimeout(this.pendingMutationTask);
+      this.pendingMutationTask = null;
+    }
     UI.remove();
     this.removeStoriesOverlay();
     this.applyReelsHiding(false);
@@ -54,6 +59,13 @@ const Facebook = {
     this.restoreHiddenNavContainers();
     if (this.observer) this.observer.disconnect();
     this.observer = null;
+  },
+  scheduleMutationCheck: function () {
+    if (this.pendingMutationTask !== null) return;
+    this.pendingMutationTask = setTimeout(() => {
+      this.pendingMutationTask = null;
+      this.runChecks();
+    }, 0);
   },
   enable: function () {
     if (!document.body) return;
@@ -338,8 +350,6 @@ const Facebook = {
     );
   },
   showStoriesOverlay: function () {
-    const iconUrl = Utils.getExtensionUrl("icons/icon48.png");
-    if (!iconUrl) return;
     if (document.getElementById(this.storiesOverlayId)) return;
     const storiesContainer = document.querySelector('[aria-label="Stories"]');
     if (!storiesContainer) return;
@@ -353,9 +363,7 @@ const Facebook = {
     overlay.id = this.storiesOverlayId;
     overlay.className = "ft-stories-overlay";
     if (CONFIG.isDarkMode) overlay.classList.add("dark");
-    const icon = document.createElement("img");
-    icon.src = iconUrl;
-    icon.className = "ft-stories-overlay-icon";
+    const icon = Utils.createBadge("ft-stories-overlay-icon");
     const text = document.createElement("span");
     text.textContent = "Stories Hidden";
     overlay.appendChild(icon);

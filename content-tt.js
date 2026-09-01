@@ -1,8 +1,8 @@
 const TikTok = {
   initialized: false,
   observer: null,
+  pendingMutationTask: null,
   currentMode: "strict",
-  lastPath: "",
   init: function () {
     if (this.initialized) return;
     Utils.ensureBody(() => this._start());
@@ -34,15 +34,26 @@ const TikTok = {
     if (!document.body) return;
     if (!this.observer) {
       this.observer = Utils.trackObserver(
-        new MutationObserver(() => this.runChecks()),
+        new MutationObserver(() => this.scheduleMutationCheck()),
       );
       this.observer.observe(document.body, { childList: true, subtree: true });
     }
   },
   disable: function () {
+    if (this.pendingMutationTask !== null) {
+      clearTimeout(this.pendingMutationTask);
+      this.pendingMutationTask = null;
+    }
     UI.remove();
     if (this.observer) this.observer.disconnect();
     this.observer = null;
+  },
+  scheduleMutationCheck: function () {
+    if (this.pendingMutationTask !== null) return;
+    this.pendingMutationTask = setTimeout(() => {
+      this.pendingMutationTask = null;
+      this.runChecks();
+    }, 0);
   },
   enable: function () {
     if (!document.body) return;

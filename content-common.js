@@ -18,11 +18,9 @@ const CONFIG = {
   isDarkMode: true,
   timer: { end: null, type: "work" },
   session: {
-    allowedCount: 0,
     allowUntil: 0,
     platform: null,
     scope: null,
-    unmuteMedia: false,
   },
   popupVisibility: { yt: true, ig: true, tt: true, fb: true, li: true },
   visualHideHidden: true,
@@ -101,13 +99,60 @@ const Utils = {
       return false;
     }
   },
-  getExtensionUrl: function (path) {
-    try {
-      if (!chrome.runtime?.id || !chrome.runtime?.getURL) return "";
-      return chrome.runtime.getURL(path);
-    } catch (e) {
-      return "";
-    }
+  _badgeSeq: 0,
+  createBadge: function (className) {
+    const namespace = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(namespace, "svg");
+    svg.setAttribute("viewBox", "0 0 128 128");
+    svg.setAttribute("aria-hidden", "true");
+    if (className) svg.setAttribute("class", className);
+
+    this._badgeSeq += 1;
+    const gradientId = `ft-badge-gradient-${this._badgeSeq}`;
+    const defs = document.createElementNS(namespace, "defs");
+    const gradient = document.createElementNS(namespace, "linearGradient");
+    gradient.setAttribute("id", gradientId);
+    gradient.setAttribute("x1", "100%");
+    gradient.setAttribute("y1", "0%");
+    gradient.setAttribute("x2", "0%");
+    gradient.setAttribute("y2", "100%");
+    [
+      ["0%", "#0969db"],
+      ["100%", "#06cecb"],
+    ].forEach(([offset, color]) => {
+      const stop = document.createElementNS(namespace, "stop");
+      stop.setAttribute("offset", offset);
+      stop.setAttribute("stop-color", color);
+      gradient.appendChild(stop);
+    });
+    defs.appendChild(gradient);
+    svg.appendChild(defs);
+
+    const plate = document.createElementNS(namespace, "rect");
+    plate.setAttribute("x", "9");
+    plate.setAttribute("y", "9");
+    plate.setAttribute("width", "110");
+    plate.setAttribute("height", "110");
+    plate.setAttribute("rx", "44");
+    plate.setAttribute("fill", `url(#${gradientId})`);
+    svg.appendChild(plate);
+
+    [
+      [6.35, 0.7],
+      [11.2, 1.6],
+      [17.8, 2.4],
+      [27.45, 3.5],
+    ].forEach(([radius, width]) => {
+      const ring = document.createElementNS(namespace, "circle");
+      ring.setAttribute("cx", "64");
+      ring.setAttribute("cy", "64");
+      ring.setAttribute("r", String(radius));
+      ring.setAttribute("fill", "none");
+      ring.setAttribute("stroke", "#fff");
+      ring.setAttribute("stroke-width", String(width));
+      svg.appendChild(ring);
+    });
+    return svg;
   },
   shouldApplyVisualHiding: function (platform) {
     if (!platform) return true;
@@ -122,6 +167,9 @@ const Utils = {
   trackObserver: function (observer) {
     if (observer) this.observers.push(observer);
     return observer;
+  },
+  untrackObserver: function (observer) {
+    this.observers = this.observers.filter((tracked) => tracked !== observer);
   },
   disconnectObservers: function () {
     this.observers.forEach((observer) => {
@@ -156,7 +204,6 @@ const Utils = {
       "ft-ig-stories-overlay",
       "ft-fb-stories-overlay",
       "ft-linkedin-feed-overlay",
-      "ft-linkedin-puzzles-overlay",
       "ft-linkedin-addfeed-overlay",
     ];
     ids.forEach((id) => {
@@ -278,9 +325,6 @@ const Utils = {
         this.reportError("disabling platform", e);
       }
     });
-    chrome.storage.local.remove(["ft_timer_end", "ft_timer_type"], () => {
-      void chrome.runtime.lastError;
-    });
   },
   enableExtension: function () {
     this._enableHandlers.forEach((handler) => {
@@ -310,9 +354,11 @@ const Utils = {
     const observer = new MutationObserver((mutations, obs) => {
       if (document.body) {
         obs.disconnect();
+        this.untrackObserver(obs);
         callback();
       }
     });
+    this.trackObserver(observer);
     observer.observe(document.documentElement, { childList: true });
   },
   setSafeInterval: function (callback, ms) {
@@ -338,14 +384,12 @@ const Utils = {
     CONFIG.session.allowUntil = 0;
     CONFIG.session.platform = null;
     CONFIG.session.scope = null;
-    CONFIG.session.unmuteMedia = false;
     if (this.isRuntimeAlive()) chrome.storage.local.remove("session");
   },
-  setAllowWindow: function (platform, scope, options = {}) {
+  setAllowWindow: function (platform, scope) {
     CONFIG.session.allowUntil = Number.MAX_SAFE_INTEGER;
     CONFIG.session.platform = platform;
     CONFIG.session.scope = scope || null;
-    CONFIG.session.unmuteMedia = options.unmute === true;
     if (this.isRuntimeAlive()) chrome.storage.local.remove("session");
   },
   markKick: function (platform, done) {
@@ -505,7 +549,18 @@ const Utils = {
         return false;
       }
       const rect = video.getBoundingClientRect();
-      return rect.width > 0 && rect.height > 0;
+      const viewportWidth =
+        window.innerWidth || document.documentElement.clientWidth;
+      const viewportHeight =
+        window.innerHeight || document.documentElement.clientHeight;
+      return (
+        rect.width > 0 &&
+        rect.height > 0 &&
+        rect.bottom > 0 &&
+        rect.right > 0 &&
+        rect.top < viewportHeight &&
+        rect.left < viewportWidth
+      );
     } catch (e) {
       return false;
     }
@@ -537,7 +592,9 @@ const Utils = {
           if (activeVideo.volume === 0) activeVideo.volume = 1;
         }
         const playPromise = activeVideo.play();
-        if (playPromise && playPromise.catch) playPromise.catch(() => {});
+        if (playPromise && playPromise.catch) {
+          playPromise.catch((error) => this.reportError("resuming visible media", error));
+        }
       }
       return;
     }
@@ -547,7 +604,9 @@ const Utils = {
         if (el.volume === 0) el.volume = 1;
       }
       const playPromise = el.play();
-      if (playPromise && playPromise.catch) playPromise.catch(() => {});
+      if (playPromise && playPromise.catch) {
+        playPromise.catch((error) => this.reportError("resuming media", error));
+      }
     });
   },
   unlockVideo: function (options = {}) {
@@ -585,7 +644,9 @@ const Utils = {
           el.pause();
         } else if (!state.paused) {
           const playPromise = el.play();
-          if (playPromise && playPromise.catch) playPromise.catch(() => {});
+          if (playPromise && playPromise.catch) {
+            playPromise.catch((error) => this.reportError("restoring media playback", error));
+          }
         }
         this._mediaState.delete(el);
       });
@@ -693,13 +754,10 @@ const UI = {
     const target = document.body || document.documentElement;
     const card = document.createElement("div");
     card.className = "focus-tube-card";
-    const img = document.createElement("img");
-    const iconUrl = Utils.getExtensionUrl("icons/icon128.png");
-    if (iconUrl) img.src = iconUrl;
-    img.className = "focus-tube-icon-img";
-    let headerText =
+    const badge = Utils.createBadge("focus-tube-icon-img");
+    const headerText =
       type === "strict" ? "Strict Mode Active" : "Distraction Blocked";
-    let bodyText = "FocusTube is keeping you productive.";
+    const bodyText = "FocusTube is keeping you productive.";
     const h1 = document.createElement("h1");
     h1.textContent = headerText;
     const p = document.createElement("p");
@@ -712,7 +770,7 @@ const UI = {
     backBtn.onclick = onBack;
     btnGroup.appendChild(backBtn);
     if (type === "warn") {
-    const watchBtn = document.createElement("button");
+      const watchBtn = document.createElement("button");
       watchBtn.className = "focus-tube-btn focus-tube-btn-secondary";
       watchBtn.textContent = "Watch Anyway";
       watchBtn.style.opacity = "0.5";
@@ -728,9 +786,7 @@ const UI = {
       watchBtn.onclick = () => {
         if (watchBtn.disabled) return;
         const shouldUnmute = ["tt", "ig"].includes(platform);
-        Utils.setAllowWindow(platform, options.scope, {
-          unmute: shouldUnmute,
-        });
+        Utils.setAllowWindow(platform, options.scope);
         this.remove({
           unmuteMedia: shouldUnmute,
           forcePlayMedia: true,
@@ -749,7 +805,7 @@ const UI = {
       };
       btnGroup.appendChild(msgBtn);
     }
-    if (iconUrl) card.appendChild(img);
+    card.appendChild(badge);
     card.append(h1, p, btnGroup);
     overlay.appendChild(card);
     target.appendChild(overlay);
@@ -838,14 +894,9 @@ const UI = {
     const toast = document.createElement("div");
     toast.id = "ft-toast";
     toast.style.cssText = `position: fixed; top: 24px; right: 24px; background: #1f1f1f; color: #fff; padding: 16px 24px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); z-index: 2147483647; font-family: sans-serif; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 15px; opacity: 0; transform: translateY(-20px); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); min-width: 300px;`;
-    const iconUrl = Utils.getExtensionUrl("icons/icon128.png");
-    if (iconUrl) {
-      const icon = document.createElement("img");
-      icon.src = iconUrl;
-      icon.alt = "";
-      icon.style.cssText = "width:32px;height:32px;border-radius:8px;";
-      toast.appendChild(icon);
-    }
+    const icon = Utils.createBadge();
+    icon.style.cssText = "width:32px;height:32px;flex:0 0 auto;";
+    toast.appendChild(icon);
     const textWrap = document.createElement("div");
     const titleEl = document.createElement("div");
     titleEl.textContent = title;
@@ -880,14 +931,9 @@ const UI = {
             box-shadow: 0 10px 40px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.1); 
             opacity: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         `;
-    const iconUrl = Utils.getExtensionUrl("icons/icon128.png");
-    if (iconUrl) {
-      const icon = document.createElement("img");
-      icon.src = iconUrl;
-      icon.alt = "";
-      icon.style.cssText = "width:24px;height:24px;border-radius:6px;";
-      n.appendChild(icon);
-    }
+    const icon = Utils.createBadge();
+    icon.style.cssText = "width:24px;height:24px;flex:0 0 auto;";
+    n.appendChild(icon);
     const message = document.createElement("span");
     message.textContent = "Strict Mode prevented access.";
     n.appendChild(message);
@@ -1167,11 +1213,23 @@ const UI = {
       CONFIG.isDarkMode = changes.darkMode.newValue;
       UI.updateTheme();
     }
-    if (changes.ft_timer_end) CONFIG.timer.end = changes.ft_timer_end.newValue;
-    if (changes.ft_timer_type)
-      CONFIG.timer.type = changes.ft_timer_type.newValue;
-    if (changes.ft_timer_end || changes.ft_timer_type)
-      Utils.applyVisualHidingClasses();
+    if (changes.ft_timer_end || changes.ft_timer_type) {
+      chrome.storage.local.get(["ft_timer_end", "ft_timer_type"], (res) => {
+        if (chrome.runtime.lastError) {
+          void chrome.runtime.lastError;
+          return;
+        }
+        CONFIG.timer.end = res.ft_timer_end;
+        CONFIG.timer.type = res.ft_timer_type;
+        Utils.applyVisualHidingClasses();
+        document.dispatchEvent(
+          new CustomEvent("ft-settings-changed", {
+            detail: Object.keys(changes),
+          }),
+        );
+      });
+      return;
+    }
     if (changes.ft_debug) {
       Utils._debugEnabled = changes.ft_debug.newValue === true;
     }

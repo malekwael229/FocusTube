@@ -1,22 +1,31 @@
 <div align="center">
   <img width="1400" height="560" alt="focustube-promotional-tile-1400x560 (2)" src="https://github.com/user-attachments/assets/14ee134e-dbbd-4649-919d-bb2e494d5fdb" />
 
-  # FocusTube: Distraction Blocker
+  <h1>FocusTube: Distraction Blocker</h1>
 
-  **A privacy-first browser extension for reducing distracting social video and feed surfaces.**
+  <p><strong>A privacy-first browser extension for reducing distracting social video and feed surfaces.</strong></p>
 
-  **Supports YouTube Shorts, Instagram Reels, TikTok, Facebook Reels, and LinkedIn feed controls.**
+  <p><strong>Supports YouTube Shorts, Instagram Reels, TikTok, Facebook Reels, and LinkedIn feed controls.</strong></p>
 
-  [Installation](#installation) | [Features](#features) | [Configuration](#configuration) | [Project Impact](#project-impact) | [Technical Highlights](#technical-highlights) | [Privacy](#privacy)
+  <p>
+    <a href="#installation">Installation</a> |
+    <a href="#features">Features</a> |
+    <a href="#configuration">Configuration</a> |
+    <a href="#project-impact">Project Impact</a> |
+    <a href="#technical-highlights">Technical Highlights</a> |
+    <a href="#privacy">Privacy</a>
+  </p>
 
-  ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-  ![Version](https://img.shields.io/badge/version-2.3.0-green.svg)
-  ![Firefox](https://img.shields.io/badge/firefox-compatible-orange.svg)
+  <p>
+    <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" />
+    <img alt="Version: 2.3.1" src="https://img.shields.io/badge/version-2.3.1-green.svg" />
+    <img alt="Firefox compatible" src="https://img.shields.io/badge/firefox-compatible-orange.svg" />
+  </p>
 </div>
 
 ---
 
-**FocusTube** is an open-source browser extension built and maintained to help users reduce doomscrolling and stay focused. It blocks or hides distracting areas on supported platforms while keeping all settings and usage data local to the browser.
+**FocusTube** is an open-source browser extension that helps reduce doomscrolling and stay focused. It blocks or hides distracting areas on supported platforms while keeping settings and usage data local to the browser.
 
 The project supports Chromium browsers with a Manifest V3 build and Firefox with a separate compatibility manifest.
 
@@ -94,9 +103,17 @@ Click the extension icon to open the popup:
 
 ## Project Impact
 
-- Published on Chrome Web Store, Microsoft Edge Add-ons, and Firefox Add-ons.
-- Open-source MIT-licensed project.
-- Privacy-first: no extension-side analytics or remote backend; settings stay in browser storage.
+Impact figures are approximate as of September 1, 2026. Store dashboards use different activity windows, so the combined audience is rounded:
+
+- Approximately 700 users across the Chrome Web Store, Microsoft Edge Add-ons, and Firefox Add-ons.
+- 32 GitHub stars and 4 forks.
+- 5.0 from 7 Chrome Web Store ratings and 5.0 from 3 Firefox Add-ons reviews.
+- Chrome Web Store Featured status.
+- Published on all three stores: Chrome, Edge, and Firefox.
+
+## Development Note
+
+AI tools contributed substantially to the implementation. The maintainer remains responsible for product direction, requirements, UX decisions, testing, debugging, publishing, maintenance, user feedback, and release management.
 
 ---
 
@@ -124,7 +141,7 @@ FocusTube is designed to run locally in the browser.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup and testing notes.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidance. [TESTING.md](TESTING.md) covers automated commands and the browser matrix; [ARCHITECTURE.md](ARCHITECTURE.md) describes the runtime boundaries.
 
 ## Security
 

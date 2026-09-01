@@ -34,6 +34,8 @@ Firefox uses `firefox-manifest.json`.
 
 ## Testing Changes
 
+Read [TESTING.md](TESTING.md) for automated commands, fixture boundaries, the Firefox restart limitation, and the browser matrix. Read [ARCHITECTURE.md](ARCHITECTURE.md) before changing manifest, background, content-script, storage, or messaging behavior.
+
 Before submitting changes, manually test the affected browser and platform behavior:
 
 - YouTube Shorts blocking, Shorts navigation/shelf hiding, and Subscriptions "Most relevant" shelf hiding in English YouTube UI.
@@ -43,6 +45,8 @@ Before submitting changes, manually test the affected browser and platform behav
 - LinkedIn feed and sidebar hiding behavior.
 - Popup controls, per-platform modes, and timer controls.
 - Options page settings, import/export, reset, and clear-data flows.
+
+Run the focused checks for the change, then run `npm.cmd run test:all` on Windows or `npm run test:all` in a Unix-like shell when practical. The smoke runner is headful and requires an active desktop session.
 
 Keep changes focused. Do not add analytics, tracking, remote servers, or new permissions unless there is a clear product need and it is documented.
 

@@ -1,9 +1,9 @@
 const Instagram = {
   initialized: false,
   observer: null,
+  pendingMutationTask: null,
   isRedirecting: false,
   currentMode: "strict",
-  lastPath: "",
   storiesOverlayId: "ft-ig-stories-overlay",
   hiddenNavContainers: new Set(),
   igSelectors: {
@@ -46,12 +46,16 @@ const Instagram = {
     if (!document.body) return;
     if (!this.observer) {
       this.observer = Utils.trackObserver(
-        new MutationObserver(() => this.runChecks()),
+        new MutationObserver(() => this.scheduleMutationCheck()),
       );
       this.observer.observe(document.body, { childList: true, subtree: true });
     }
   },
   disable: function () {
+    if (this.pendingMutationTask !== null) {
+      clearTimeout(this.pendingMutationTask);
+      this.pendingMutationTask = null;
+    }
     this.isRedirecting = false;
     UI.remove();
     this.removeStoriesOverlay();
@@ -61,6 +65,13 @@ const Instagram = {
     this.restoreHidden(this.hiddenNavContainers);
     if (this.observer) this.observer.disconnect();
     this.observer = null;
+  },
+  scheduleMutationCheck: function () {
+    if (this.pendingMutationTask !== null) return;
+    this.pendingMutationTask = setTimeout(() => {
+      this.pendingMutationTask = null;
+      this.runChecks();
+    }, 0);
   },
   enable: function () {
     if (!document.body) return;
@@ -262,8 +273,6 @@ const Instagram = {
     set.clear();
   },
   showStoriesOverlay: function () {
-    const iconUrl = Utils.getExtensionUrl("icons/icon48.png");
-    if (!iconUrl) return;
     if (document.getElementById(this.storiesOverlayId)) return;
     const storyTray = this.findStoriesTray();
     if (!storyTray) return;
@@ -272,9 +281,7 @@ const Instagram = {
     overlay.id = this.storiesOverlayId;
     overlay.className = "ft-stories-overlay";
     if (CONFIG.isDarkMode) overlay.classList.add("dark");
-    const icon = document.createElement("img");
-    icon.src = iconUrl;
-    icon.className = "ft-stories-overlay-icon";
+    const icon = Utils.createBadge("ft-stories-overlay-icon");
     const text = document.createElement("span");
     text.textContent = "Stories Hidden";
     overlay.appendChild(icon);

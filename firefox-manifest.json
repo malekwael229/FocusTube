@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "FocusTube: Distraction Blocker",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Reduce distractions from YouTube Shorts, Instagram Reels, TikTok, Facebook Reels, and LinkedIn.",
   "content_security_policy": "script-src 'self'; object-src 'self';",
   "permissions": [

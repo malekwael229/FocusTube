@@ -4,10 +4,9 @@ FocusTube is intended to run locally in the user's browser. It should not transm
 
 ## Reporting Security or Privacy Issues
 
-Please report security or privacy concerns through one of these channels:
+Private vulnerability reporting is currently disabled on GitHub for this repository.
 
-- Open a GitHub Issue and include `[Security]` or `[Privacy]` in the title if the report is safe to discuss publicly.
-- For sensitive reports, avoid posting exploit details publicly. Open a brief GitHub Issue asking for a private contact path first.
+For a report that is safe to discuss publicly, open a GitHub Issue with `[Security]` or `[Privacy]` in the title. For a sensitive report, omit exploit details, secrets, and personal data, and open a brief issue asking the maintainer for a private contact path.
 
 Please include:
 

@@ -6,6 +6,19 @@ All notable project-facing changes are documented here.
 
 No unreleased changes yet.
 
+## [2.3.1] - 2026-09-01
+
+- Hardened timer recovery across Chromium service-worker and Firefox background restarts. Future alarms are restored, stale alarms cannot affect replacement timers, failed writes roll back safely, and completion side effects are deduplicated.
+- Improved popup, import, and content-script timer synchronization after partial storage changes or failed timer operations.
+- Reduced repeated Instagram, TikTok, and Facebook DOM scans, cleaned up temporary observers, and narrowed Facebook Stories hiding so unrelated controls remain visible.
+- Replaced content-page icon URL loads with an inline FocusTube badge so overlays survive extension reloads without invalid extension URLs.
+- Limited Warn-mode media recovery to visible videos so an earlier Reel cannot resume as hidden audio.
+- Kept timer durations numeric across browser restarts and aligned popup, options, overlay, and break-timer typography across Firefox and Chromium.
+- Added a tracked, reproducible test harness, byte-reproducible Chromium and Firefox packages, Firefox validation, `TESTING.md`, and `ARCHITECTURE.md`.
+- Added dated project-impact figures and a concise AI-assisted development disclosure.
+
+Thanks to [@AlexanderMishutkin](https://github.com/AlexanderMishutkin) for reporting and contributing the inline badge fix in [#12](https://github.com/malekwael229/FocusTube/pull/12).
+
 ## [2.3.0] - 2026-08-04
 
 - Added a separate YouTube setting to hide the English "Most relevant" shelf on the Subscriptions page, including late-loaded shelves.

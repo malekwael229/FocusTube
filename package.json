@@ -1,0 +1,22 @@
+{
+  "name": "focustube",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test:regression": "node tests/regression.test.js",
+    "test:background": "node tests/background-timer.test.js",
+    "test:smoke": "node tests/playwright-smoke.test.js",
+    "test:smoke:youtube": "node tests/playwright-smoke.test.js --youtube",
+    "test:package": "node tests/package-reproducibility.test.js",
+    "test:syntax": "node scripts/run-test-all.js --syntax",
+    "test:live": "node tests/live-browser.test.js",
+    "test:live:harness": "node --test tests/live/report.test.js",
+    "test:all": "node scripts/run-test-all.js"
+  },
+  "devDependencies": {
+    "playwright": "1.59.1",
+    "web-ext": "10.6.0"
+  }
+}

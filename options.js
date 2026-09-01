@@ -52,12 +52,6 @@ document.addEventListener("DOMContentLoaded", function () {
     ),
     "ft_timer_type",
   ]);
-  const importAllowedKeys = new Set([
-    ...importBooleanKeys,
-    ...importNumberKeys,
-    ...importStringKeys,
-    "platformSettings",
-  ]);
   const importPlatformKeys = ["yt", "ig", "tt", "fb", "li"];
   const importPlatformModes = new Set(["strict", "warn", "allow"]);
   const hasOwn = (object, key) =>
@@ -84,7 +78,11 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
       const value = Number(raw[key]);
-      if (Number.isFinite(value) && value >= 0) {
+      if (
+        Number.isFinite(value) &&
+        value >= 0 &&
+        (key !== "ft_timer_end" || value > 0)
+      ) {
         sanitized[key] = key === "ft_stats_blocked" ? Math.floor(value) : value;
       } else {
         invalidKeys.push(key);
@@ -102,9 +100,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
       if (key === "ft_timer_type") {
-        if (value === null) {
-          sanitized[key] = null;
-        } else if (value === "work" || value === "break") {
+        if (value === "work" || value === "break") {
           sanitized[key] = value;
         } else {
           invalidKeys.push(key);
@@ -137,6 +133,17 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
     }
+    const hasTimerEnd = hasOwn(raw, "ft_timer_end");
+    const hasTimerType = hasOwn(raw, "ft_timer_type");
+    if (hasTimerEnd !== hasTimerType) {
+      return {
+        error: "ft_timer_end and ft_timer_type must be imported together",
+      };
+    }
+    if (hasTimerEnd && hasTimerType && raw.ft_timer_end === null) {
+      delete sanitized.ft_timer_end;
+      delete sanitized.ft_timer_type;
+    }
     if (invalidKeys.length > 0) {
       return { error: `Invalid values for: ${invalidKeys.join(", ")}` };
     }
@@ -168,7 +175,6 @@ document.addEventListener("DOMContentLoaded", function () {
       setToggle("popup_visible_fb", items.popup_visible_fb);
       setToggle("popup_visible_li", items.popup_visible_li);
       setToggle("restrictHiddenPlatforms", items.restrictHiddenPlatforms);
-      setToggle("visualHideHiddenPlatforms", items.visualHideHiddenPlatforms);
       setToggle("visualHideHiddenPlatforms", items.visualHideHiddenPlatforms);
       if (document.getElementById("totalBlocked"))
         document.getElementById("totalBlocked").textContent =
@@ -212,7 +218,11 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   function saveSetting(key, value) {
     const setting = {};
-    if (key === "focusDuration") key = "ft_timer_duration";
+    if (key === "focusDuration") {
+      key = "ft_timer_duration";
+      value = Number(value);
+    }
+    if (key === "breakDuration") value = Number(value);
     if (key === "strictMode") key = "focusMode";
     if (key === "theme") {
       key = "darkMode";
@@ -221,14 +231,38 @@ document.addEventListener("DOMContentLoaded", function () {
     setting[key] = value;
     chrome.storage.local.set(setting);
   }
+  function setExtensionEnabled(enabled) {
+    chrome.runtime.sendMessage(
+      { action: "setExtensionEnabled", enabled },
+      (response) => {
+        if (chrome.runtime.lastError || !response || response.enabled !== enabled) {
+          void chrome.runtime.lastError;
+          chrome.storage.local.get(["ft_enabled"], (res) => {
+            if (chrome.runtime.lastError) {
+              void chrome.runtime.lastError;
+              return;
+            }
+            const durableEnabled = res.ft_enabled !== false;
+            setToggle("ft_enabled", durableEnabled);
+            applyExtensionEnabledState(durableEnabled);
+            updateDisabledState();
+          });
+          return;
+        }
+        applyExtensionEnabledState(enabled);
+        updateDisabledState();
+      },
+    );
+  }
   document.querySelectorAll(".toggle-input").forEach((toggle) => {
     toggle.addEventListener("change", function () {
+      if (this.id === "ft_enabled") {
+        setExtensionEnabled(this.checked);
+        return;
+      }
       saveSetting(this.id, this.checked);
       if (this.id === "autoStartBreaks") {
         updateBreakButtonVisibility(this.checked, true);
-      }
-      if (this.id === "ft_enabled") {
-        applyExtensionEnabledState(this.checked);
       }
     });
   });
@@ -352,12 +386,17 @@ document.addEventListener("DOMContentLoaded", function () {
               "Importing data will overwrite your current settings and stats. Are you sure you want to continue?",
             )
           ) {
-            chrome.storage.local.clear(() => {
-              chrome.storage.local.set(sanitized, () => {
+            chrome.runtime.sendMessage(
+              { action: "replaceSettings", settings: sanitized },
+              (response) => {
+                if (!response || response.replaced !== true) {
+                  alert("Error importing data: Could not replace settings.");
+                  return;
+                }
                 alert("Data imported successfully!");
                 location.reload();
-              });
-            });
+              },
+            );
           }
         } catch (err) {
           alert("Error importing data: Invalid JSON file.");
@@ -371,10 +410,14 @@ document.addEventListener("DOMContentLoaded", function () {
   if (resetBtn) {
     resetBtn.addEventListener("click", function () {
       if (confirm("Are you sure you want to reset all settings to defaults?")) {
-        chrome.storage.local.set(defaultSettings, function () {
-          loadSettings();
-          location.reload();
-        });
+        chrome.runtime.sendMessage(
+          { action: "replaceSettings", settings: defaultSettings },
+          function (response) {
+            if (!response || response.replaced !== true) return;
+            loadSettings();
+            location.reload();
+          },
+        );
       }
     });
   }
@@ -386,12 +429,14 @@ document.addEventListener("DOMContentLoaded", function () {
           "Are you sure you want to clear all data? This cannot be undone.",
         )
       ) {
-        chrome.storage.local.clear(function () {
-          chrome.storage.local.set(defaultSettings, function () {
+        chrome.runtime.sendMessage(
+          { action: "replaceSettings", settings: defaultSettings },
+          function (response) {
+            if (!response || response.replaced !== true) return;
             loadSettings();
             location.reload();
-          });
-        });
+          },
+        );
       }
     });
   }
@@ -799,7 +844,6 @@ function initPlatformGrid() {
       );
     });
   }
-  updateAllBadges();
   loadPlatformModes();
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === "local") {

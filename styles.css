@@ -95,6 +95,12 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+.focustube-popup-body button,
+.focustube-popup-body input,
+.focustube-popup-body select,
+.focustube-popup-body textarea {
+  font-family: inherit;
+}
 .focustube-popup-body > * {
   position: relative;
   z-index: 1;
@@ -1469,7 +1475,7 @@ body:not(.dark-mode) .tutorial-spotlight {
   margin-bottom: 4px;
 }
 .timer-type-label.break {
-  color: var(--success);
+  color: var(--text);
 }
 .timer-type-label.hidden {
   display: none;
@@ -1487,7 +1493,7 @@ body:not(.dark-mode) .tutorial-spotlight {
   display: none;
 }
 .timer-display-compact.break {
-  color: var(--success);
+  color: var(--text);
 }
 .timer-display-compact.fade-out {
   animation: timerFadeOut 0.2s ease forwards;

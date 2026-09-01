@@ -59,9 +59,24 @@ body.ft-hide-fb-stories.ft-platform-fb [aria-label="Stories"] [role="button"],
 body.ft-hide-fb-stories.ft-platform-fb
   [aria-label="Story tray"]
   [role="button"],
-body.ft-hide-fb-stories.ft-platform-fb [aria-label="See more stories"],
-body.ft-hide-fb-stories.ft-platform-fb [aria-label="Next card"],
-body.ft-hide-fb-stories.ft-platform-fb [aria-label="Previous card"] {
+body.ft-hide-fb-stories.ft-platform-fb
+  [aria-label="Stories"]
+  [aria-label="See more stories"],
+body.ft-hide-fb-stories.ft-platform-fb
+  [aria-label="Stories"]
+  [aria-label="Next card"],
+body.ft-hide-fb-stories.ft-platform-fb
+  [aria-label="Stories"]
+  [aria-label="Previous card"],
+body.ft-hide-fb-stories.ft-platform-fb
+  [aria-label="Story tray"]
+  [aria-label="See more stories"],
+body.ft-hide-fb-stories.ft-platform-fb
+  [aria-label="Story tray"]
+  [aria-label="Next card"],
+body.ft-hide-fb-stories.ft-platform-fb
+  [aria-label="Story tray"]
+  [aria-label="Previous card"] {
   display: none !important;
   opacity: 0 !important;
   pointer-events: none !important;
@@ -181,6 +196,12 @@ body.ft-scroll-lock {
   overflow: hidden !important;
   height: 100% !important;
 }
+.ft-linkedin-overlay,
+.ft-stories-overlay {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif !important;
+}
 .ft-linkedin-overlay-icon {
   width: 64px;
   height: 64px;
@@ -215,6 +236,7 @@ body.ft-scroll-lock {
   color: #fff;
   cursor: pointer;
   transition: opacity 0.2s;
+  font-family: inherit;
 }
 .ft-linkedin-overlay-btn:hover {
   opacity: 0.85;

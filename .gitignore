@@ -1,0 +1,13 @@
+# Local browser-extension test artifacts.
+node_modules/
+manifest.json
+dist-test-builds/
+dist-release-builds/
+.tmp/
+.omx/
+test-build-*/
+*.zip
+FocusTube-test-*.zip
+playwright-report/
+test-results/
+.playwright-*/
