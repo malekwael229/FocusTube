@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Private security report
+    url: https://github.com/malekwael229/FocusTube/security/advisories/new
+    about: Report vulnerabilities or sensitive security issues privately.
