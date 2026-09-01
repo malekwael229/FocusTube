@@ -61,6 +61,7 @@ function isOwnedTempDirectory(directory) {
 const buildDirectories = [];
 let unsafeOutputDirectory;
 const distSentinelPaths = [];
+const createdDistOutputs = [];
 try {
   buildDirectories.push(fs.mkdtempSync(path.join(os.tmpdir(), tempPrefix)));
   buildDirectories.push(fs.mkdtempSync(path.join(os.tmpdir(), tempPrefix)));
@@ -72,6 +73,10 @@ try {
   assert.equal(fs.readFileSync(sentinelPath, "utf8"), "preserve me\n", "unrelated output survives repeated builds");
 
   for (const distOutput of distOutputs) {
+    if (!fs.existsSync(distOutput)) {
+      fs.mkdirSync(distOutput, { recursive: true });
+      createdDistOutputs.push(distOutput);
+    }
     const distSentinelPath = path.join(distOutput, `unrelated-sentinel-${process.pid}.txt`);
     distSentinelPaths.push(distSentinelPath);
     fs.writeFileSync(distSentinelPath, "preserve dist root sentinel\n");
@@ -121,5 +126,8 @@ try {
   }
   for (const sentinelPath of distSentinelPaths) {
     if (fs.existsSync(sentinelPath)) fs.rmSync(sentinelPath, { force: true });
+  }
+  for (const distOutput of createdDistOutputs) {
+    if (fs.existsSync(distOutput)) fs.rmSync(distOutput, { recursive: true, force: true });
   }
 }
