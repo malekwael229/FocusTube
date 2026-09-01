@@ -1,9 +1,11 @@
 const Site = {
-  isYT: () => location.hostname.includes("youtube.com"),
-  isIG: () => location.hostname.includes("instagram.com"),
-  isTT: () => location.hostname.includes("tiktok.com"),
-  isFB: () => location.hostname.includes("facebook.com"),
-  isLI: () => location.hostname.includes("linkedin.com"),
+  matchesHostname: (hostname, domain) =>
+    hostname === domain || hostname.endsWith(`.${domain}`),
+  isYT: () => Site.matchesHostname(location.hostname, "youtube.com"),
+  isIG: () => Site.matchesHostname(location.hostname, "instagram.com"),
+  isTT: () => Site.matchesHostname(location.hostname, "tiktok.com"),
+  isFB: () => Site.matchesHostname(location.hostname, "facebook.com"),
+  isLI: () => Site.matchesHostname(location.hostname, "linkedin.com"),
 };
 const CONFIG = {
   extensionEnabled: true,

@@ -18,8 +18,9 @@
 
   <p>
     <a href="https://github.com/malekwael229/FocusTube/actions/workflows/ci.yml"><img alt="CI status" src="https://github.com/malekwael229/FocusTube/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
+    <a href="https://www.bestpractices.dev/projects/14395"><img alt="OpenSSF Best Practices Baseline Level 1" src="https://www.bestpractices.dev/projects/14395/baseline" /></a>
     <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" />
-    <img alt="Version: 2.3.1" src="https://img.shields.io/badge/version-2.3.1-green.svg" />
+    <img alt="Version: 2.3.2" src="https://img.shields.io/badge/version-2.3.2-green.svg" />
     <img alt="Firefox compatible" src="https://img.shields.io/badge/firefox-compatible-orange.svg" />
   </p>
 </div>
@@ -142,7 +143,7 @@ FocusTube is designed to run locally in the browser.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidance. [TESTING.md](TESTING.md) covers automated commands and the browser matrix; [ARCHITECTURE.md](ARCHITECTURE.md) describes the runtime boundaries.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidance and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community standards. [TESTING.md](TESTING.md) covers automated commands and the browser matrix; [ARCHITECTURE.md](ARCHITECTURE.md) describes the runtime boundaries.
 
 ## Security
 

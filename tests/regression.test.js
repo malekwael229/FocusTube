@@ -1,6 +1,7 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const vm = require("node:vm");
 
 const root = path.resolve(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
@@ -30,6 +31,31 @@ function assertPerPlatformContentScripts(manifest) {
 }
 
 const checks = [
+  [
+    "site detection accepts only supported domains and subdomains",
+    () => {
+      const common = read("content-common.js");
+      const siteDeclaration = common.slice(0, common.indexOf("const CONFIG"));
+      const isSite = (hostname, method) =>
+        vm.runInNewContext(`${siteDeclaration}\nSite.${method}();`, {
+          location: { hostname },
+        });
+      const sites = [
+        ["youtube.com", "isYT"],
+        ["instagram.com", "isIG"],
+        ["tiktok.com", "isTT"],
+        ["facebook.com", "isFB"],
+        ["linkedin.com", "isLI"],
+      ];
+
+      sites.forEach(([domain, method]) => {
+        assert.equal(isSite(domain, method), true);
+        assert.equal(isSite(`www.${domain}`, method), true);
+        assert.equal(isSite(`${domain}.example.com`, method), false);
+        assert.equal(isSite(`not${domain}`, method), false);
+      });
+    },
+  ],
   [
     "Instagram feed Reels hiding option and code are removed",
     () => {
@@ -936,7 +962,7 @@ const checks = [
     },
   ],
   [
-    "settings replacement and displayed version remain release-gated at 2.3.1",
+    "settings replacement and displayed version remain release-gated at 2.3.2",
     () => {
       const options = read("options.html");
       const changelog = read("CHANGELOG.md");
@@ -944,14 +970,14 @@ const checks = [
       const firefoxManifest = readJson("firefox-manifest.json");
 
       assert.match(read("options.js"), /action:\s*["']replaceSettings["']/);
-      assert.match(options, /Version\s+2\.3\.1/);
-      assert.equal(chromeManifest.version, "2.3.1");
-      assert.equal(firefoxManifest.version, "2.3.1");
+      assert.match(options, /Version\s+2\.3\.2/);
+      assert.equal(chromeManifest.version, "2.3.2");
+      assert.equal(firefoxManifest.version, "2.3.2");
       assert.match(
         changelog,
         /^##\s*\[Unreleased\]\s*\r?\n\s*No unreleased changes yet\./m,
       );
-      assert.match(changelog, /^##\s*\[2\.3\.1\]\s*-\s*2026-09-01$/m);
+      assert.match(changelog, /^##\s*\[2\.3\.2\]\s*-\s*2026-09-01$/m);
     },
   ],
   [
@@ -962,8 +988,8 @@ const checks = [
 
       assert.equal(chromeManifest.manifest_version, 3);
       assert.equal(firefoxManifest.manifest_version, 2);
-      assert.equal(chromeManifest.version, "2.3.1");
-      assert.equal(firefoxManifest.version, "2.3.1");
+      assert.equal(chromeManifest.version, "2.3.2");
+      assert.equal(firefoxManifest.version, "2.3.2");
       assert.deepEqual(chromeManifest.content_security_policy, {
         extension_pages: "script-src 'self'; object-src 'self';",
       });
@@ -971,6 +997,7 @@ const checks = [
         firefoxManifest.content_security_policy,
         "script-src 'self'; object-src 'self';",
       );
+      assert.equal(firefoxManifest.incognito, "not_allowed");
       assert.deepEqual(chromeManifest.permissions, [
         "storage",
         "alarms",

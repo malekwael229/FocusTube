@@ -3,6 +3,7 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const { matrixStatus, redact } = require("./report");
+const { parseListeningPort } = require("./firefox-driver");
 
 test("an absent or entirely blocked site never passes", () => {
   assert.equal(matrixStatus([]), "BLOCKED");
@@ -17,7 +18,13 @@ test("failures are never erased by other passing checks", () => {
 });
 test("diagnostics redact query tokens, email addresses and authorization values", () => {
   const result = redact("https://example.com/path?token=secret#private person@example.com token=secret");
-  assert.ok(!result.includes("secret"));
-  assert.ok(!result.includes("person@example.com"));
-  assert.ok(result.includes("https://example.com/path"));
+  assert.equal(result, "https://example.com/path [email] token=[redacted]");
+});
+test("Firefox driver accepts only a loopback port reported by geckodriver", () => {
+  assert.equal(
+    parseListeningPort("123 geckodriver INFO Listening on 127.0.0.1:55056\n"),
+    55056,
+  );
+  assert.equal(parseListeningPort("Listening on 0.0.0.0:55056"), null);
+  assert.equal(parseListeningPort("Listening on 127.0.0.1:70000"), null);
 });

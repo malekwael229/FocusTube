@@ -104,7 +104,7 @@ async function launchChromium(options) {
         chrome.developerPrivate.getExtensionsInfo({ includeDisabled: true }, resolve);
       }));
     } catch (error) { errors.push("Extension inventory unavailable: " + error.message); }
-    const installed = extensions.find((item) => item.name?.startsWith("FocusTube") && item.version === "2.3.1");
+    const installed = extensions.find((item) => item.name?.startsWith("FocusTube") && item.version === "2.3.2");
     if (installed?.state === "ENABLED") extensionId = installed.id;
     if (!extensionId && install) {
       try { extensionId = (await cdp.send("Extensions.loadUnpacked", { path: buildDir })).id; }
@@ -115,7 +115,7 @@ async function launchChromium(options) {
         if (!worker.url().startsWith("chrome-extension://")) continue;
         try {
           const manifest = await worker.evaluate(() => chrome.runtime.getManifest());
-          if (manifest.name.startsWith("FocusTube") && manifest.version === "2.3.1") {
+          if (manifest.name.startsWith("FocusTube") && manifest.version === "2.3.2") {
             extensionId = new URL(worker.url()).host;
             break;
           }

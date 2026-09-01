@@ -2,6 +2,8 @@
 
 Thanks for helping maintain FocusTube. This project is a live browser extension, so changes should be small, testable, and privacy-preserving.
 
+By participating, you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## Local Setup
 
 1. Clone the repository:

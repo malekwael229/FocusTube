@@ -1,6 +1,6 @@
 # Live Browser Validation
 
-This optional harness tests the retained 2.3.1 release candidate, not a rebuilt or patched extension. It never publishes anything. Use the existing deterministic suite first; live-site results complement it, not replace it.
+This optional harness tests the retained 2.3.2 release candidate, not a rebuilt or patched extension. It never publishes anything. Use the existing deterministic suite first; live-site results complement it, not replace it.
 
 ## Setup on Windows
 
@@ -15,7 +15,7 @@ npm.cmd run test:live:harness
 
 The Firefox setup downloads pinned geckodriver 0.37.1 from Mozilla's official GitHub release and checks its SHA-256. No Selenium dependency is needed. The harness uses Playwright for Chromium browsers and the WebDriver protocol for Firefox.
 
-The extracted release folders and ZIPs must already exist under `dist-release-builds`, with names `FocusTube-release-chromium-v2.3.1` and `FocusTube-release-firefox-v2.3.1`. Runtime files must match the working candidate exactly. The harness refuses stale packages and checks that candidate bytes remain unchanged afterwards.
+The extracted release folders and ZIPs must already exist under `dist-release-builds`, with names `FocusTube-release-chromium-v2.3.2` and `FocusTube-release-firefox-v2.3.2`. Runtime files must match the working candidate exactly. The harness refuses stale packages and checks that candidate bytes remain unchanged afterwards.
 
 ## One-Time Browser and Login Steps
 
@@ -26,7 +26,7 @@ npm.cmd run test:live -- --setup chrome
 npm.cmd run test:live -- --setup edge
 ```
 
-In the opened extension manager, enable Developer mode, choose **Load unpacked**, and select `dist-release-builds/FocusTube-release-chromium-v2.3.1`. Return to the terminal and press Enter. Do not choose your normal browser profile.
+In the opened extension manager, enable Developer mode, choose **Load unpacked**, and select `dist-release-builds/FocusTube-release-chromium-v2.3.2`. Return to the terminal and press Enter. Do not choose your normal browser profile.
 
 Sign in only where needed, using your own keyboard in these isolated profiles:
 
