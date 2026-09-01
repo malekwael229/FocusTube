@@ -16,7 +16,7 @@
     "test:all": "node scripts/run-test-all.js"
   },
   "devDependencies": {
-    "playwright": "1.59.1",
+    "playwright": "1.62.1",
     "web-ext": "10.6.0"
   }
 }
