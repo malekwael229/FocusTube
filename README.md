@@ -81,7 +81,7 @@ Clone or download this repository, then choose the manifest for your browser.
 The Chromium build uses **Manifest V3**.
 
 1. Copy or rename `chrome-manifest.json` to `manifest.json`.
-2. Open `chrome://extensions` or `edge://extensions/`.
+2. Open `chrome://extensions` or `edge://extensions`.
 3. Enable **Developer mode**.
 4. Click **Load unpacked**.
 5. Select the repository folder containing the renamed `manifest.json`.
