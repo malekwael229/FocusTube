@@ -2,7 +2,6 @@
 
 const fs = require('node:fs');
 const fsp = fs.promises;
-const net = require('node:net');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
 
@@ -25,14 +24,41 @@ async function assertRealProfile(profileDir) {
   return absolute;
 }
 
-async function freePort() {
+function parseListeningPort(output) {
+  const match = /(?:^|\s)Listening on 127\.0\.0\.1:(\d+)(?:\s|$)/.exec(output);
+  const port = Number(match?.[1]);
+  return Number.isInteger(port) && port > 0 && port <= 65535 ? port : null;
+}
+
+function waitForDriverPort(processHandle, logFile) {
   return new Promise((resolve, reject) => {
-    const server = net.createServer();
-    server.once('error', reject);
-    server.listen({ host: '127.0.0.1', port: 0 }, () => {
-      const address = server.address();
-      server.close(() => resolve(address.port));
-    });
+    let output = '';
+    let settled = false;
+    const timer = setTimeout(() => finish(new Error('Timed out waiting for geckodriver to bind')), START_TIMEOUT_MS);
+    const onData = (chunk) => {
+      const text = chunk.toString('utf8');
+      if (logFile) fs.appendFileSync(logFile, text);
+      if (settled) return;
+      output = (output + text).slice(-4096);
+      const port = parseListeningPort(output);
+      if (port) finish(null, port);
+    };
+    const onError = (error) => finish(error);
+    const onExit = (code) => finish(new Error(`geckodriver exited before binding (${code})`));
+    const finish = (error, port) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      processHandle.off('error', onError);
+      processHandle.off('exit', onExit);
+      if (error) reject(error);
+      else resolve(port);
+    };
+
+    processHandle.stdout.on('data', onData);
+    processHandle.stderr.on('data', onData);
+    processHandle.once('error', onError);
+    processHandle.once('exit', onExit);
   });
 }
 
@@ -214,12 +240,15 @@ async function launchFirefox({
   }
 
   async function start(load) {
-    driver = { port: await freePort(), process: null };
-    const args = ['--port', String(driver.port), '--allow-system-access'];
-    const logFd = logFile ? fs.openSync(logFile, 'a') : null;
-    const output = logFd === null ? 'ignore' : logFd;
-    driver.process = spawn(driverPath, args, { windowsHide: true, stdio: ['ignore', output, output] });
-    if (logFd !== null) fs.closeSync(logFd);
+    const args = ['--host', '127.0.0.1', '--port', '0', '--allow-system-access'];
+    driver = {
+      port: null,
+      process: spawn(driverPath, args, {
+        windowsHide: true,
+        stdio: ['ignore', 'pipe', 'pipe'],
+      }),
+    };
+    driver.port = await waitForDriverPort(driver.process, logFile);
     await waitForDriver();
     const prefs = {};
     if (persistent) prefs['xpinstall.signatures.required'] = false;
@@ -382,4 +411,4 @@ async function launchFirefox({
   };
 }
 
-module.exports = { launchFirefox };
+module.exports = { launchFirefox, parseListeningPort };

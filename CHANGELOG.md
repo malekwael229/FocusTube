@@ -9,6 +9,7 @@ No unreleased changes yet.
 ## [2.3.2] - 2026-09-01
 
 - Disabled Firefox private-window access so FocusTube does not persist data from private browsing sessions.
+- Tightened platform hostname checks to reject lookalike domains.
 
 ## [2.3.1] - 2026-09-01
 

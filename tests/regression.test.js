@@ -1,6 +1,7 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const vm = require("node:vm");
 
 const root = path.resolve(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
@@ -30,6 +31,31 @@ function assertPerPlatformContentScripts(manifest) {
 }
 
 const checks = [
+  [
+    "site detection accepts only supported domains and subdomains",
+    () => {
+      const common = read("content-common.js");
+      const siteDeclaration = common.slice(0, common.indexOf("const CONFIG"));
+      const isSite = (hostname, method) =>
+        vm.runInNewContext(`${siteDeclaration}\nSite.${method}();`, {
+          location: { hostname },
+        });
+      const sites = [
+        ["youtube.com", "isYT"],
+        ["instagram.com", "isIG"],
+        ["tiktok.com", "isTT"],
+        ["facebook.com", "isFB"],
+        ["linkedin.com", "isLI"],
+      ];
+
+      sites.forEach(([domain, method]) => {
+        assert.equal(isSite(domain, method), true);
+        assert.equal(isSite(`www.${domain}`, method), true);
+        assert.equal(isSite(`${domain}.example.com`, method), false);
+        assert.equal(isSite(`not${domain}`, method), false);
+      });
+    },
+  ],
   [
     "Instagram feed Reels hiding option and code are removed",
     () => {
