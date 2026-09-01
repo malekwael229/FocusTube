@@ -18,6 +18,7 @@
 
   <p>
     <a href="https://github.com/malekwael229/FocusTube/actions/workflows/ci.yml"><img alt="CI status" src="https://github.com/malekwael229/FocusTube/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
+    <a href="https://www.bestpractices.dev/projects/14395"><img alt="OpenSSF Best Practices Passing" src="https://www.bestpractices.dev/projects/14395/badge" /></a>
     <a href="https://www.bestpractices.dev/projects/14395"><img alt="OpenSSF Best Practices Baseline Level 1" src="https://www.bestpractices.dev/projects/14395/baseline" /></a>
     <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" />
     <img alt="Version: 2.3.2" src="https://img.shields.io/badge/version-2.3.2-green.svg" />
