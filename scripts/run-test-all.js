@@ -45,6 +45,7 @@ function main() {
   try {
     run(process.execPath, [path.join("scripts", "prepare-test-builds.js"), buildRoot]);
     runSyntaxChecks();
+    run(process.execPath, [path.join("tests", "pages-site.test.js")]);
     run(process.execPath, [path.join("tests", "package-reproducibility.test.js")]);
     run(process.execPath, [path.join("tests", "regression.test.js")]);
     run(process.execPath, [path.join("tests", "background-timer.test.js")]);
