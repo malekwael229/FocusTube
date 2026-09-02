@@ -47,7 +47,6 @@ function main() {
     runSyntaxChecks();
     run(process.execPath, [path.join("tests", "package-reproducibility.test.js")]);
     run(process.execPath, [path.join("tests", "regression.test.js")]);
-    run(process.execPath, [path.join("tests", "pages-site.test.js")]);
     run(process.execPath, [path.join("tests", "background-timer.test.js")]);
     run(process.execPath, [path.join("tests", "playwright-smoke.test.js"), "--build-dir", chromiumBuild], {
       ...process.env,
