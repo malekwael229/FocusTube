@@ -70,7 +70,6 @@ const checks = [
         "README.md",
         "CHANGELOG.md",
         "CONTRIBUTING.md",
-        "STORE_LISTING_NOTES.md",
       ];
       const removedPatterns = [
         /hide_ig_feed_reels/,
