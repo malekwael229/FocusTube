@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /FocusTube/
+
+Sitemap: https://malekwael229.github.io/FocusTube/sitemap.xml

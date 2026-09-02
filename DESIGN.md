@@ -2,211 +2,209 @@
 
 ## Source of truth
 
-**Status:** Active  
-**Date:** 2026-09-02  
-**Product surfaces:** browser-extension popup/options UI, public GitHub Pages landing page, store-facing product presentation.
+**Status:** Active
+**Date:** September 2, 2026
+**Product surfaces:** FocusTube GitHub Pages website, including the homepage and five platform-specific information pages.
 
 Evidence reviewed:
 
-- Current extension popup structure and existing product styling.
-- README product description, supported platforms, privacy model, and project-impact figures.
-- Existing GitHub Pages landing-page files under `docs/`.
-- GitHub Pages deployment logs showing the repository root is the active publishing source.
-- User screenshot of the live site showing the README rendered as the homepage.
+- The real extension popup and options markup in `popup.html` and `options.html`.
+- Extension behavior and feature names in `README.md`, `STORE_LISTING_NOTES.md`, and the platform content scripts.
+- FocusTube colors and controls in `styles.css`.
+- Existing store assets in the `focustube-promo-tile` project, especially the real UI and YouTube before/after images.
+- GitHub Pages project-site guidance, Google Search documentation for titles, descriptions, canonical URLs, and sitemaps, and WCAG 2.2 guidance for visible focus and reduced motion.
 
 ## Brand
 
-FocusTube should feel calm, focused, technical, and trustworthy. It is a practical productivity tool, not a lifestyle brand or a flashy startup landing page.
+FocusTube should feel focused, direct, technical, and trustworthy. The extension is a small practical tool that removes specific distractions without pretending social platforms are unusable.
 
 Trust signals:
 
-- Free and open source.
-- No analytics or tracking.
-- No account or project-controlled backend.
-- Available on Chrome, Firefox, and Edge.
-- Real public source, releases, tests, and store listings.
+- Real extension screenshots and accurate feature descriptions.
+- Clear local-first privacy language.
+- Open-source code, MIT license, and repository security badges.
+- Direct links to official browser stores.
 
 Avoid:
 
-- Generic AI-startup aesthetics.
-- Decorative gradients, glow effects, excessive shadows, and card grids used only for visual filler.
-- Huge marketing copy that pushes the product below the fold.
-- Fake browser chrome, fake live counters, or invented usage statistics.
-- Repeating the same claim in multiple sections.
+- Generic productivity claims, corporate filler, and invented proof.
+- Decorative blobs, fake glass surfaces, stock illustrations, and excessive gradients.
+- Fake browser chrome, fake testimonials, and dashboard-style UI that does not exist in the extension.
+- Repeating the same card layout for every section.
 
 ## Product goals
 
 Goals:
 
-- Explain the product in one screen: keep useful parts of social sites, remove distracting feeds.
-- Make the Chrome install action obvious while keeping Firefox and Edge easy to find.
-- Show enough of the extension UI to make the product feel real.
-- Establish privacy and open-source trust quickly.
-- Work well on desktop and mobile without JavaScript.
+- Explain FocusTube clearly enough that a visitor can decide whether to install it within the first screen.
+- Make the real extension the primary visual evidence.
+- Give each supported platform a useful search landing page with specific, non-duplicated content.
+- Convert direct and search visitors to the correct Chrome, Firefox, or Edge listing.
+- Keep the site fast, static, private, and easy to maintain.
 
 Non-goals:
 
-- Reproduce every extension setting on the marketing page.
-- Turn the landing page into full documentation.
-- Add analytics, accounts, tracking, or a backend.
-- Add animation or visual effects that do not improve comprehension.
+- Replacing the repository documentation.
+- Adding accounts, analytics, tracking, personalization, or a backend.
+- Reproducing the extension UI as an interactive demo.
+- Publishing unverified impact numbers or store claims.
 
 Success signals:
 
-- A visitor can identify what FocusTube does within a few seconds.
-- Store links are visible without scrolling on common desktop sizes.
-- The live root URL serves the product landing page rather than the repository README.
+- Store links are prominent and correct.
+- Visitors can understand what remains available after blocking.
+- All pages work under the `/FocusTube/` GitHub Pages project path.
+- The site remains readable and usable at narrow mobile widths and with keyboard navigation.
 
 ## Personas and jobs
 
-Primary personas:
+Primary visitors are students, developers, researchers, remote workers, and other people who still need useful parts of social platforms.
 
-- Students who need YouTube or social platforms for useful tasks but get pulled into short-form feeds.
-- Knowledge workers who want to keep access to specific social-site functions without blocking entire domains.
-- Privacy-conscious users who prefer a local, open-source extension.
+Their jobs:
 
-Primary jobs:
-
-- Understand what FocusTube blocks.
-- Decide whether it fits the user's browsing habits.
-- Install it in the user's browser.
-- Verify that it does not track browsing activity.
+- Confirm whether FocusTube handles a specific distracting surface.
+- Understand the difference between Strict, Warn, and Passive modes.
+- Check privacy before granting site access.
+- Install from their preferred browser store.
+- Inspect the source or project security practices.
 
 ## Information architecture
 
-Public landing page hierarchy:
+Routes:
 
-1. Header with FocusTube brand, key navigation, GitHub, and install action.
-2. Hero with the core promise, browser install links, current project proof, and a product-control preview.
-3. Supported-platform strip.
-4. Short explanation of how FocusTube removes distracting surfaces while keeping useful pages available.
-5. Privacy section.
-6. Final install action.
-7. Minimal footer with source link.
+- `/FocusTube/` for the product overview, screenshots, modes, privacy, open source, and install links.
+- `/FocusTube/block-youtube-shorts/` for Shorts paths, navigation, shelves, and the Subscriptions-page shelf limitation.
+- `/FocusTube/instagram-reels-blocker/` for Reels, Explore, Reels navigation, and Stories controls.
+- `/FocusTube/tiktok-blocker/` for TikTok feed and video routes plus allowed utility areas.
+- `/FocusTube/facebook-reels-blocker/` for Reels paths and targeted Reels, Stories, and People You Might Know hiding.
+- `/FocusTube/linkedin-feed-blocker/` for the main feed and Add to your feed card.
 
-The README remains developer/project documentation and must not be used as the public landing-page entry file.
+Homepage hierarchy:
+
+1. Header with brand, in-page navigation, GitHub, and install action.
+2. Hero with exact product category, primary message, store actions, and real UI image.
+3. Core idea contrasting whole-site blocking with targeted blocking.
+4. Supported-platform links.
+5. Strict, Warn, and Passive modes.
+6. YouTube before/after image.
+7. Secondary focus tools.
+8. Prominent privacy statement.
+9. Open-source trust signals.
+10. Final install section and footer.
 
 ## Design principles
 
-1. **Product before prose.** Show what the extension does before explaining every detail.
-2. **One primary action.** Chrome is the main install CTA; Firefox and Edge remain visible secondary actions.
-3. **Use real product language.** Prefer terms already used by FocusTube and avoid generic productivity slogans.
-4. **Trust through restraint.** Privacy and open-source facts should be specific and verifiable, not exaggerated.
-5. **No visual filler.** Every panel, border, label, and metric must carry product information.
-6. **Preserve brand continuity.** The existing FocusTube blue is intentional product branding, not a default landing-page choice.
+1. Show proof before promises. Use the product UI and specific behavior instead of broad claims.
+2. Keep useful content visible. The layout should reinforce FocusTube's targeted-blocking idea through clear before/after comparisons and plain explanations.
+3. Use contrast for hierarchy, not decoration. Bright cyan is reserved for identity, links, focus, and primary actions.
+4. Vary composition by purpose. Use editorial text bands, a platform index, a mode sequence, and wide image sections instead of a wall of repeated cards.
+5. Be honest about limits. Platform pages should state what is blocked, what stays available, and selector or language limitations where relevant.
 
 ## Visual language
 
 Color:
 
-- Base: near-black neutral background.
-- Surfaces: restrained dark gray layers.
-- Text: high-contrast white with muted gray secondary copy.
-- Accent: existing FocusTube blue `#4facfe` with a lighter hover state.
-- Success state: muted green only for explicit enabled/status feedback.
+- Page background: `#071322`.
+- Alternate section: `#0b1a2a`.
+- Raised surface: `#111d2f`.
+- Extension surface: `#2c2c2e` where the real UI appears.
+- Primary text: `#f7fbff`.
+- Secondary text: `#aeb9c6`.
+- Accent: `#4facfe` with `#00d9e8` used sparingly for brand emphasis.
+- Strict: `#ef5b62`; Warn: `#f5a524`; Passive: `#4facfe`.
 
 Typography:
 
-- System-first sans-serif stack using Inter when available.
-- Large but controlled hero type; no oversized display text that overwhelms the product preview.
-- Body copy at comfortable reading sizes with short line lengths.
+- Use a local system sans-serif stack. No remote font requests.
+- Headlines are compact and confident, with normal letter spacing.
+- Body text uses comfortable line height and a maximum reading width near 68 characters.
+- Labels are sentence case except for the FocusTube name and browser/store names.
 
-Spacing:
+Spacing and shape:
 
-- Wide desktop breathing room with tighter mobile spacing.
-- Prefer separators and whitespace over stacking many boxed cards.
-
-Shape and elevation:
-
-- Moderate corner radii on interactive/product-preview surfaces.
-- Borders provide separation; avoid gratuitous drop shadows and glow effects.
+- Base spacing unit: 8px.
+- Content width: about 1180px with responsive side padding.
+- Cards and framed media use 8px corner radii.
+- Buttons use restrained 6px to 8px radii, not pill shapes except for small mode labels.
+- Shadows are limited to the hero product image and small elevated controls.
 
 Motion:
 
-- No required motion. Hover transitions should be subtle and functional.
+- No automatic animation.
+- Short color and transform transitions are allowed for hover and focus.
+- All transitions are disabled when `prefers-reduced-motion: reduce` is active.
 
-Imagery and iconography:
+Imagery and icons:
 
-- Use the real FocusTube extension icon.
-- Product preview should reflect actual controls and terminology rather than a fake browser window.
+- Use the existing FocusTube icon and existing promotional screenshots.
+- Keep screenshot crops wide enough to show the actual popup/options relationship.
+- Use simple text or CSS markers for platform sections. Do not introduce a separate icon library.
 
 ## Components
 
-Landing-page components:
+- `site-header`: brand link, compact navigation, GitHub link, and primary install action.
+- `store-actions`: Chrome primary action with Firefox and Edge alternatives.
+- `hero-media`: framed real UI screenshot with descriptive alt text.
+- `platform-index`: five platform links with short, factual summaries.
+- `mode-sequence`: Strict, Warn, and Passive shown as three ordered behaviors.
+- `before-after-media`: existing YouTube comparison image with caption.
+- `privacy-band`: high-contrast statement with five concrete privacy facts.
+- `trust-row`: MIT, GitHub, OpenSSF Passing, and Baseline Level 1 links with restrained explanations.
+- `site-footer`: GitHub, privacy anchor, license, and all store links.
+- `topic-page`: breadcrumb, problem statement, behavior table, mode notes, related pages, and install action.
 
-- `site-header`: brand, navigation, install shortcut.
-- `store-actions`: Chrome primary action plus Firefox and Edge secondary actions.
-- `product-shot`: static representation of the extension control surface.
-- `supported-strip`: supported-site names.
-- `feature-rows`: three concise product behaviors.
-- `privacy-section`: direct privacy statement plus specific trust facts.
-- `install-section`: final install prompt.
-- `site-footer`: brand/source closure.
-
-Token ownership:
-
-- Landing-page tokens live in the landing-page stylesheet and must not modify the extension's root `styles.css`.
-- Extension UI tokens remain owned by the extension stylesheet.
+Component styling and tokens live in `site/styles.css`.
 
 ## Accessibility
 
-Target: WCAG 2.2 AA where practical for the static landing page.
+Target WCAG 2.2 AA where practical.
 
-- Semantic `header`, `nav`, `main`, `section`, and `footer` structure.
-- Visible keyboard focus on links and controls.
-- Decorative icon images use empty alt text; meaningful text remains in the DOM.
-- Maintain readable text/background contrast.
-- Do not require hover, animation, or color alone to understand content.
-- Respect reduced-motion expectations by keeping motion minimal and nonessential.
+- Use semantic landmarks, one clear `h1`, ordered heading levels, lists, tables only for tabular behavior, and meaningful image alt text.
+- Include a skip link and a visible `:focus-visible` outline with strong contrast.
+- Keep all navigation and actions keyboard accessible without JavaScript.
+- Maintain at least 44px touch targets for primary interactive controls on mobile.
+- Do not communicate mode only through color; always include the mode name.
+- Respect reduced-motion preferences and avoid autoplaying media.
+- Keep text contrast strong on every surface.
 
 ## Responsive behavior
 
-Desktop:
-
-- Two-column hero with copy and product preview.
-- Full navigation visible.
-- Privacy content can use two columns.
-
-Tablet:
-
-- Hero and privacy sections collapse to one column.
-- Product preview moves below the hero copy.
-
-Mobile:
-
-- Hide nonessential header links while preserving the install action.
-- Stack platform preview items and install controls when needed.
-- Keep tap targets comfortably sized.
-- Prevent horizontal overflow except the intentionally scrollable supported-platform strip.
+- Wide desktop: two-column hero with copy and screenshot, followed by full-width editorial sections.
+- Tablet: hero columns remain balanced until the screenshot becomes cramped, then stack.
+- Mobile: single-column flow, wrapping navigation, full-width primary store action, horizontally safe media, and no fixed-width controls.
+- Images use intrinsic dimensions and `height: auto`; no section may create horizontal overflow at 320px.
+- Hover treatments must not be required to discover information.
 
 ## Interaction states
 
-The public page is static and has no application loading state.
-
-- Links: default, hover, and keyboard-focus states.
-- Install buttons: clear default and hover/focus states.
-- Product preview controls are illustrative, not interactive, and must not imply that settings can be changed on the website.
-- If an external store is unavailable, the page itself remains usable and the other store/GitHub links remain available.
+- Default, hover, active, and visible keyboard-focus states are required for all links and buttons.
+- External store and trust links remain normal links and do not open scripted overlays.
+- The site has no loading, account, form, or saved state.
+- If images fail, surrounding headings, copy, captions, and alt text still explain the product.
+- The site remains fully usable with CSS disabled and JavaScript unavailable.
 
 ## Content voice
 
-- Short, direct, and specific.
-- Prefer plain language such as "Hide short-form feeds" over marketing jargon.
-- Use "FocusTube" consistently.
-- Do not claim certification, auditing, or privacy guarantees beyond what the repository supports.
-- Do not invent user counts, ratings, time-saved figures, or blocked-count values.
+- Short, normal, and specific.
+- Lead with the distracting surface and the exact FocusTube behavior.
+- Use "block" for routes/interstitials and "hide" for navigation or feed elements.
+- Use "Passive" for the extension's allow mode in public copy.
+- Avoid inflated productivity language and unsupported comparisons.
+- Mention limitations close to the affected behavior.
 
 ## Implementation constraints
 
-- Static HTML and CSS only for the landing page.
-- No JavaScript, analytics, tracking pixels, external runtime dependencies, or backend.
-- GitHub Pages currently publishes from `main` at the repository root, so the public entry file must be root `index.html` unless Pages settings are deliberately changed later.
-- Do not overwrite the extension's root `styles.css`; the landing page uses its own stylesheet.
-- Store URLs and GitHub URL must remain the official existing links.
-- Required repository CI, CodeQL, and release-verification checks must stay green.
-- Public-page changes should be checked at desktop and mobile widths before being considered finished.
+- Plain HTML and CSS. JavaScript is optional and should be omitted unless it solves a real accessibility or navigation need.
+- No framework, build step, package change, remote code, analytics, tracking, cookies, or backend.
+- Root `index.html` is the GitHub Pages entry. Topic pages use directory `index.html` files.
+- Use repository-relative links for assets and navigation so the project path remains intact.
+- Use absolute HTTPS URLs for canonical and Open Graph page URLs.
+- Include unique titles, descriptions, canonicals, Open Graph metadata, `robots.txt`, and `sitemap.xml`.
+- Copy only required local image assets into `site/assets/`.
+- Website tests must verify internal targets, metadata, store URLs, prohibited tracking/code patterns, and project-path-safe references.
+- Browser verification must cover desktop and mobile layouts, keyboard focus, overflow, and image loading.
 
 ## Open questions
 
-- [ ] Replace the illustrative extension preview with a polished real product screenshot if a stable screenshot asset is added later. **Owner:** maintainer. **Impact:** medium.
-- [ ] Decide later whether project-impact numbers should remain hard-coded on the landing page or be removed to avoid stale public metrics. **Owner:** maintainer. **Impact:** low.
+- [ ] Submit `https://malekwael229.github.io/FocusTube/sitemap.xml` in Google Search Console after the site is merged. **Owner:** maintainer. **Impact:** medium for discovery, none for site function.
+- [ ] Revisit screenshot freshness after future extension UI changes. **Owner:** maintainer. **Impact:** low until the UI changes materially.
