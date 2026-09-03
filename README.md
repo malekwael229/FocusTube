@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="1400" height="560" alt="focustube-promotional-tile-1400x560 (2)" src="https://github.com/user-attachments/assets/14ee134e-dbbd-4649-919d-bb2e494d5fdb" />
+  <img width="1920" height="1080" alt="focustube-01-hero-v18" src="https://github.com/user-attachments/assets/e204789b-5ac0-467f-8e62-a7c5933ceda0" />
 
   <h1>FocusTube: Distraction Blocker</h1>
 
