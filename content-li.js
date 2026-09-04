@@ -221,9 +221,9 @@ const LinkedIn = {
     const feedColumn =
       document.querySelector('[data-testid="mainFeed"]') ||
       document.querySelector("main.scaffold-layout__main") ||
+      document.querySelector("main#workspace > div > div > div:nth-child(2)") ||
       document.querySelector("#main-content") ||
-      document.querySelector("main") ||
-      document.querySelector("main#workspace > div > div > div:nth-child(2)");
+      null;
     if (!feedColumn) return;
     Utils.setInlineStyle(feedColumn, "position", "relative");
     Utils.setInlineStyle(feedColumn, "overflow", "hidden");
@@ -248,20 +248,18 @@ const LinkedIn = {
     const searchText = normalizeText(headerText);
     const matchesHeader = (element) =>
       normalizeText(element.textContent || "").includes(searchText);
-    const currentCard = Array.from(
-      document.querySelectorAll("div._1f3f3b6f"),
-    ).find(matchesHeader);
-    if (currentCard) return currentCard;
-
     const roots = [
       document.querySelector("aside.scaffold-layout__aside"),
       ...Array.from(document.querySelectorAll("aside")),
-      document.body,
     ].filter(Boolean);
     const visitedRoots = new Set();
     for (const root of roots) {
       if (visitedRoots.has(root)) continue;
       visitedRoots.add(root);
+      const currentCard = Array.from(
+        root.querySelectorAll("div._1f3f3b6f"),
+      ).find(matchesHeader);
+      if (currentCard) return currentCard;
       const walker = document.createTreeWalker(
         root,
         NodeFilter.SHOW_TEXT,

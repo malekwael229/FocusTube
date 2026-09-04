@@ -125,6 +125,9 @@ const Facebook = {
       Utils.shouldApplyVisualHiding("fb");
     const onReelsPath = this.isReelsPath(path);
     if (onReelsPath) {
+      // The home-page stories overlay can survive SPA navigation into Reels.
+      // Remove it before applying the Reels state so it cannot cover controls.
+      this.removeStoriesOverlay();
       if (
         Utils.isSessionAllowed("fb", warnScope) &&
         CONFIG.platformSettings.fb !== "strict"

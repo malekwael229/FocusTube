@@ -610,10 +610,12 @@ function linkedinFixtureHtml() {
   <head><title>FocusTube LinkedIn Fixture</title></head>
   <body>
     <main id="main-content"><p>Normal LinkedIn feed</p></main>
-    <aside id="unrelated-sidebar"><div>Unrelated sidebar content</div></aside>
-    <div id="add-feed-card" class="_739dbf16 _1f3f3b6f">
-      <div class="baa8df48"><p>Add to your feed</p><a href="/in/example/">Example profile</a></div>
-    </div>
+    <main id="generic-main"><div id="non-sidebar-card" class="_1f3f3b6f">Add to your feed</div></main>
+    <aside id="feed-sidebar">
+      <div id="add-feed-card" class="_739dbf16 _1f3f3b6f">
+        <div class="baa8df48"><p>Add to your feed</p><a href="/in/example/">Example profile</a></div>
+      </div>
+    </aside>
   </body>
 </html>`;
 }
@@ -639,12 +641,18 @@ async function verifyYouTubeMostRelevantRuntime(context, extensionId) {
 
   await context.route(
     "https://www.youtube.com/feed/subscriptions**",
-    (route) =>
+    (route) => {
+      const isLocalizedFixture = new URL(route.request().url()).searchParams.has(
+        "localized",
+      );
       route.fulfill({
         status: 200,
         contentType: "text/html",
-        body: youtubeFixtureHtml(),
-      }),
+        body: youtubeFixtureHtml(
+          isLocalizedFixture ? "Más relevantes" : "Most relevant",
+        ),
+      });
+    },
   );
   await context.route("https://www.youtube.com/feed/trending**", (route) =>
     route.fulfill({
@@ -688,6 +696,15 @@ async function verifyYouTubeMostRelevantRuntime(context, extensionId) {
 
   await setStorage(settingsPage, { hide_yt_most_relevant_shelf: true });
   await page.goto("https://www.youtube.com/feed/trending", {
+    waitUntil: "domcontentloaded",
+  });
+  await page.waitForTimeout(500);
+  assert.notEqual(
+    await page.locator("#target-shelf").evaluate((el) => getComputedStyle(el).display),
+    "none",
+  );
+
+  await page.goto("https://www.youtube.com/feed/subscriptions?localized=1", {
     waitUntil: "domcontentloaded",
   });
   await page.waitForTimeout(500);
@@ -980,6 +997,12 @@ async function verifyLinkedInRuntime(context, extensionId) {
     .evaluateAll((nodes) => nodes.map((node) => node.id));
   assert.equal(new Set(gradientIds).size, gradientIds.length);
   assert.equal(await page.locator("#add-feed-card").count(), 1);
+  assert.equal(await page.locator("#non-sidebar-card #ft-linkedin-addfeed-overlay").count(), 0);
+  const genericMainStyle = await page.locator("#generic-main").evaluate((element) => ({
+    maxHeight: element.style.maxHeight,
+    overflow: element.style.overflow,
+  }));
+  assert.deepEqual(genericMainStyle, { maxHeight: "", overflow: "" });
   await page.close();
   await settingsPage.close();
   pass("LinkedIn Add to your feed hiding finds the current card wrapper");
