@@ -554,6 +554,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return false;
     }
   }
+  if (!request || typeof request !== "object" || Array.isArray(request)) {
+    return false;
+  }
   if (request.action === "incrementStat") {
     const amount = Math.max(1, Number(request.amount) || 1);
     statIncrementPending += amount;

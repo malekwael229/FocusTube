@@ -516,6 +516,29 @@ function assertPrimaryAlarmMatchesPersistedTimer(fake) {
   assert.equal(primaryCreates.at(-1).info.when, fake.state.ft_timer_end);
 }
 
+test("malformed runtime messages are ignored without breaking valid commands", () => {
+  const fake = loadBackground({}, { now: 1_000_000 });
+  const baseline = {
+    sets: fake.calls.sets.length,
+    removes: fake.calls.removes.length,
+    alarms: fake.calls.alarms.length,
+  };
+
+  for (const request of [null, undefined, "null", '"text"', "not json", 0, true, []]) {
+    assert.doesNotThrow(() => fake.sendRuntimeMessage(request));
+  }
+  assert.deepEqual({
+    sets: fake.calls.sets.length,
+    removes: fake.calls.removes.length,
+    alarms: fake.calls.alarms.length,
+  }, baseline);
+
+  const response = fake.sendRuntimeMessage(JSON.stringify({ action: "startTimer", duration: 2 }));
+  assert.equal(JSON.stringify(response), JSON.stringify([{ end: 1_120_000 }]));
+  assert.equal(fake.state.ft_timer_type, "work");
+  assertPrimaryAlarmMatchesPersistedTimer(fake);
+});
+
 test("startTimer writes the primary alarm at the persisted timer end", () => {
   const fake = loadBackground({}, { now: 1_000_000 });
 
