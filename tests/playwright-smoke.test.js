@@ -604,7 +604,21 @@ function instagramFixtureHtml({ warnMedia = false } = {}) {
 </html>`;
 }
 
-function linkedinFixtureHtml() {
+function linkedinFixtureHtml({ genericOnly = false } = {}) {
+  if (genericOnly) {
+    return `<!doctype html>
+<html>
+  <head><title>FocusTube LinkedIn Generic Fixture</title></head>
+  <body>
+    <main id="generic-main">
+      <div id="non-sidebar-card" class="_1f3f3b6f">Add to your feed</div>
+    </main>
+    <div id="outer-sidebar-ancestor" class="artdeco-card">
+      <aside id="generic-sidebar"><span>Add to your feed</span></aside>
+    </div>
+  </body>
+</html>`;
+  }
   return `<!doctype html>
 <html>
   <head><title>FocusTube LinkedIn Fixture</title></head>
@@ -758,6 +772,32 @@ async function verifyFacebookRuntime(context, extensionId) {
     "none",
   );
   assert.equal(await home.locator("#focus-tube-warning-overlay").count(), 0);
+
+  await home.evaluate(() => {
+    history.pushState({}, "", "/reel/123");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  });
+  await home.locator("#focus-tube-warning-overlay").waitFor({ state: "visible" });
+  await home.waitForFunction(
+    () => !document.querySelector("#ft-fb-stories-overlay"),
+  );
+  assert.equal(
+    await home.locator("#stories").evaluate((element) => element.style.overflow),
+    "",
+  );
+
+  await home.evaluate(() => {
+    history.pushState({}, "", "/");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  });
+  await home.waitForFunction(
+    () =>
+      !document.querySelector("#focus-tube-warning-overlay") &&
+      document.querySelectorAll("#ft-fb-stories-overlay").length === 1,
+  );
+  await home.evaluate(() => document.body.appendChild(document.createElement("div")));
+  await home.waitForTimeout(100);
+  assert.equal(await home.locator("#ft-fb-stories-overlay").count(), 1);
 
   await setStorage(settingsPage, { hide_fb_people_you_might_know: false });
   await home.waitForFunction(
@@ -971,13 +1011,14 @@ async function verifyLinkedInRuntime(context, extensionId) {
     hide_li_feed: true,
     hide_li_addfeed: true,
   });
-  await context.route("https://www.linkedin.com/feed**", (route) =>
-    route.fulfill({
+  await context.route("https://www.linkedin.com/feed**", (route) => {
+    const genericOnly = new URL(route.request().url()).searchParams.has("generic");
+    return route.fulfill({
       status: 200,
       contentType: "text/html",
-      body: linkedinFixtureHtml(),
-    }),
-  );
+      body: linkedinFixtureHtml({ genericOnly }),
+    });
+  });
   const page = await context.newPage();
   await page.goto("https://www.linkedin.com/feed", { waitUntil: "domcontentloaded" });
   await page.locator("#ft-linkedin-addfeed-overlay").waitFor({ state: "visible" });
@@ -1004,8 +1045,31 @@ async function verifyLinkedInRuntime(context, extensionId) {
   }));
   assert.deepEqual(genericMainStyle, { maxHeight: "", overflow: "" });
   await page.close();
+
+  const genericPage = await context.newPage();
+  await genericPage.goto("https://www.linkedin.com/feed?generic=1", {
+    waitUntil: "domcontentloaded",
+  });
+  await genericPage.waitForTimeout(250);
+  assert.equal(await genericPage.locator("#ft-linkedin-feed-overlay").count(), 0);
+  assert.equal(await genericPage.locator("#ft-linkedin-addfeed-overlay").count(), 0);
+  for (const selector of [
+    "#generic-main",
+    "#non-sidebar-card",
+    "#outer-sidebar-ancestor",
+  ]) {
+    assert.deepEqual(
+      await genericPage.locator(selector).evaluate((element) => ({
+        maxHeight: element.style.maxHeight,
+        overflow: element.style.overflow,
+        position: element.style.position,
+      })),
+      { maxHeight: "", overflow: "", position: "" },
+    );
+  }
+  await genericPage.close();
   await settingsPage.close();
-  pass("LinkedIn Add to your feed hiding finds the current card wrapper");
+  pass("LinkedIn hiding stays inside recognized feed and sidebar containers");
 }
 
 async function verifyYouTubeShortsRedirectFixture(context, extensionId) {

@@ -51,16 +51,13 @@ const LinkedIn = {
     if (!document.body) return;
     if (!this.observer) {
       this.observer = Utils.trackObserver(
-        new MutationObserver(() => {
-          if (this.pendingTimeout) clearTimeout(this.pendingTimeout);
-          this.pendingTimeout = setTimeout(() => this.runChecks(), 50);
-        }),
+        new MutationObserver(() => this.scheduleMutationCheck()),
       );
       this.observer.observe(document.body, { childList: true, subtree: true });
     }
   },
   disable: function () {
-    if (this.pendingTimeout) {
+    if (this.pendingTimeout !== null) {
       clearTimeout(this.pendingTimeout);
       this.pendingTimeout = null;
     }
@@ -68,6 +65,13 @@ const LinkedIn = {
     this.clearDismissalFlags();
     if (this.observer) this.observer.disconnect();
     this.observer = null;
+  },
+  scheduleMutationCheck: function () {
+    if (this.pendingTimeout !== null) return;
+    this.pendingTimeout = setTimeout(() => {
+      this.pendingTimeout = null;
+      this.runChecks();
+    }, 50);
   },
   enable: function () {
     if (!document.body) return;
@@ -274,10 +278,16 @@ const LinkedIn = {
         }
         const card =
           node.parentElement && node.parentElement.closest("div._1f3f3b6f");
-        if (card && card !== root) return card;
+        if (card && card !== root && root.contains(card)) return card;
         const artdecoCard =
           node.parentElement && node.parentElement.closest(".artdeco-card");
-        if (artdecoCard && artdecoCard !== root) return artdecoCard;
+        if (
+          artdecoCard &&
+          artdecoCard !== root &&
+          root.contains(artdecoCard)
+        ) {
+          return artdecoCard;
+        }
         let el = node.parentElement;
         let depth = 0;
         while (el && depth < 12 && el !== root) {

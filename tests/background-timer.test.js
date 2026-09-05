@@ -1365,13 +1365,29 @@ function loadPlatform(platform) {
     location: { hostname: `${platform}.example.test` },
     MutationObserver: FakeMutationObserver,
     setTimeout: (callback) => { const id = timers.length + 1; timers.push({ id, callback }); return id; },
-    clearTimeout: (id) => cleared.push(id),
+    clearTimeout: (id) => {
+      cleared.push(id);
+      const timer = timers.find((entry) => entry.id === id);
+      if (timer) timer.canceled = true;
+    },
     chrome: {
       runtime: { id: "test-extension" },
       storage: { onChanged: { addListener: (listener) => storageListeners.push(listener) } },
     },
-    Site: { isIG: () => platform === "instagram", isTT: () => platform === "tiktok", isFB: () => platform === "facebook" },
-    CONFIG: { extensionEnabled: true, platformSettings: { ig: "strict", tt: "strict", fb: "strict" }, visualHiding: {}, popupVisibility: {}, visualHideHidden: true },
+    Site: {
+      isIG: () => platform === "instagram",
+      isTT: () => platform === "tiktok",
+      isFB: () => platform === "facebook",
+      isLI: () => platform === "linkedin",
+    },
+    CONFIG: {
+      extensionEnabled: true,
+      platformSettings: { ig: "strict", tt: "strict", fb: "strict", li: "strict" },
+      visualHiding: {},
+      popupVisibility: {},
+      visualHideHidden: true,
+      session: {},
+    },
     FocusState: { shouldBlock: false, isBreak: false, isWork: false },
     UI: { remove() {} },
     Utils: {
@@ -1389,12 +1405,20 @@ function loadPlatform(platform) {
       getExtensionUrl: () => "icon",
     },
   };
-  const source = platform === "instagram" ? "content-ig.js" : platform === "tiktok" ? "content-tt.js" : "content-fb.js";
-  vm.runInNewContext(`${read(source)}\nthis.target = ${platform === "instagram" ? "Instagram" : platform === "tiktok" ? "TikTok" : "Facebook"};`, context, { filename: source });
+  const definitions = {
+    instagram: ["content-ig.js", "Instagram"],
+    tiktok: ["content-tt.js", "TikTok"],
+    facebook: ["content-fb.js", "Facebook"],
+    linkedin: ["content-li.js", "LinkedIn"],
+  };
+  const [source, target] = definitions[platform];
+  vm.runInNewContext(`${read(source)}\nthis.target = ${target};`, context, {
+    filename: source,
+  });
   return { target: context.target, observers, timers, cleared, document };
 }
 
-for (const platform of ["instagram", "tiktok", "facebook"]) {
+for (const platform of ["instagram", "tiktok", "facebook", "linkedin"]) {
   test(`${platform} mutation bursts schedule one non-resetting pending check`, () => {
     const fake = loadPlatform(platform);
     let checks = 0;
@@ -1419,15 +1443,39 @@ for (const platform of ["instagram", "tiktok", "facebook"]) {
     fake.target.applyReelsHiding = () => {};
     fake.target.applyPeopleYouMightKnowHiding = () => {};
     fake.target.restoreHiddenNavContainers = () => {};
+    fake.target.removeAllOverlays = () => {};
+    fake.target.clearDismissalFlags = () => {};
     fake.target.ensureObservers();
     fake.observers[0].callback();
     fake.target.disable();
     assert.ok(fake.cleared.length >= 1);
+    assert.equal(fake.timers[0].canceled, true);
+    assert.equal(fake.observers[0].disconnected, true);
     fake.target.enable();
     fake.observers.at(-1).callback();
     assert.equal(fake.timers.length, 2);
   });
 }
+
+test("linkedin sustained mutations cannot starve its pending check", () => {
+  const fake = loadPlatform("linkedin");
+  let checks = 0;
+  fake.target.runChecks = () => { checks += 1; };
+  fake.target.ensureObservers();
+
+  for (let mutation = 0; mutation < 100; mutation += 1) {
+    fake.observers[0].callback();
+  }
+
+  assert.equal(fake.timers.length, 1);
+  assert.equal(fake.cleared.length, 0);
+  fake.timers[0].callback();
+  assert.equal(checks, 1);
+  assert.equal(fake.target.pendingTimeout, null);
+
+  fake.observers[0].callback();
+  assert.equal(fake.timers.length, 2);
+});
 
 test("ensureBody tracks and disconnects the pre-body observer", () => {
   const observers = [];
