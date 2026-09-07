@@ -1,0 +1,547 @@
+{
+  "extensionName": {
+    "message": "FocusTube: Ablenkungsblocker"
+  },
+  "extensionDescription": {
+    "message": "Weniger Ablenkung durch YouTube Shorts, Instagram Reels, TikTok, Facebook Reels und LinkedIn."
+  },
+  "appName": {
+    "message": "FocusTube"
+  },
+  "optionsPageTitle": {
+    "message": "FocusTube-Optionen"
+  },
+  "enabled": {
+    "message": "Aktiviert"
+  },
+  "disabled": {
+    "message": "Deaktiviert"
+  },
+  "locked": {
+    "message": "GESPERRT"
+  },
+  "hideUiDistractions": {
+    "message": "Ablenkende UI-Elemente ausblenden"
+  },
+  "platformYoutube": {
+    "message": "YouTube"
+  },
+  "platformInstagram": {
+    "message": "Instagram"
+  },
+  "platformTiktok": {
+    "message": "TikTok"
+  },
+  "platformFacebook": {
+    "message": "Facebook"
+  },
+  "platformLinkedin": {
+    "message": "LinkedIn"
+  },
+  "platformSettings": {
+    "message": "Einstellungen für $PLATFORM$",
+    "placeholders": {
+      "platform": {
+        "content": "$1"
+      }
+    }
+  },
+  "modeStrict": {
+    "message": "Strikt"
+  },
+  "modeWarn": {
+    "message": "Warnung"
+  },
+  "modePassive": {
+    "message": "Passiv"
+  },
+  "modeStrictLong": {
+    "message": "Strikter Modus"
+  },
+  "modeWarnLong": {
+    "message": "Warnmodus"
+  },
+  "modePassiveLong": {
+    "message": "Passiver Modus"
+  },
+  "modeStrictDescription": {
+    "message": "Zugriff vollständig blockieren"
+  },
+  "modeWarnDescription": {
+    "message": "Vor dem Öffnen eine Warnung anzeigen"
+  },
+  "modePassiveDescription": {
+    "message": "Normales Surfen"
+  },
+  "modeLinkedinStrictDescription": {
+    "message": "Blendet Feed und ablenkende Elemente aus"
+  },
+  "modeLinkedinWarnDescription": {
+    "message": "Blendet den Feed aus, erlaubt \"Trotzdem anzeigen\""
+  },
+  "modeLinkedinPassiveDescription": {
+    "message": "Blendet nichts aus"
+  },
+  "blockingMode": {
+    "message": "Blockierungsmodus"
+  },
+  "visualHiding": {
+    "message": "Visuelles Ausblenden"
+  },
+  "platformConfigurationHint": {
+    "message": "Klicke auf eine Plattform, um den Blockierungsmodus festzulegen"
+  },
+  "timerActiveModesLocked": {
+    "message": "Timer aktiv: Modi gesperrt"
+  },
+  "focus": {
+    "message": "Fokus"
+  },
+  "break": {
+    "message": "Pause"
+  },
+  "startTimer": {
+    "message": "Timer starten"
+  },
+  "stopTimer": {
+    "message": "Timer stoppen"
+  },
+  "takeBreak": {
+    "message": "Pause machen"
+  },
+  "skipBreak": {
+    "message": "Pause überspringen"
+  },
+  "blockedCount": {
+    "message": "$COUNT$ blockiert",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "timeSavedCompact": {
+    "message": "$TIME$ gespart",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "minutesCompact": {
+    "message": "$COUNT$ Min.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "hoursMinutesCompact": {
+    "message": "$HOURS$ Std. $MINUTES$ Min.",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "minutesLong": {
+    "message": "$COUNT$ Minuten",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "openSourceCode": {
+    "message": "Quellcode öffnen"
+  },
+  "viewSourceGithub": {
+    "message": "Quellcode auf GitHub ansehen"
+  },
+  "settings": {
+    "message": "Einstellungen"
+  },
+  "openSettings": {
+    "message": "Einstellungen öffnen"
+  },
+  "goBackMainView": {
+    "message": "Zur Hauptansicht zurückkehren"
+  },
+  "reviewPrompt": {
+    "message": "Gefällt dir FocusTube? Eine kurze Bewertung hilft anderen, es zu entdecken!"
+  },
+  "later": {
+    "message": "Später"
+  },
+  "rateUs": {
+    "message": "Bewerten"
+  },
+  "rateUsStar": {
+    "message": "⭐ Bewerten"
+  },
+  "tutorialSkip": {
+    "message": "Überspringen"
+  },
+  "tutorialNext": {
+    "message": "Weiter"
+  },
+  "tutorialStart": {
+    "message": "Tour starten"
+  },
+  "tutorialFinish": {
+    "message": "Fertig"
+  },
+  "tutorialProgress": {
+    "message": "$CURRENT$ von $TOTAL$",
+    "placeholders": {
+      "current": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "tutorialWelcomeTitle": {
+    "message": "Willkommen bei FocusTube!"
+  },
+  "tutorialWelcomeDescription": {
+    "message": "Eine kurze Tour zeigt dir, wie du fokussiert bleibst und Ablenkungen blockierst."
+  },
+  "tutorialPlatformsTitle": {
+    "message": "Plattformsteuerung"
+  },
+  "tutorialPlatformsDescription": {
+    "message": "Klicke auf ein Plattform-Symbol, um den Blockierungsmodus zu ändern. Verwalte YouTube, Facebook, Instagram, TikTok und LinkedIn."
+  },
+  "tutorialModesTitle": {
+    "message": "Blockierungsmodi"
+  },
+  "tutorialModesDescription": {
+    "message": "Jede Plattform zeigt ein Kürzel: S (Strikt) blockiert immer, W (Warnung) fragt vor der Anzeige und P (Passiv) erlaubt den Zugriff."
+  },
+  "tutorialFocusTitle": {
+    "message": "Fokus-Schalter"
+  },
+  "tutorialFocusDescription": {
+    "message": "Schalte den Fokusmodus mit diesem Schalter ein oder aus. Wenn er aktiv ist, gelten deine ausgewählten Blockierungsregeln."
+  },
+  "tutorialTimerTitle": {
+    "message": "Timer-Schaltfläche"
+  },
+  "tutorialTimerDescription": {
+    "message": "Starte einen Fokus- oder Pausentimer. Arbeitssitzungen erzwingen strikte Blockierung, Pausen erlauben freies Surfen."
+  },
+  "tutorialSettingsTitle": {
+    "message": "Einstellungen"
+  },
+  "tutorialSettingsDescription": {
+    "message": "Öffne erweiterte Optionen, verwalte ausgeblendete Elemente und passe dein Fokus-Erlebnis an."
+  },
+  "tutorialCompleteTitle": {
+    "message": "Alles bereit!"
+  },
+  "tutorialCompleteDescription": {
+    "message": "Du kennst jetzt die Grundlagen. Bleib fokussiert und produktiv!"
+  },
+  "totalBlocked": {
+    "message": "Insgesamt blockiert"
+  },
+  "timeSaved": {
+    "message": "Gesparte Zeit"
+  },
+  "focusTimer": {
+    "message": "Fokus-Timer"
+  },
+  "focusTimerDescription": {
+    "message": "Lege deine Einstellungen für Fokus-Sitzungen fest"
+  },
+  "focusDuration": {
+    "message": "Fokusdauer"
+  },
+  "focusDurationDescription": {
+    "message": "Dauer jeder Fokus-Sitzung"
+  },
+  "breakDuration": {
+    "message": "Pausendauer"
+  },
+  "breakDurationDescription": {
+    "message": "Pausenlänge zwischen Sitzungen"
+  },
+  "autoStartBreaks": {
+    "message": "Pausen automatisch starten"
+  },
+  "autoStartBreaksDescription": {
+    "message": "Pausentimer nach Ende des Fokus automatisch starten"
+  },
+  "showBreakButton": {
+    "message": "Pausen-Schaltfläche anzeigen"
+  },
+  "showBreakButtonDescription": {
+    "message": "Während des Fokus \"Pause machen\" im Pop-up anzeigen"
+  },
+  "lockSettingsDuringTimer": {
+    "message": "Einstellungen während des Timers sperren"
+  },
+  "lockSettingsDuringTimerDescription": {
+    "message": "Änderungen verhindern, solange der Fokus-Timer aktiv ist"
+  },
+  "popupVisibility": {
+    "message": "Sichtbarkeit im Pop-up"
+  },
+  "popupVisibilityDescription": {
+    "message": "Wähle, welche Plattformen im Pop-up erscheinen"
+  },
+  "showPlatform": {
+    "message": "$PLATFORM$ anzeigen",
+    "placeholders": {
+      "platform": {
+        "content": "$1"
+      }
+    }
+  },
+  "restrictHiddenPlatforms": {
+    "message": "Ausgeblendete Plattformen einschränken"
+  },
+  "restrictHiddenPlatformsDescription": {
+    "message": "Blockierungsregeln auch anwenden, wenn die Plattform im Pop-up ausgeblendet ist"
+  },
+  "visualHidingHidden": {
+    "message": "Visuelles Ausblenden auf ausgeblendeten Plattformen"
+  },
+  "visualHidingHiddenDescription": {
+    "message": "Ablenkende Elemente auf ausgeblendeten Plattformen ausblenden"
+  },
+  "notifications": {
+    "message": "Benachrichtigungen"
+  },
+  "notificationsDescription": {
+    "message": "Hinweise und Erinnerungen verwalten"
+  },
+  "systemNotifications": {
+    "message": "Systembenachrichtigungen"
+  },
+  "systemNotificationsDescription": {
+    "message": "Benachrichtigung anzeigen, wenn der Timer endet"
+  },
+  "dataPrivacy": {
+    "message": "Daten und Datenschutz"
+  },
+  "dataPrivacyDescription": {
+    "message": "Daten und Statistiken verwalten"
+  },
+  "import": {
+    "message": "Importieren"
+  },
+  "export": {
+    "message": "Exportieren"
+  },
+  "reset": {
+    "message": "Zurücksetzen"
+  },
+  "clearAll": {
+    "message": "Alles löschen"
+  },
+  "starRepo": {
+    "message": "Repository mit Stern markieren"
+  },
+  "reportIssue": {
+    "message": "Problem melden"
+  },
+  "aboutVersion": {
+    "message": "Version $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "aboutDescription": {
+    "message": "Eine quelloffene Browser-Erweiterung, die dir hilft, fokussiert zu bleiben, indem sie ablenkende Kurzvideos blockiert."
+  },
+  "select": {
+    "message": "Auswählen"
+  },
+  "importError": {
+    "message": "Fehler beim Importieren der Daten: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "importObjectRequired": {
+    "message": "Die Importdatei muss ein JSON-Objekt enthalten."
+  },
+  "importTimerFieldsTogether": {
+    "message": "ft_timer_end und ft_timer_type müssen zusammen importiert werden"
+  },
+  "importInvalidValues": {
+    "message": "Ungültige Werte für: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "importNoSupportedSettings": {
+    "message": "Fehler beim Importieren der Daten: Keine unterstützten Einstellungen gefunden."
+  },
+  "importConfirm": {
+    "message": "Beim Importieren werden deine aktuellen Einstellungen und Statistiken überschrieben. Möchtest du fortfahren?"
+  },
+  "importReplaceFailed": {
+    "message": "Fehler beim Importieren der Daten: Einstellungen konnten nicht ersetzt werden."
+  },
+  "importSuccess": {
+    "message": "Daten erfolgreich importiert!"
+  },
+  "importInvalidJson": {
+    "message": "Fehler beim Importieren der Daten: Ungültige JSON-Datei."
+  },
+  "resetConfirm": {
+    "message": "Möchtest du wirklich alle Einstellungen auf die Standardwerte zurücksetzen?"
+  },
+  "clearAllConfirm": {
+    "message": "Möchtest du wirklich alle Daten löschen? Dies kann nicht rückgängig gemacht werden."
+  },
+  "hideShortsButton": {
+    "message": "Shorts-Schaltfläche ausblenden"
+  },
+  "hideShortsButtonDescription": {
+    "message": "Shorts-Link in der Seitenleiste ausblenden"
+  },
+  "hideShortsShelves": {
+    "message": "Shorts-Bereiche ausblenden"
+  },
+  "hideShortsShelvesDescription": {
+    "message": "Shorts-Bereiche im Feed ausblenden"
+  },
+  "hideMostRelevantShelf": {
+    "message": "Bereich \"Relevanteste\" ausblenden"
+  },
+  "hideMostRelevantShelfShort": {
+    "message": "\"Relevanteste\" ausblenden"
+  },
+  "hideMostRelevantShelfDescription": {
+    "message": "Bereich \"Relevanteste\" unter Abonnements ausblenden"
+  },
+  "hideStories": {
+    "message": "Storys ausblenden"
+  },
+  "hideInstagramStoriesDescription": {
+    "message": "Story-Leiste oben ausblenden"
+  },
+  "hideFacebookStoriesDescription": {
+    "message": "Storys-Bereich ausblenden"
+  },
+  "hideReelsButton": {
+    "message": "Reels-Schaltfläche ausblenden"
+  },
+  "hideInstagramReelsDescription": {
+    "message": "Reels-Tab in der Navigation ausblenden"
+  },
+  "hideFacebookReelsDescription": {
+    "message": "Reels-Link in der Seitenleiste ausblenden"
+  },
+  "hidePeopleYouMightKnow": {
+    "message": "Personen ausblenden, die du kennen könntest"
+  },
+  "hidePeopleYouMightKnowDescription": {
+    "message": "Personenvorschläge im Feed ausblenden"
+  },
+  "hideFeed": {
+    "message": "Feed ausblenden"
+  },
+  "hideFeedDescription": {
+    "message": "Haupt-Feed ausblenden"
+  },
+  "hideAddToFeed": {
+    "message": "\"Zum Feed hinzufügen\" ausblenden"
+  },
+  "hideAddToFeedShort": {
+    "message": "\"Zu deinem Feed hinzufügen\" ausblenden"
+  },
+  "hideAddToFeedDescription": {
+    "message": "Vorschläge zum Folgen ausblenden"
+  },
+  "overlayStrictModeActive": {
+    "message": "Strikter Modus aktiv"
+  },
+  "overlayDistractionBlocked": {
+    "message": "Ablenkung blockiert"
+  },
+  "overlayProductive": {
+    "message": "FocusTube hilft dir, produktiv zu bleiben."
+  },
+  "overlayProductiveShort": {
+    "message": "Wir helfen dir, produktiv zu bleiben."
+  },
+  "goBack": {
+    "message": "Zurück"
+  },
+  "watchAnyway": {
+    "message": "Trotzdem ansehen"
+  },
+  "goToMessages": {
+    "message": "Zu Nachrichten"
+  },
+  "view": {
+    "message": "Anzeigen"
+  },
+  "viewAnyway": {
+    "message": "Trotzdem anzeigen"
+  },
+  "storiesHidden": {
+    "message": "Storys ausgeblendet"
+  },
+  "feedHidden": {
+    "message": "Feed ausgeblendet"
+  },
+  "hidden": {
+    "message": "Ausgeblendet"
+  },
+  "strictModePreventedAccess": {
+    "message": "Der strikte Modus hat den Zugriff verhindert."
+  },
+  "focusSessionComplete": {
+    "message": "Fokus-Sitzung abgeschlossen!"
+  },
+  "focusSessionCompleteToast": {
+    "message": "Gut gemacht! Mache $DURATION$ Minuten Pause.",
+    "placeholders": {
+      "duration": {
+        "content": "$1"
+      }
+    }
+  },
+  "breakOver": {
+    "message": "Pause vorbei!"
+  },
+  "backToWork": {
+    "message": "Zeit, wieder an die Arbeit zu gehen."
+  },
+  "focusTimerCompleteNotification": {
+    "message": "Fokus-Timer abgeschlossen! 🎉"
+  },
+  "breakOverNotification": {
+    "message": "Pause vorbei! ⏰"
+  },
+  "notificationBackToWork": {
+    "message": "Zurück an die Arbeit. Ablenkungen blockiert."
+  },
+  "notificationTimeForBreak": {
+    "message": "Zeit für eine Pause von $DURATION$ Minuten.",
+    "placeholders": {
+      "duration": {
+        "content": "$1"
+      }
+    }
+  },
+  "notificationFocusComplete": {
+    "message": "Fokus-Sitzung abgeschlossen."
+  }
+}

@@ -303,6 +303,31 @@ body.ft-platform-li aside.scaffold-layout__aside {
   );
   border: 1px solid rgba(79, 172, 254, 0.3);
 }
+
+.focus-tube-warning[dir="rtl"],
+.ft-linkedin-overlay[dir="rtl"],
+.ft-stories-overlay[dir="rtl"],
+#ft-toast[dir="rtl"],
+#ft-kick-notification[dir="rtl"] {
+  direction: rtl;
+  text-align: center;
+}
+
+.focus-tube-warning[dir="rtl"] .focus-tube-btn-group {
+  align-items: center;
+}
+
+.focus-tube-warning h1,
+.focus-tube-warning p,
+.focus-tube-btn,
+.ft-linkedin-overlay h3,
+.ft-linkedin-overlay p,
+.ft-linkedin-overlay-btn,
+.ft-stories-overlay span,
+#ft-toast,
+#ft-kick-notification {
+  overflow-wrap: anywhere;
+}
 .ft-stories-overlay-icon {
   width: 32px;
   height: 32px;

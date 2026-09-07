@@ -365,10 +365,11 @@ const Facebook = {
     const overlay = document.createElement("div");
     overlay.id = this.storiesOverlayId;
     overlay.className = "ft-stories-overlay";
+    localizeOwnedRoot(overlay);
     if (CONFIG.isDarkMode) overlay.classList.add("dark");
     const icon = Utils.createBadge("ft-stories-overlay-icon");
     const text = document.createElement("span");
-    text.textContent = "Stories Hidden";
+    text.textContent = ftMessage("storiesHidden");
     overlay.appendChild(icon);
     overlay.appendChild(text);
     storyShelf.appendChild(overlay);

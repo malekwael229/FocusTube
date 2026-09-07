@@ -7,6 +7,9 @@ const Site = {
   isFB: () => Site.matchesHostname(location.hostname, "facebook.com"),
   isLI: () => Site.matchesHostname(location.hostname, "linkedin.com"),
 };
+const ftMessage = (key, substitutions) =>
+  globalThis.FT_I18N?.message(key, substitutions) || "";
+const localizeOwnedRoot = (element) => globalThis.FT_I18N?.applyDirection(element);
 const CONFIG = {
   extensionEnabled: true,
   isFocusMode: true,
@@ -750,6 +753,7 @@ const UI = {
     overlay.dataset.ftType = type;
     overlay.dataset.ftPlatform = platform;
     overlay.dataset.ftScope = nextScope;
+    localizeOwnedRoot(overlay);
     if (CONFIG.isDarkMode) overlay.classList.add("dark");
     overlay.style.cssText =
       "position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0,0,0,0.96) !important; display: flex !important; justify-content: center !important; align-items: center !important; z-index: 2147483647 !important; isolation: isolate !important;";
@@ -757,9 +761,10 @@ const UI = {
     const card = document.createElement("div");
     card.className = "focus-tube-card";
     const badge = Utils.createBadge("focus-tube-icon-img");
-    const headerText =
-      type === "strict" ? "Strict Mode Active" : "Distraction Blocked";
-    const bodyText = "FocusTube is keeping you productive.";
+    const headerText = ftMessage(
+      type === "strict" ? "overlayStrictModeActive" : "overlayDistractionBlocked",
+    );
+    const bodyText = ftMessage("overlayProductive");
     const h1 = document.createElement("h1");
     h1.textContent = headerText;
     const p = document.createElement("p");
@@ -768,13 +773,13 @@ const UI = {
     btnGroup.className = "focus-tube-btn-group";
     const backBtn = document.createElement("button");
     backBtn.className = "focus-tube-btn focus-tube-btn-primary";
-    backBtn.textContent = "Go Back";
+    backBtn.textContent = ftMessage("goBack");
     backBtn.onclick = onBack;
     btnGroup.appendChild(backBtn);
     if (type === "warn") {
       const watchBtn = document.createElement("button");
       watchBtn.className = "focus-tube-btn focus-tube-btn-secondary";
-      watchBtn.textContent = "Watch Anyway";
+      watchBtn.textContent = ftMessage("watchAnyway");
       watchBtn.style.opacity = "0.5";
       watchBtn.style.cursor = "not-allowed";
       watchBtn.disabled = true;
@@ -800,7 +805,7 @@ const UI = {
     if (Site.isTT()) {
       const msgBtn = document.createElement("button");
       msgBtn.className = "focus-tube-btn focus-tube-btn-secondary";
-      msgBtn.textContent = "Go to Messages";
+      msgBtn.textContent = ftMessage("goToMessages");
       msgBtn.onclick = () => {
         if (Site.isTT())
           window.location.href = "https://www.tiktok.com/messages";
@@ -895,7 +900,8 @@ const UI = {
     if (exist) exist.remove();
     const toast = document.createElement("div");
     toast.id = "ft-toast";
-    toast.style.cssText = `position: fixed; top: 24px; right: 24px; background: #1f1f1f; color: #fff; padding: 16px 24px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); z-index: 2147483647; font-family: sans-serif; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 15px; opacity: 0; transform: translateY(-20px); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); min-width: 300px;`;
+    localizeOwnedRoot(toast);
+    toast.style.cssText = `position: fixed; top: 24px; inset-inline-end: 24px; background: #1f1f1f; color: #fff; padding: 16px 24px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); z-index: 2147483647; font-family: sans-serif; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 15px; opacity: 0; transform: translateY(-20px); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); min-width: 300px; max-width: min(420px, calc(100vw - 48px)); box-sizing: border-box;`;
     const icon = Utils.createBadge();
     icon.style.cssText = "width:32px;height:32px;flex:0 0 auto;";
     toast.appendChild(icon);
@@ -924,6 +930,7 @@ const UI = {
     document.getElementById("ft-kick-notification")?.remove();
     const n = document.createElement("div");
     n.id = "ft-kick-notification";
+    localizeOwnedRoot(n);
     n.style.cssText = `
             position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); 
             background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
@@ -937,7 +944,7 @@ const UI = {
     icon.style.cssText = "width:24px;height:24px;flex:0 0 auto;";
     n.appendChild(icon);
     const message = document.createElement("span");
-    message.textContent = "Strict Mode prevented access.";
+    message.textContent = ftMessage("strictModePreventedAccess");
     n.appendChild(message);
     document.documentElement.appendChild(n);
     requestAnimationFrame(() => {
@@ -1248,10 +1255,12 @@ const UI = {
         if (msg.type === "work") {
           const duration = msg.breakDuration || 5;
           UI.showToast(
-            "Focus Session Complete!",
-            `Great job! Take a ${duration}-minute break.`,
+            ftMessage("focusSessionComplete"),
+            ftMessage("focusSessionCompleteToast", [String(duration)]),
           );
-        } else UI.showToast("Break Over!", "Time to get back to work.");
+        } else {
+          UI.showToast(ftMessage("breakOver"), ftMessage("backToWork"));
+        }
       } catch (e) {
         Utils.reportError("showing timer notification", e);
       }

@@ -10,7 +10,7 @@ const AdmZip = require("adm-zip");
 
 const root = path.resolve(__dirname, "..");
 const prepareBuilds = path.join(root, "scripts", "prepare-test-builds.js");
-const { runtimeFiles } = require(prepareBuilds);
+const { runtimeFiles, supportedLocales, requireLocaleFiles } = require(prepareBuilds);
 const expectedVersion = "2.3.2";
 const browsers = ["chromium", "firefox"];
 const tempPrefix = "focustube-package-repro-";
@@ -30,7 +30,18 @@ function expectedArchiveName(browser) {
 function assertArchiveContents(archivePath, browser) {
   const entries = new AdmZip(archivePath).getEntries();
   const entryNames = entries.map((entry) => entry.entryName);
-  const expectedNames = [...runtimeFiles, "icons/", "manifest.json"].sort();
+  const expectedDirectories = new Set(["icons/"]);
+  runtimeFiles.forEach((relativePath) => {
+    const parts = relativePath.split("/");
+    for (let index = 1; index < parts.length; index += 1) {
+      expectedDirectories.add(`${parts.slice(0, index).join("/")}/`);
+    }
+  });
+  const expectedNames = [
+    ...runtimeFiles,
+    ...expectedDirectories,
+    "manifest.json",
+  ].sort();
 
   assert.deepEqual([...entryNames].sort(), expectedNames, `${browser} ZIP contents`);
   for (const entryName of entryNames) {
@@ -41,6 +52,13 @@ function assertArchiveContents(archivePath, browser) {
 
   const manifest = JSON.parse(new AdmZip(archivePath).readAsText("manifest.json"));
   assert.equal(manifest.version, expectedVersion, `${browser} manifest version`);
+  assert.ok(entryNames.includes("i18n.js"), `${browser} ZIP includes localization helper`);
+  for (const locale of supportedLocales) {
+    assert.ok(
+      entryNames.includes(`_locales/${locale}/messages.json`),
+      `${browser} ZIP includes ${locale} catalog`,
+    );
+  }
 }
 
 function build(outputRoot, stdio = "inherit") {
@@ -63,6 +81,22 @@ let unsafeOutputDirectory;
 const distSentinelPaths = [];
 const createdDistOutputs = [];
 try {
+  const incompleteLocales = fs.mkdtempSync(path.join(os.tmpdir(), tempPrefix));
+  try {
+    for (const locale of supportedLocales.slice(0, -1)) {
+      const catalogPath = path.join(incompleteLocales, "_locales", locale, "messages.json");
+      fs.mkdirSync(path.dirname(catalogPath), { recursive: true });
+      fs.writeFileSync(catalogPath, "{}\n");
+    }
+    assert.throws(
+      () => requireLocaleFiles(incompleteLocales),
+      /Missing required localization catalog\(s\): _locales\/id\/messages\.json/,
+      "a missing supported locale fails packaging instead of being filtered",
+    );
+  } finally {
+    fs.rmSync(incompleteLocales, { recursive: true, force: true });
+  }
+
   buildDirectories.push(fs.mkdtempSync(path.join(os.tmpdir(), tempPrefix)));
   buildDirectories.push(fs.mkdtempSync(path.join(os.tmpdir(), tempPrefix)));
 

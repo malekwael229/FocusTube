@@ -6,11 +6,26 @@ const path = require("node:path");
 const { execFileSync } = require("node:child_process");
 
 const root = path.resolve(__dirname, "..");
+const supportedLocales = ["en", "ar", "es", "pt_BR", "fr", "de", "tr", "id"];
+function requireLocaleFiles(directory = root) {
+  const files = supportedLocales.map(
+    (locale) => `_locales/${locale}/messages.json`,
+  );
+  const missing = files.filter(
+    (relativePath) => !fs.existsSync(path.join(directory, relativePath)),
+  );
+  if (missing.length > 0) {
+    throw new Error(`Missing required localization catalog(s): ${missing.join(", ")}`);
+  }
+  return files;
+}
+const localeFiles = requireLocaleFiles();
 const ZIP_SAFE_TIMESTAMP = new Date("1980-01-01T00:00:00.000Z");
 const generatedDirectoryPattern = /^(?:chromium|firefox|FocusTube-(?:release-(?:chromium|firefox)-v[^/]+|test-(?:chromium|firefox)))$/;
 const generatedZipPattern = /^(?:chromium|firefox)\.zip$|^FocusTube-(?:release-(?:chromium|firefox)-v[^/]+|test-(?:chromium|firefox))\.zip$/;
 const runtimeFiles = [
   "background.js",
+  "i18n.js",
   "content-common.js",
   "content-fb.js",
   "content-ig.js",
@@ -23,6 +38,7 @@ const runtimeFiles = [
   "popup.js",
   "options.html",
   "options.js",
+  ...localeFiles,
   "icons/icon16.png",
   "icons/icon48.png",
   "icons/icon128.png",
@@ -195,4 +211,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { runtimeFiles };
+module.exports = { runtimeFiles, supportedLocales, requireLocaleFiles };

@@ -1,0 +1,547 @@
+{
+  "extensionName": {
+    "message": "FocusTube: Pemblokir Gangguan"
+  },
+  "extensionDescription": {
+    "message": "Kurangi gangguan dari YouTube Shorts, Instagram Reels, TikTok, Facebook Reels, dan LinkedIn."
+  },
+  "appName": {
+    "message": "FocusTube"
+  },
+  "optionsPageTitle": {
+    "message": "Opsi FocusTube"
+  },
+  "enabled": {
+    "message": "Aktif"
+  },
+  "disabled": {
+    "message": "Nonaktif"
+  },
+  "locked": {
+    "message": "TERKUNCI"
+  },
+  "hideUiDistractions": {
+    "message": "Sembunyikan gangguan antarmuka"
+  },
+  "platformYoutube": {
+    "message": "YouTube"
+  },
+  "platformInstagram": {
+    "message": "Instagram"
+  },
+  "platformTiktok": {
+    "message": "TikTok"
+  },
+  "platformFacebook": {
+    "message": "Facebook"
+  },
+  "platformLinkedin": {
+    "message": "LinkedIn"
+  },
+  "platformSettings": {
+    "message": "Pengaturan $PLATFORM$",
+    "placeholders": {
+      "platform": {
+        "content": "$1"
+      }
+    }
+  },
+  "modeStrict": {
+    "message": "Ketat"
+  },
+  "modeWarn": {
+    "message": "Peringatan"
+  },
+  "modePassive": {
+    "message": "Pasif"
+  },
+  "modeStrictLong": {
+    "message": "Mode Ketat"
+  },
+  "modeWarnLong": {
+    "message": "Mode Peringatan"
+  },
+  "modePassiveLong": {
+    "message": "Mode Pasif"
+  },
+  "modeStrictDescription": {
+    "message": "Blokir akses sepenuhnya"
+  },
+  "modeWarnDescription": {
+    "message": "Tampilkan peringatan sebelum masuk"
+  },
+  "modePassiveDescription": {
+    "message": "Penjelajahan normal"
+  },
+  "modeLinkedinStrictDescription": {
+    "message": "Menyembunyikan beranda dan elemen yang mengganggu"
+  },
+  "modeLinkedinWarnDescription": {
+    "message": "Menyembunyikan beranda dan mengizinkan \"Tetap Tampilkan\""
+  },
+  "modeLinkedinPassiveDescription": {
+    "message": "Tidak menyembunyikan apa pun"
+  },
+  "blockingMode": {
+    "message": "Mode Pemblokiran"
+  },
+  "visualHiding": {
+    "message": "Penyembunyian Visual"
+  },
+  "platformConfigurationHint": {
+    "message": "Klik platform untuk mengatur mode pemblokiran"
+  },
+  "timerActiveModesLocked": {
+    "message": "Pengatur waktu aktif: mode terkunci"
+  },
+  "focus": {
+    "message": "Fokus"
+  },
+  "break": {
+    "message": "Istirahat"
+  },
+  "startTimer": {
+    "message": "Mulai Pengatur Waktu"
+  },
+  "stopTimer": {
+    "message": "Hentikan Pengatur Waktu"
+  },
+  "takeBreak": {
+    "message": "Istirahat"
+  },
+  "skipBreak": {
+    "message": "Lewati Istirahat"
+  },
+  "blockedCount": {
+    "message": "$COUNT$ diblokir",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "timeSavedCompact": {
+    "message": "$TIME$ dihemat",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "minutesCompact": {
+    "message": "$COUNT$ mnt",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "hoursMinutesCompact": {
+    "message": "$HOURS$ j $MINUTES$ mnt",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "minutesLong": {
+    "message": "$COUNT$ menit",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "openSourceCode": {
+    "message": "Buka Kode Sumber"
+  },
+  "viewSourceGithub": {
+    "message": "Lihat kode sumber di GitHub"
+  },
+  "settings": {
+    "message": "Pengaturan"
+  },
+  "openSettings": {
+    "message": "Buka pengaturan"
+  },
+  "goBackMainView": {
+    "message": "Kembali ke tampilan utama"
+  },
+  "reviewPrompt": {
+    "message": "Menikmati FocusTube? Ulasan singkat membantu orang lain menemukannya!"
+  },
+  "later": {
+    "message": "Nanti"
+  },
+  "rateUs": {
+    "message": "Beri Nilai"
+  },
+  "rateUsStar": {
+    "message": "⭐ Beri Nilai"
+  },
+  "tutorialSkip": {
+    "message": "Lewati"
+  },
+  "tutorialNext": {
+    "message": "Berikutnya"
+  },
+  "tutorialStart": {
+    "message": "Mulai Tur"
+  },
+  "tutorialFinish": {
+    "message": "Selesai"
+  },
+  "tutorialProgress": {
+    "message": "$CURRENT$ dari $TOTAL$",
+    "placeholders": {
+      "current": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "tutorialWelcomeTitle": {
+    "message": "Selamat Datang di FocusTube!"
+  },
+  "tutorialWelcomeDescription": {
+    "message": "Ikuti tur singkat untuk mempelajari cara tetap fokus dan memblokir gangguan."
+  },
+  "tutorialPlatformsTitle": {
+    "message": "Kontrol Platform"
+  },
+  "tutorialPlatformsDescription": {
+    "message": "Klik ikon platform untuk mengubah mode pemblokirannya. Kelola YouTube, Facebook, Instagram, TikTok, dan LinkedIn."
+  },
+  "tutorialModesTitle": {
+    "message": "Mode Pemblokiran"
+  },
+  "tutorialModesDescription": {
+    "message": "Setiap platform menampilkan lencana: S (Ketat) selalu memblokir, W (Peringatan) bertanya sebelum menampilkan, dan P (Pasif) mengizinkan akses."
+  },
+  "tutorialFocusTitle": {
+    "message": "Tombol Fokus"
+  },
+  "tutorialFocusDescription": {
+    "message": "Aktifkan atau nonaktifkan Mode Fokus dengan tombol ini. Saat aktif, aturan pemblokiran yang Anda pilih akan berlaku."
+  },
+  "tutorialTimerTitle": {
+    "message": "Tombol Pengatur Waktu"
+  },
+  "tutorialTimerDescription": {
+    "message": "Mulai pengatur waktu fokus atau istirahat. Sesi kerja menerapkan pemblokiran ketat, sedangkan waktu istirahat memungkinkan penjelajahan bebas."
+  },
+  "tutorialSettingsTitle": {
+    "message": "Pengaturan"
+  },
+  "tutorialSettingsDescription": {
+    "message": "Akses opsi lanjutan, kelola elemen tersembunyi, dan sesuaikan pengalaman fokus Anda."
+  },
+  "tutorialCompleteTitle": {
+    "message": "Semua Siap!"
+  },
+  "tutorialCompleteDescription": {
+    "message": "Anda sudah memahami dasarnya. Tetap fokus dan produktif!"
+  },
+  "totalBlocked": {
+    "message": "Total Diblokir"
+  },
+  "timeSaved": {
+    "message": "Waktu Dihemat"
+  },
+  "focusTimer": {
+    "message": "Pengatur Waktu Fokus"
+  },
+  "focusTimerDescription": {
+    "message": "Atur preferensi sesi fokus Anda"
+  },
+  "focusDuration": {
+    "message": "Durasi Fokus"
+  },
+  "focusDurationDescription": {
+    "message": "Lama setiap sesi fokus"
+  },
+  "breakDuration": {
+    "message": "Durasi Istirahat"
+  },
+  "breakDurationDescription": {
+    "message": "Lama istirahat di antara sesi"
+  },
+  "autoStartBreaks": {
+    "message": "Mulai Istirahat Otomatis"
+  },
+  "autoStartBreaksDescription": {
+    "message": "Mulai pengatur waktu istirahat secara otomatis setelah fokus berakhir"
+  },
+  "showBreakButton": {
+    "message": "Tampilkan Tombol Istirahat"
+  },
+  "showBreakButtonDescription": {
+    "message": "Tampilkan tombol \"Istirahat\" di pop-up selama fokus"
+  },
+  "lockSettingsDuringTimer": {
+    "message": "Kunci Pengaturan Selama Pengatur Waktu"
+  },
+  "lockSettingsDuringTimerDescription": {
+    "message": "Cegah perubahan saat Pengatur Waktu Fokus aktif"
+  },
+  "popupVisibility": {
+    "message": "Visibilitas Pop-up"
+  },
+  "popupVisibilityDescription": {
+    "message": "Pilih platform yang muncul di pop-up"
+  },
+  "showPlatform": {
+    "message": "Tampilkan $PLATFORM$",
+    "placeholders": {
+      "platform": {
+        "content": "$1"
+      }
+    }
+  },
+  "restrictHiddenPlatforms": {
+    "message": "Batasi Platform Tersembunyi"
+  },
+  "restrictHiddenPlatformsDescription": {
+    "message": "Terapkan aturan pemblokiran meskipun disembunyikan dari pop-up"
+  },
+  "visualHidingHidden": {
+    "message": "Penyembunyian Visual pada Platform Tersembunyi"
+  },
+  "visualHidingHiddenDescription": {
+    "message": "Sembunyikan elemen yang mengganggu pada platform tersembunyi"
+  },
+  "notifications": {
+    "message": "Notifikasi"
+  },
+  "notificationsDescription": {
+    "message": "Kelola peringatan dan pengingat"
+  },
+  "systemNotifications": {
+    "message": "Notifikasi Sistem"
+  },
+  "systemNotificationsDescription": {
+    "message": "Tampilkan notifikasi saat pengatur waktu berakhir"
+  },
+  "dataPrivacy": {
+    "message": "Data & Privasi"
+  },
+  "dataPrivacyDescription": {
+    "message": "Kelola data dan statistik Anda"
+  },
+  "import": {
+    "message": "Impor"
+  },
+  "export": {
+    "message": "Ekspor"
+  },
+  "reset": {
+    "message": "Atur Ulang"
+  },
+  "clearAll": {
+    "message": "Hapus Semua"
+  },
+  "starRepo": {
+    "message": "Beri Bintang pada Repositori"
+  },
+  "reportIssue": {
+    "message": "Laporkan Masalah"
+  },
+  "aboutVersion": {
+    "message": "Versi $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "aboutDescription": {
+    "message": "Ekstensi peramban sumber terbuka yang membantu Anda tetap fokus dengan memblokir konten video pendek yang mengganggu."
+  },
+  "select": {
+    "message": "Pilih"
+  },
+  "importError": {
+    "message": "Terjadi kesalahan saat mengimpor data: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "importObjectRequired": {
+    "message": "File impor harus berisi objek JSON."
+  },
+  "importTimerFieldsTogether": {
+    "message": "ft_timer_end dan ft_timer_type harus diimpor bersama"
+  },
+  "importInvalidValues": {
+    "message": "Nilai tidak valid untuk: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "importNoSupportedSettings": {
+    "message": "Terjadi kesalahan saat mengimpor data: pengaturan yang didukung tidak ditemukan."
+  },
+  "importConfirm": {
+    "message": "Mengimpor data akan menimpa pengaturan dan statistik Anda saat ini. Yakin ingin melanjutkan?"
+  },
+  "importReplaceFailed": {
+    "message": "Terjadi kesalahan saat mengimpor data: pengaturan tidak dapat diganti."
+  },
+  "importSuccess": {
+    "message": "Data berhasil diimpor!"
+  },
+  "importInvalidJson": {
+    "message": "Terjadi kesalahan saat mengimpor data: file JSON tidak valid."
+  },
+  "resetConfirm": {
+    "message": "Yakin ingin mengatur ulang semua pengaturan ke nilai bawaan?"
+  },
+  "clearAllConfirm": {
+    "message": "Yakin ingin menghapus semua data? Tindakan ini tidak dapat dibatalkan."
+  },
+  "hideShortsButton": {
+    "message": "Sembunyikan Tombol Shorts"
+  },
+  "hideShortsButtonDescription": {
+    "message": "Sembunyikan tautan Shorts di bilah samping"
+  },
+  "hideShortsShelves": {
+    "message": "Sembunyikan Bagian Shorts"
+  },
+  "hideShortsShelvesDescription": {
+    "message": "Sembunyikan bagian Shorts di beranda"
+  },
+  "hideMostRelevantShelf": {
+    "message": "Sembunyikan Bagian \"Paling Relevan\""
+  },
+  "hideMostRelevantShelfShort": {
+    "message": "Sembunyikan \"Paling Relevan\""
+  },
+  "hideMostRelevantShelfDescription": {
+    "message": "Sembunyikan bagian \"Paling relevan\" di Langganan"
+  },
+  "hideStories": {
+    "message": "Sembunyikan Stories"
+  },
+  "hideInstagramStoriesDescription": {
+    "message": "Sembunyikan baki Stories di bagian atas"
+  },
+  "hideFacebookStoriesDescription": {
+    "message": "Sembunyikan bagian Stories"
+  },
+  "hideReelsButton": {
+    "message": "Sembunyikan Tombol Reels"
+  },
+  "hideInstagramReelsDescription": {
+    "message": "Sembunyikan tab Reels di navigasi"
+  },
+  "hideFacebookReelsDescription": {
+    "message": "Sembunyikan tautan Reels di bilah samping"
+  },
+  "hidePeopleYouMightKnow": {
+    "message": "Sembunyikan Orang yang Mungkin Anda Kenal"
+  },
+  "hidePeopleYouMightKnowDescription": {
+    "message": "Sembunyikan saran orang di beranda"
+  },
+  "hideFeed": {
+    "message": "Sembunyikan Beranda"
+  },
+  "hideFeedDescription": {
+    "message": "Sembunyikan bagian beranda utama"
+  },
+  "hideAddToFeed": {
+    "message": "Sembunyikan Tambahkan ke Beranda"
+  },
+  "hideAddToFeedShort": {
+    "message": "Sembunyikan \"Tambahkan ke Beranda Anda\""
+  },
+  "hideAddToFeedDescription": {
+    "message": "Sembunyikan saran akun untuk diikuti"
+  },
+  "overlayStrictModeActive": {
+    "message": "Mode Ketat Aktif"
+  },
+  "overlayDistractionBlocked": {
+    "message": "Gangguan Diblokir"
+  },
+  "overlayProductive": {
+    "message": "FocusTube membantu Anda tetap produktif."
+  },
+  "overlayProductiveShort": {
+    "message": "Kami membantu Anda tetap produktif."
+  },
+  "goBack": {
+    "message": "Kembali"
+  },
+  "watchAnyway": {
+    "message": "Tetap Tonton"
+  },
+  "goToMessages": {
+    "message": "Buka Pesan"
+  },
+  "view": {
+    "message": "Tampilkan"
+  },
+  "viewAnyway": {
+    "message": "Tetap Tampilkan"
+  },
+  "storiesHidden": {
+    "message": "Stories Disembunyikan"
+  },
+  "feedHidden": {
+    "message": "Beranda Disembunyikan"
+  },
+  "hidden": {
+    "message": "Tersembunyi"
+  },
+  "strictModePreventedAccess": {
+    "message": "Mode Ketat mencegah akses."
+  },
+  "focusSessionComplete": {
+    "message": "Sesi Fokus Selesai!"
+  },
+  "focusSessionCompleteToast": {
+    "message": "Kerja bagus! Istirahatlah selama $DURATION$ menit.",
+    "placeholders": {
+      "duration": {
+        "content": "$1"
+      }
+    }
+  },
+  "breakOver": {
+    "message": "Waktu Istirahat Selesai!"
+  },
+  "backToWork": {
+    "message": "Saatnya kembali bekerja."
+  },
+  "focusTimerCompleteNotification": {
+    "message": "Pengatur Waktu Fokus Selesai! 🎉"
+  },
+  "breakOverNotification": {
+    "message": "Waktu Istirahat Selesai! ⏰"
+  },
+  "notificationBackToWork": {
+    "message": "Kembali bekerja. Gangguan diblokir."
+  },
+  "notificationTimeForBreak": {
+    "message": "Saatnya istirahat selama $DURATION$ menit.",
+    "placeholders": {
+      "duration": {
+        "content": "$1"
+      }
+    }
+  },
+  "notificationFocusComplete": {
+    "message": "Sesi fokus selesai."
+  }
+}

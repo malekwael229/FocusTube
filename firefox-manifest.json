@@ -1,8 +1,9 @@
 {
   "manifest_version": 2,
-  "name": "FocusTube: Distraction Blocker",
+  "name": "__MSG_extensionName__",
   "version": "2.3.2",
-  "description": "Reduce distractions from YouTube Shorts, Instagram Reels, TikTok, Facebook Reels, and LinkedIn.",
+  "description": "__MSG_extensionDescription__",
+  "default_locale": "en",
   "incognito": "not_allowed",
   "content_security_policy": "script-src 'self'; object-src 'self';",
   "permissions": [
@@ -23,37 +24,37 @@
     "open_in_tab": true
   },
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["i18n.js", "background.js"]
   },
   "content_scripts": [
     {
       "matches": ["*://*.youtube.com/*"],
       "css": ["content.css"],
-      "js": ["content-common.js", "content-yt.js"],
+      "js": ["i18n.js", "content-common.js", "content-yt.js"],
       "run_at": "document_start"
     },
     {
       "matches": ["*://*.instagram.com/*"],
       "css": ["content.css"],
-      "js": ["content-common.js", "content-ig.js"],
+      "js": ["i18n.js", "content-common.js", "content-ig.js"],
       "run_at": "document_start"
     },
     {
       "matches": ["*://*.tiktok.com/*"],
       "css": ["content.css"],
-      "js": ["content-common.js", "content-tt.js"],
+      "js": ["i18n.js", "content-common.js", "content-tt.js"],
       "run_at": "document_start"
     },
     {
       "matches": ["*://*.facebook.com/*"],
       "css": ["content.css"],
-      "js": ["content-common.js", "content-fb.js"],
+      "js": ["i18n.js", "content-common.js", "content-fb.js"],
       "run_at": "document_start"
     },
     {
       "matches": ["*://*.linkedin.com/*"],
       "css": ["content.css"],
-      "js": ["content-common.js", "content-li.js"],
+      "js": ["i18n.js", "content-common.js", "content-li.js"],
       "run_at": "document_start"
     }
   ],

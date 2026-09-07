@@ -1,0 +1,547 @@
+{
+  "extensionName": {
+    "message": "FocusTube: Dikkat Dağıtıcı Engelleyici"
+  },
+  "extensionDescription": {
+    "message": "YouTube Shorts, Instagram Reels, TikTok, Facebook Reels ve LinkedIn kaynaklı dikkat dağınıklığını azaltın."
+  },
+  "appName": {
+    "message": "FocusTube"
+  },
+  "optionsPageTitle": {
+    "message": "FocusTube Seçenekleri"
+  },
+  "enabled": {
+    "message": "Etkin"
+  },
+  "disabled": {
+    "message": "Devre dışı"
+  },
+  "locked": {
+    "message": "KİLİTLİ"
+  },
+  "hideUiDistractions": {
+    "message": "Dikkat dağıtan arayüz öğelerini gizle"
+  },
+  "platformYoutube": {
+    "message": "YouTube"
+  },
+  "platformInstagram": {
+    "message": "Instagram"
+  },
+  "platformTiktok": {
+    "message": "TikTok"
+  },
+  "platformFacebook": {
+    "message": "Facebook"
+  },
+  "platformLinkedin": {
+    "message": "LinkedIn"
+  },
+  "platformSettings": {
+    "message": "$PLATFORM$ ayarları",
+    "placeholders": {
+      "platform": {
+        "content": "$1"
+      }
+    }
+  },
+  "modeStrict": {
+    "message": "Katı"
+  },
+  "modeWarn": {
+    "message": "Uyarı"
+  },
+  "modePassive": {
+    "message": "Pasif"
+  },
+  "modeStrictLong": {
+    "message": "Katı Mod"
+  },
+  "modeWarnLong": {
+    "message": "Uyarı Modu"
+  },
+  "modePassiveLong": {
+    "message": "Pasif Mod"
+  },
+  "modeStrictDescription": {
+    "message": "Erişimi tamamen engelle"
+  },
+  "modeWarnDescription": {
+    "message": "Girmeden önce uyarı göster"
+  },
+  "modePassiveDescription": {
+    "message": "Normal gezinme"
+  },
+  "modeLinkedinStrictDescription": {
+    "message": "Akışı ve dikkat dağıtan öğeleri gizler"
+  },
+  "modeLinkedinWarnDescription": {
+    "message": "Akışı gizler, \"Yine de Görüntüle\" seçeneğine izin verir"
+  },
+  "modeLinkedinPassiveDescription": {
+    "message": "Hiçbir şeyi gizlemez"
+  },
+  "blockingMode": {
+    "message": "Engelleme Modu"
+  },
+  "visualHiding": {
+    "message": "Görsel Gizleme"
+  },
+  "platformConfigurationHint": {
+    "message": "Engelleme modunu ayarlamak için bir platforma tıklayın"
+  },
+  "timerActiveModesLocked": {
+    "message": "Zamanlayıcı Etkin: Modlar Kilitli"
+  },
+  "focus": {
+    "message": "Odaklanma"
+  },
+  "break": {
+    "message": "Mola"
+  },
+  "startTimer": {
+    "message": "Zamanlayıcıyı Başlat"
+  },
+  "stopTimer": {
+    "message": "Zamanlayıcıyı Durdur"
+  },
+  "takeBreak": {
+    "message": "Mola Ver"
+  },
+  "skipBreak": {
+    "message": "Molayı Atla"
+  },
+  "blockedCount": {
+    "message": "$COUNT$ engellendi",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "timeSavedCompact": {
+    "message": "$TIME$ kazanıldı",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "minutesCompact": {
+    "message": "$COUNT$ dk",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "hoursMinutesCompact": {
+    "message": "$HOURS$ sa $MINUTES$ dk",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "minutesLong": {
+    "message": "$COUNT$ dakika",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "openSourceCode": {
+    "message": "Kaynak Kodu Aç"
+  },
+  "viewSourceGithub": {
+    "message": "Kaynak kodu GitHub'da görüntüle"
+  },
+  "settings": {
+    "message": "Ayarlar"
+  },
+  "openSettings": {
+    "message": "Ayarları aç"
+  },
+  "goBackMainView": {
+    "message": "Ana görünüme dön"
+  },
+  "reviewPrompt": {
+    "message": "FocusTube'u beğendiniz mi? Kısa bir değerlendirme başkalarının onu keşfetmesine yardımcı olur!"
+  },
+  "later": {
+    "message": "Daha Sonra"
+  },
+  "rateUs": {
+    "message": "Bizi Değerlendirin"
+  },
+  "rateUsStar": {
+    "message": "⭐ Bizi Değerlendirin"
+  },
+  "tutorialSkip": {
+    "message": "Atla"
+  },
+  "tutorialNext": {
+    "message": "İleri"
+  },
+  "tutorialStart": {
+    "message": "Turu Başlat"
+  },
+  "tutorialFinish": {
+    "message": "Bitir"
+  },
+  "tutorialProgress": {
+    "message": "$CURRENT$ / $TOTAL$",
+    "placeholders": {
+      "current": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "tutorialWelcomeTitle": {
+    "message": "FocusTube'a Hoş Geldiniz!"
+  },
+  "tutorialWelcomeDescription": {
+    "message": "Odaklanmayı sürdürmeyi ve dikkat dağıtıcıları engellemeyi öğrenmek için kısa bir tura çıkın."
+  },
+  "tutorialPlatformsTitle": {
+    "message": "Platform Denetimleri"
+  },
+  "tutorialPlatformsDescription": {
+    "message": "Engelleme modunu değiştirmek için herhangi bir platform simgesine tıklayın. YouTube, Facebook, Instagram, TikTok ve LinkedIn'i yönetin."
+  },
+  "tutorialModesTitle": {
+    "message": "Engelleme Modları"
+  },
+  "tutorialModesDescription": {
+    "message": "Her platform bir rozet gösterir: S (Katı) her zaman engeller, W (Uyarı) göstermeden önce sorar ve P (Pasif) erişime izin verir."
+  },
+  "tutorialFocusTitle": {
+    "message": "Odaklanma Düğmesi"
+  },
+  "tutorialFocusDescription": {
+    "message": "Bu düğmeyle Odaklanma Modunu açın veya kapatın. Etkinleştirildiğinde seçtiğiniz engelleme kuralları uygulanır."
+  },
+  "tutorialTimerTitle": {
+    "message": "Zamanlayıcı Düğmesi"
+  },
+  "tutorialTimerDescription": {
+    "message": "Odaklanma veya mola zamanlayıcısı başlatın. Çalışma oturumları katı engelleme uygular, molalar serbest gezinmeye izin verir."
+  },
+  "tutorialSettingsTitle": {
+    "message": "Ayarlar"
+  },
+  "tutorialSettingsDescription": {
+    "message": "Gelişmiş seçeneklere erişin, gizli öğeleri yönetin ve odaklanma deneyiminizi özelleştirin."
+  },
+  "tutorialCompleteTitle": {
+    "message": "Her Şey Hazır!"
+  },
+  "tutorialCompleteDescription": {
+    "message": "Artık temel bilgileri biliyorsunuz. Odaklanın ve üretken kalın!"
+  },
+  "totalBlocked": {
+    "message": "Toplam Engellenen"
+  },
+  "timeSaved": {
+    "message": "Kazanılan Süre"
+  },
+  "focusTimer": {
+    "message": "Odaklanma Zamanlayıcısı"
+  },
+  "focusTimerDescription": {
+    "message": "Odaklanma oturumu tercihlerinizi ayarlayın"
+  },
+  "focusDuration": {
+    "message": "Odaklanma Süresi"
+  },
+  "focusDurationDescription": {
+    "message": "Her odaklanma oturumunun süresi"
+  },
+  "breakDuration": {
+    "message": "Mola Süresi"
+  },
+  "breakDurationDescription": {
+    "message": "Oturumlar arasındaki mola süresi"
+  },
+  "autoStartBreaks": {
+    "message": "Molaları Otomatik Başlat"
+  },
+  "autoStartBreaksDescription": {
+    "message": "Odaklanma sona erince mola zamanlayıcısını otomatik başlat"
+  },
+  "showBreakButton": {
+    "message": "Mola Düğmesini Göster"
+  },
+  "showBreakButtonDescription": {
+    "message": "Odaklanma sırasında açılır pencerede \"Mola Ver\" düğmesini göster"
+  },
+  "lockSettingsDuringTimer": {
+    "message": "Zamanlayıcı Sırasında Ayarları Kilitle"
+  },
+  "lockSettingsDuringTimerDescription": {
+    "message": "Odaklanma Zamanlayıcısı etkinken değişiklikleri önle"
+  },
+  "popupVisibility": {
+    "message": "Açılır Pencere Görünürlüğü"
+  },
+  "popupVisibilityDescription": {
+    "message": "Açılır pencerede görünecek platformları seçin"
+  },
+  "showPlatform": {
+    "message": "$PLATFORM$ platformunu göster",
+    "placeholders": {
+      "platform": {
+        "content": "$1"
+      }
+    }
+  },
+  "restrictHiddenPlatforms": {
+    "message": "Gizli Platformları Kısıtla"
+  },
+  "restrictHiddenPlatformsDescription": {
+    "message": "Açılır pencerede gizli olsalar bile engelleme kurallarını uygula"
+  },
+  "visualHidingHidden": {
+    "message": "Gizli Platformlarda Görsel Gizleme"
+  },
+  "visualHidingHiddenDescription": {
+    "message": "Gizli platformlardaki dikkat dağıtan öğeleri gizle"
+  },
+  "notifications": {
+    "message": "Bildirimler"
+  },
+  "notificationsDescription": {
+    "message": "Uyarıları ve hatırlatıcıları yönetin"
+  },
+  "systemNotifications": {
+    "message": "Sistem Bildirimleri"
+  },
+  "systemNotificationsDescription": {
+    "message": "Zamanlayıcı sona erdiğinde bildirim göster"
+  },
+  "dataPrivacy": {
+    "message": "Veriler ve Gizlilik"
+  },
+  "dataPrivacyDescription": {
+    "message": "Verilerinizi ve istatistiklerinizi yönetin"
+  },
+  "import": {
+    "message": "İçe Aktar"
+  },
+  "export": {
+    "message": "Dışa Aktar"
+  },
+  "reset": {
+    "message": "Sıfırla"
+  },
+  "clearAll": {
+    "message": "Tümünü Temizle"
+  },
+  "starRepo": {
+    "message": "Depoya Yıldız Ver"
+  },
+  "reportIssue": {
+    "message": "Sorun Bildir"
+  },
+  "aboutVersion": {
+    "message": "Sürüm $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "aboutDescription": {
+    "message": "Dikkat dağıtan kısa video içeriklerini engelleyerek odaklanmanıza yardımcı olan açık kaynaklı bir tarayıcı uzantısı."
+  },
+  "select": {
+    "message": "Seç"
+  },
+  "importError": {
+    "message": "Veriler içe aktarılırken hata oluştu: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "importObjectRequired": {
+    "message": "İçe aktarma dosyası bir JSON nesnesi içermelidir."
+  },
+  "importTimerFieldsTogether": {
+    "message": "ft_timer_end ve ft_timer_type birlikte içe aktarılmalıdır"
+  },
+  "importInvalidValues": {
+    "message": "Şunlar için geçersiz değerler: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "importNoSupportedSettings": {
+    "message": "Veriler içe aktarılırken hata oluştu: Desteklenen ayar bulunamadı."
+  },
+  "importConfirm": {
+    "message": "Verileri içe aktarmak mevcut ayarlarınızın ve istatistiklerinizin üzerine yazacak. Devam etmek istiyor musunuz?"
+  },
+  "importReplaceFailed": {
+    "message": "Veriler içe aktarılırken hata oluştu: Ayarlar değiştirilemedi."
+  },
+  "importSuccess": {
+    "message": "Veriler başarıyla içe aktarıldı!"
+  },
+  "importInvalidJson": {
+    "message": "Veriler içe aktarılırken hata oluştu: Geçersiz JSON dosyası."
+  },
+  "resetConfirm": {
+    "message": "Tüm ayarları varsayılan değerlere sıfırlamak istediğinizden emin misiniz?"
+  },
+  "clearAllConfirm": {
+    "message": "Tüm verileri temizlemek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+  },
+  "hideShortsButton": {
+    "message": "Shorts Düğmesini Gizle"
+  },
+  "hideShortsButtonDescription": {
+    "message": "Kenar çubuğundaki Shorts bağlantısını gizle"
+  },
+  "hideShortsShelves": {
+    "message": "Shorts Raflarını Gizle"
+  },
+  "hideShortsShelvesDescription": {
+    "message": "Akıştaki Shorts raflarını gizle"
+  },
+  "hideMostRelevantShelf": {
+    "message": "\"En Alakalı\" Rafını Gizle"
+  },
+  "hideMostRelevantShelfShort": {
+    "message": "\"En Alakalı\" Öğesini Gizle"
+  },
+  "hideMostRelevantShelfDescription": {
+    "message": "Abonelikler'deki \"En alakalı\" rafını gizle"
+  },
+  "hideStories": {
+    "message": "Hikâyeleri Gizle"
+  },
+  "hideInstagramStoriesDescription": {
+    "message": "Üstteki Hikâyeler tepsisini gizle"
+  },
+  "hideFacebookStoriesDescription": {
+    "message": "Hikâyeler bölümünü gizle"
+  },
+  "hideReelsButton": {
+    "message": "Reels Düğmesini Gizle"
+  },
+  "hideInstagramReelsDescription": {
+    "message": "Gezinmedeki Reels sekmesini gizle"
+  },
+  "hideFacebookReelsDescription": {
+    "message": "Kenar çubuğundaki Reels bağlantısını gizle"
+  },
+  "hidePeopleYouMightKnow": {
+    "message": "Tanıyor Olabileceğiniz Kişileri Gizle"
+  },
+  "hidePeopleYouMightKnowDescription": {
+    "message": "Akıştaki kişi önerilerini gizle"
+  },
+  "hideFeed": {
+    "message": "Akışı Gizle"
+  },
+  "hideFeedDescription": {
+    "message": "Ana akış bölümünü gizle"
+  },
+  "hideAddToFeed": {
+    "message": "Akışa Ekle'yi Gizle"
+  },
+  "hideAddToFeedShort": {
+    "message": "\"Akışına Ekle\" Seçeneğini Gizle"
+  },
+  "hideAddToFeedDescription": {
+    "message": "Takip önerilerini gizle"
+  },
+  "overlayStrictModeActive": {
+    "message": "Katı Mod Etkin"
+  },
+  "overlayDistractionBlocked": {
+    "message": "Dikkat Dağıtıcı Engellendi"
+  },
+  "overlayProductive": {
+    "message": "FocusTube üretken kalmanızı sağlıyor."
+  },
+  "overlayProductiveShort": {
+    "message": "Üretken kalmanızı sağlıyoruz."
+  },
+  "goBack": {
+    "message": "Geri Dön"
+  },
+  "watchAnyway": {
+    "message": "Yine de İzle"
+  },
+  "goToMessages": {
+    "message": "Mesajlara Git"
+  },
+  "view": {
+    "message": "Görüntüle"
+  },
+  "viewAnyway": {
+    "message": "Yine de Görüntüle"
+  },
+  "storiesHidden": {
+    "message": "Hikâyeler Gizlendi"
+  },
+  "feedHidden": {
+    "message": "Akış Gizlendi"
+  },
+  "hidden": {
+    "message": "Gizli"
+  },
+  "strictModePreventedAccess": {
+    "message": "Katı Mod erişimi engelledi."
+  },
+  "focusSessionComplete": {
+    "message": "Odaklanma Oturumu Tamamlandı!"
+  },
+  "focusSessionCompleteToast": {
+    "message": "Harika iş! $DURATION$ dakikalık bir mola verin.",
+    "placeholders": {
+      "duration": {
+        "content": "$1"
+      }
+    }
+  },
+  "breakOver": {
+    "message": "Mola Bitti!"
+  },
+  "backToWork": {
+    "message": "İşe dönme zamanı."
+  },
+  "focusTimerCompleteNotification": {
+    "message": "Odaklanma Zamanlayıcısı Tamamlandı! 🎉"
+  },
+  "breakOverNotification": {
+    "message": "Mola Bitti! ⏰"
+  },
+  "notificationBackToWork": {
+    "message": "İşe dönün. Dikkat dağıtıcılar engellendi."
+  },
+  "notificationTimeForBreak": {
+    "message": "$DURATION$ dakikalık mola zamanı.",
+    "placeholders": {
+      "duration": {
+        "content": "$1"
+      }
+    }
+  },
+  "notificationFocusComplete": {
+    "message": "Odaklanma oturumu tamamlandı."
+  }
+}

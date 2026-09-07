@@ -1,0 +1,547 @@
+{
+  "extensionName": {
+    "message": "FocusTube: Bloqueador de distracciones"
+  },
+  "extensionDescription": {
+    "message": "Reduce las distracciones de YouTube Shorts, Instagram Reels, TikTok, Facebook Reels y LinkedIn."
+  },
+  "appName": {
+    "message": "FocusTube"
+  },
+  "optionsPageTitle": {
+    "message": "Opciones de FocusTube"
+  },
+  "enabled": {
+    "message": "Activado"
+  },
+  "disabled": {
+    "message": "Desactivado"
+  },
+  "locked": {
+    "message": "BLOQUEADO"
+  },
+  "hideUiDistractions": {
+    "message": "Ocultar distracciones de la interfaz"
+  },
+  "platformYoutube": {
+    "message": "YouTube"
+  },
+  "platformInstagram": {
+    "message": "Instagram"
+  },
+  "platformTiktok": {
+    "message": "TikTok"
+  },
+  "platformFacebook": {
+    "message": "Facebook"
+  },
+  "platformLinkedin": {
+    "message": "LinkedIn"
+  },
+  "platformSettings": {
+    "message": "Ajustes de $PLATFORM$",
+    "placeholders": {
+      "platform": {
+        "content": "$1"
+      }
+    }
+  },
+  "modeStrict": {
+    "message": "Estricto"
+  },
+  "modeWarn": {
+    "message": "Advertencia"
+  },
+  "modePassive": {
+    "message": "Pasivo"
+  },
+  "modeStrictLong": {
+    "message": "Modo estricto"
+  },
+  "modeWarnLong": {
+    "message": "Modo de advertencia"
+  },
+  "modePassiveLong": {
+    "message": "Modo pasivo"
+  },
+  "modeStrictDescription": {
+    "message": "Bloquear el acceso por completo"
+  },
+  "modeWarnDescription": {
+    "message": "Mostrar una advertencia antes de entrar"
+  },
+  "modePassiveDescription": {
+    "message": "Navegación normal"
+  },
+  "modeLinkedinStrictDescription": {
+    "message": "Oculta el feed y los elementos que distraen"
+  },
+  "modeLinkedinWarnDescription": {
+    "message": "Oculta el feed y permite «Ver de todos modos»"
+  },
+  "modeLinkedinPassiveDescription": {
+    "message": "No oculta nada"
+  },
+  "blockingMode": {
+    "message": "Modo de bloqueo"
+  },
+  "visualHiding": {
+    "message": "Ocultación visual"
+  },
+  "platformConfigurationHint": {
+    "message": "Haz clic en una plataforma para configurar el modo de bloqueo"
+  },
+  "timerActiveModesLocked": {
+    "message": "Temporizador activo: modos bloqueados"
+  },
+  "focus": {
+    "message": "Concentración"
+  },
+  "break": {
+    "message": "Descanso"
+  },
+  "startTimer": {
+    "message": "Iniciar temporizador"
+  },
+  "stopTimer": {
+    "message": "Detener temporizador"
+  },
+  "takeBreak": {
+    "message": "Tomar un descanso"
+  },
+  "skipBreak": {
+    "message": "Omitir descanso"
+  },
+  "blockedCount": {
+    "message": "$COUNT$ bloqueados",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "timeSavedCompact": {
+    "message": "$TIME$ ahorrado",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "minutesCompact": {
+    "message": "$COUNT$ min",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "hoursMinutesCompact": {
+    "message": "$HOURS$ h $MINUTES$ min",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "minutesLong": {
+    "message": "$COUNT$ minutos",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "openSourceCode": {
+    "message": "Abrir código fuente"
+  },
+  "viewSourceGithub": {
+    "message": "Ver el código fuente en GitHub"
+  },
+  "settings": {
+    "message": "Ajustes"
+  },
+  "openSettings": {
+    "message": "Abrir ajustes"
+  },
+  "goBackMainView": {
+    "message": "Volver a la vista principal"
+  },
+  "reviewPrompt": {
+    "message": "¿Te gusta FocusTube? ¡Una reseña rápida ayuda a otras personas a descubrirlo!"
+  },
+  "later": {
+    "message": "Más tarde"
+  },
+  "rateUs": {
+    "message": "Valóranos"
+  },
+  "rateUsStar": {
+    "message": "⭐ Valóranos"
+  },
+  "tutorialSkip": {
+    "message": "Omitir"
+  },
+  "tutorialNext": {
+    "message": "Siguiente"
+  },
+  "tutorialStart": {
+    "message": "Iniciar recorrido"
+  },
+  "tutorialFinish": {
+    "message": "Finalizar"
+  },
+  "tutorialProgress": {
+    "message": "$CURRENT$ de $TOTAL$",
+    "placeholders": {
+      "current": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "tutorialWelcomeTitle": {
+    "message": "¡Te damos la bienvenida a FocusTube!"
+  },
+  "tutorialWelcomeDescription": {
+    "message": "Haz un recorrido rápido para aprender a mantener la concentración y bloquear distracciones."
+  },
+  "tutorialPlatformsTitle": {
+    "message": "Controles de plataformas"
+  },
+  "tutorialPlatformsDescription": {
+    "message": "Haz clic en el icono de una plataforma para cambiar su modo de bloqueo. Gestiona YouTube, Facebook, Instagram, TikTok y LinkedIn."
+  },
+  "tutorialModesTitle": {
+    "message": "Modos de bloqueo"
+  },
+  "tutorialModesDescription": {
+    "message": "Cada plataforma muestra una insignia: S (Estricto) bloquea siempre, W (Advertencia) pregunta antes de mostrar y P (Pasivo) permite el acceso."
+  },
+  "tutorialFocusTitle": {
+    "message": "Interruptor de concentración"
+  },
+  "tutorialFocusDescription": {
+    "message": "Activa o desactiva el modo de concentración con este interruptor. Al activarlo, se aplican las reglas de bloqueo elegidas."
+  },
+  "tutorialTimerTitle": {
+    "message": "Botón del temporizador"
+  },
+  "tutorialTimerDescription": {
+    "message": "Inicia un temporizador de concentración o descanso. Las sesiones de trabajo aplican el bloqueo estricto y los descansos permiten navegar libremente."
+  },
+  "tutorialSettingsTitle": {
+    "message": "Ajustes"
+  },
+  "tutorialSettingsDescription": {
+    "message": "Accede a opciones avanzadas, gestiona elementos ocultos y personaliza tu experiencia de concentración."
+  },
+  "tutorialCompleteTitle": {
+    "message": "¡Todo listo!"
+  },
+  "tutorialCompleteDescription": {
+    "message": "Ya conoces lo básico. ¡Mantén la concentración y la productividad!"
+  },
+  "totalBlocked": {
+    "message": "Total bloqueado"
+  },
+  "timeSaved": {
+    "message": "Tiempo ahorrado"
+  },
+  "focusTimer": {
+    "message": "Temporizador de concentración"
+  },
+  "focusTimerDescription": {
+    "message": "Configura tus preferencias para las sesiones de concentración"
+  },
+  "focusDuration": {
+    "message": "Duración de la concentración"
+  },
+  "focusDurationDescription": {
+    "message": "Duración de cada sesión de concentración"
+  },
+  "breakDuration": {
+    "message": "Duración del descanso"
+  },
+  "breakDurationDescription": {
+    "message": "Duración del descanso entre sesiones"
+  },
+  "autoStartBreaks": {
+    "message": "Iniciar descansos automáticamente"
+  },
+  "autoStartBreaksDescription": {
+    "message": "Iniciar automáticamente el temporizador de descanso al terminar la concentración"
+  },
+  "showBreakButton": {
+    "message": "Mostrar botón de descanso"
+  },
+  "showBreakButtonDescription": {
+    "message": "Mostrar el botón «Tomar un descanso» en la ventana emergente durante la concentración"
+  },
+  "lockSettingsDuringTimer": {
+    "message": "Bloquear ajustes durante el temporizador"
+  },
+  "lockSettingsDuringTimerDescription": {
+    "message": "Impedir cambios mientras el temporizador de concentración esté activo"
+  },
+  "popupVisibility": {
+    "message": "Visibilidad en la ventana emergente"
+  },
+  "popupVisibilityDescription": {
+    "message": "Elige qué plataformas aparecen en la ventana emergente"
+  },
+  "showPlatform": {
+    "message": "Mostrar $PLATFORM$",
+    "placeholders": {
+      "platform": {
+        "content": "$1"
+      }
+    }
+  },
+  "restrictHiddenPlatforms": {
+    "message": "Restringir plataformas ocultas"
+  },
+  "restrictHiddenPlatformsDescription": {
+    "message": "Aplicar las reglas de bloqueo aunque no aparezcan en la ventana emergente"
+  },
+  "visualHidingHidden": {
+    "message": "Ocultación visual en plataformas ocultas"
+  },
+  "visualHidingHiddenDescription": {
+    "message": "Ocultar elementos que distraen en las plataformas ocultas"
+  },
+  "notifications": {
+    "message": "Notificaciones"
+  },
+  "notificationsDescription": {
+    "message": "Gestiona alertas y recordatorios"
+  },
+  "systemNotifications": {
+    "message": "Notificaciones del sistema"
+  },
+  "systemNotificationsDescription": {
+    "message": "Mostrar notificaciones cuando termine el temporizador"
+  },
+  "dataPrivacy": {
+    "message": "Datos y privacidad"
+  },
+  "dataPrivacyDescription": {
+    "message": "Gestiona tus datos y estadísticas"
+  },
+  "import": {
+    "message": "Importar"
+  },
+  "export": {
+    "message": "Exportar"
+  },
+  "reset": {
+    "message": "Restablecer"
+  },
+  "clearAll": {
+    "message": "Borrar todo"
+  },
+  "starRepo": {
+    "message": "Dar una estrella al repositorio"
+  },
+  "reportIssue": {
+    "message": "Informar de un problema"
+  },
+  "aboutVersion": {
+    "message": "Versión $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "aboutDescription": {
+    "message": "Una extensión de navegador de código abierto que te ayuda a mantener la concentración al bloquear vídeos cortos que distraen."
+  },
+  "select": {
+    "message": "Seleccionar"
+  },
+  "importError": {
+    "message": "Error al importar datos: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "importObjectRequired": {
+    "message": "El archivo de importación debe contener un objeto JSON."
+  },
+  "importTimerFieldsTogether": {
+    "message": "ft_timer_end y ft_timer_type deben importarse juntos"
+  },
+  "importInvalidValues": {
+    "message": "Valores no válidos para: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "importNoSupportedSettings": {
+    "message": "Error al importar datos: no se encontraron ajustes compatibles."
+  },
+  "importConfirm": {
+    "message": "Al importar datos se sobrescribirán tus ajustes y estadísticas actuales. ¿Seguro que quieres continuar?"
+  },
+  "importReplaceFailed": {
+    "message": "Error al importar datos: no se pudieron reemplazar los ajustes."
+  },
+  "importSuccess": {
+    "message": "¡Datos importados correctamente!"
+  },
+  "importInvalidJson": {
+    "message": "Error al importar datos: archivo JSON no válido."
+  },
+  "resetConfirm": {
+    "message": "¿Seguro que quieres restablecer todos los ajustes a sus valores predeterminados?"
+  },
+  "clearAllConfirm": {
+    "message": "¿Seguro que quieres borrar todos los datos? Esta acción no se puede deshacer."
+  },
+  "hideShortsButton": {
+    "message": "Ocultar botón de Shorts"
+  },
+  "hideShortsButtonDescription": {
+    "message": "Ocultar el enlace de Shorts en la barra lateral"
+  },
+  "hideShortsShelves": {
+    "message": "Ocultar secciones de Shorts"
+  },
+  "hideShortsShelvesDescription": {
+    "message": "Ocultar las secciones de Shorts en el feed"
+  },
+  "hideMostRelevantShelf": {
+    "message": "Ocultar sección «Más relevante»"
+  },
+  "hideMostRelevantShelfShort": {
+    "message": "Ocultar «Más relevante»"
+  },
+  "hideMostRelevantShelfDescription": {
+    "message": "Ocultar la sección «Más relevante» en Suscripciones"
+  },
+  "hideStories": {
+    "message": "Ocultar Stories"
+  },
+  "hideInstagramStoriesDescription": {
+    "message": "Ocultar la bandeja de Stories de la parte superior"
+  },
+  "hideFacebookStoriesDescription": {
+    "message": "Ocultar la sección Stories"
+  },
+  "hideReelsButton": {
+    "message": "Ocultar botón de Reels"
+  },
+  "hideInstagramReelsDescription": {
+    "message": "Ocultar la pestaña Reels de la navegación"
+  },
+  "hideFacebookReelsDescription": {
+    "message": "Ocultar el enlace de Reels en la barra lateral"
+  },
+  "hidePeopleYouMightKnow": {
+    "message": "Ocultar personas que quizá conozcas"
+  },
+  "hidePeopleYouMightKnowDescription": {
+    "message": "Ocultar sugerencias de personas en el feed"
+  },
+  "hideFeed": {
+    "message": "Ocultar feed"
+  },
+  "hideFeedDescription": {
+    "message": "Ocultar la sección principal del feed"
+  },
+  "hideAddToFeed": {
+    "message": "Ocultar Añadir al feed"
+  },
+  "hideAddToFeedShort": {
+    "message": "Ocultar «Añadir a tu feed»"
+  },
+  "hideAddToFeedDescription": {
+    "message": "Ocultar sugerencias de cuentas para seguir"
+  },
+  "overlayStrictModeActive": {
+    "message": "Modo estricto activo"
+  },
+  "overlayDistractionBlocked": {
+    "message": "Distracción bloqueada"
+  },
+  "overlayProductive": {
+    "message": "FocusTube te ayuda a mantener la productividad."
+  },
+  "overlayProductiveShort": {
+    "message": "Te ayudamos a mantener la productividad."
+  },
+  "goBack": {
+    "message": "Volver"
+  },
+  "watchAnyway": {
+    "message": "Ver de todos modos"
+  },
+  "goToMessages": {
+    "message": "Ir a Mensajes"
+  },
+  "view": {
+    "message": "Ver"
+  },
+  "viewAnyway": {
+    "message": "Ver de todos modos"
+  },
+  "storiesHidden": {
+    "message": "Stories ocultas"
+  },
+  "feedHidden": {
+    "message": "Feed oculto"
+  },
+  "hidden": {
+    "message": "Oculto"
+  },
+  "strictModePreventedAccess": {
+    "message": "El modo estricto impidió el acceso."
+  },
+  "focusSessionComplete": {
+    "message": "¡Sesión de concentración completada!"
+  },
+  "focusSessionCompleteToast": {
+    "message": "¡Buen trabajo! Tómate un descanso de $DURATION$ minutos.",
+    "placeholders": {
+      "duration": {
+        "content": "$1"
+      }
+    }
+  },
+  "breakOver": {
+    "message": "¡Descanso terminado!"
+  },
+  "backToWork": {
+    "message": "Es hora de volver al trabajo."
+  },
+  "focusTimerCompleteNotification": {
+    "message": "¡Temporizador de concentración completado! 🎉"
+  },
+  "breakOverNotification": {
+    "message": "¡Descanso terminado! ⏰"
+  },
+  "notificationBackToWork": {
+    "message": "Vuelve al trabajo. Distracciones bloqueadas."
+  },
+  "notificationTimeForBreak": {
+    "message": "Es hora de un descanso de $DURATION$ minutos.",
+    "placeholders": {
+      "duration": {
+        "content": "$1"
+      }
+    }
+  },
+  "notificationFocusComplete": {
+    "message": "Sesión de concentración completada."
+  }
+}

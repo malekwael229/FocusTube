@@ -235,7 +235,7 @@ const LinkedIn = {
     feedColumn.dataset.ftHidden = "true";
     const overlay = this.createOverlayElement(
       this.feedOverlayId,
-      "Feed Hidden",
+      ftMessage("feedHidden"),
       mode === "warn",
     );
     overlay.dataset.ftMode = mode;
@@ -328,7 +328,7 @@ const LinkedIn = {
           Utils.setInlineStyle(addFeedCard, "overflow", "hidden");
           const overlay = this.createSmallOverlay(
             this.addFeedOverlayId,
-            "Hidden",
+            ftMessage("hidden"),
             allowDismiss,
             addFeedCard,
           );
@@ -353,6 +353,7 @@ const LinkedIn = {
     const overlay = document.createElement("div");
     overlay.id = id;
     overlay.className = "ft-stories-overlay";
+    localizeOwnedRoot(overlay);
     overlay.dataset.ftDismiss = showDismiss ? "true" : "false";
     if (CONFIG.isDarkMode) overlay.classList.add("dark");
     const icon = Utils.createBadge("ft-stories-overlay-icon");
@@ -363,7 +364,7 @@ const LinkedIn = {
     if (showDismiss) {
       const btn = document.createElement("button");
       btn.className = "ft-linkedin-overlay-btn";
-      btn.textContent = "View";
+      btn.textContent = ftMessage("view");
       btn.style.cssText =
         "margin-top: 8px; padding: 6px 16px; font-size: 12px; position: relative; z-index: 10; cursor: pointer;";
       btn.addEventListener("click", (e) => {
@@ -380,19 +381,20 @@ const LinkedIn = {
     const overlay = document.createElement("div");
     overlay.id = id;
     overlay.className = "ft-linkedin-overlay";
+    localizeOwnedRoot(overlay);
     if (CONFIG.isDarkMode) overlay.classList.add("dark");
     const icon = Utils.createBadge("ft-linkedin-overlay-icon");
     const h3 = document.createElement("h3");
     h3.textContent = title;
     const subtitle = document.createElement("p");
-    subtitle.textContent = "We're keeping you productive.";
+    subtitle.textContent = ftMessage("overlayProductiveShort");
     overlay.appendChild(icon);
     overlay.appendChild(h3);
     overlay.appendChild(subtitle);
     if (showDismiss) {
       const btn = document.createElement("button");
       btn.className = "ft-linkedin-overlay-btn";
-      btn.textContent = "View Anyway";
+      btn.textContent = ftMessage("viewAnyway");
       btn.onclick = () => {
         Utils.setAllowWindow("li", 5);
         this.removeFeedOverlay();

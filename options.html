@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FocusTube Options</title>
+    <title data-i18n="optionsPageTitle">FocusTube Options</title>
     <style>
       *,
       *::before,
@@ -1057,6 +1057,38 @@
           transform: scale(1.2);
         }
       }
+      html[dir="rtl"] body {
+        direction: rtl;
+      }
+
+      html[dir="rtl"] #headerBackBtn svg,
+      html[dir="rtl"] #backBtn svg {
+        transform: scaleX(-1);
+      }
+
+      html[dir="rtl"] .toggle,
+      html[dir="rtl"] .platform-badge {
+        direction: ltr;
+      }
+
+      .stat-value,
+      .platform-badge,
+      select {
+        direction: ltr;
+        unicode-bidi: isolate;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .title,
+      .setting-info,
+      .mode-info,
+      .section-title,
+      .section-desc,
+      .platform-hint,
+      .about-desc {
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
     </style>
   </head>
 
@@ -1073,7 +1105,14 @@
     <div class="container">
       <header class="header">
         <div class="header-left">
-          <button class="icon-btn" id="headerBackBtn">
+          <button
+            class="icon-btn"
+            id="headerBackBtn"
+            title="Go Back"
+            aria-label="Go Back"
+            data-i18n-title="goBack"
+            data-i18n-aria-label="goBack"
+          >
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -1086,10 +1125,17 @@
               <path d="M19 12H5" />
             </svg>
           </button>
-          <h1 class="title">FocusTube Options</h1>
+          <h1 class="title" data-i18n="optionsPageTitle">FocusTube Options</h1>
         </div>
         <div class="header-right">
-          <button class="icon-btn" id="headerGithubBtn">
+          <button
+            class="icon-btn"
+            id="headerGithubBtn"
+            title="Open Source Code"
+            aria-label="View source code on GitHub"
+            data-i18n-title="openSourceCode"
+            data-i18n-aria-label="viewSourceGithub"
+          >
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -1176,12 +1222,12 @@
               <span class="platform-badge badge-red" id="badge-li">S</span>
             </button>
           </div>
-          <p class="platform-hint">
+          <p class="platform-hint" data-i18n="platformConfigurationHint">
             Click a platform to configure blocking mode
           </p>
           <div class="timer-active-pill" id="timerActivePill">
             <span class="timer-active-pill-dot"></span>
-            <span class="timer-active-pill-label"
+            <span class="timer-active-pill-label" data-i18n="timerActiveModesLocked"
               >Timer Active: Modes Locked</span
             >
           </div>
@@ -1189,7 +1235,14 @@
 
         <div class="card platform-detail" id="platformDetail">
           <div class="detail-header">
-            <button class="icon-btn" id="backBtn">
+            <button
+              class="icon-btn"
+              id="backBtn"
+              title="Go Back"
+              aria-label="Go Back"
+              data-i18n-title="goBack"
+              data-i18n-aria-label="goBack"
+            >
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -1204,13 +1257,13 @@
             <span id="detailIcon"></span>
             <span id="detailName"></span>
           </div>
-          <div class="section-label">Blocking Mode</div>
+          <div class="section-label" data-i18n="blockingMode">Blocking Mode</div>
           <div id="modeButtons"></div>
           <div
             id="visualHidingSection"
             style="display: none; margin-top: 1.25rem"
           >
-            <div class="section-label">Visual Hiding</div>
+            <div class="section-label" data-i18n="visualHiding">Visual Hiding</div>
             <div id="settingsToggles"></div>
           </div>
         </div>
@@ -1233,7 +1286,7 @@
             </div>
             <div>
               <div class="stat-value" id="totalBlocked">0</div>
-              <div class="stat-label">Total Blocked</div>
+              <div class="stat-label" data-i18n="totalBlocked">Total Blocked</div>
             </div>
           </div>
           <div class="card stat-card">
@@ -1252,7 +1305,7 @@
             </div>
             <div>
               <div class="stat-value" id="timeSaved">0m</div>
-              <div class="stat-label">Time Saved</div>
+              <div class="stat-label" data-i18n="timeSaved">Time Saved</div>
             </div>
           </div>
         </div>
@@ -1260,39 +1313,39 @@
         <section class="settings-section card">
           <div class="section-bar bar-blue"></div>
           <div class="section-content">
-            <h2 class="section-title">Focus Timer</h2>
-            <p class="section-desc">Configure your focus session preferences</p>
+            <h2 class="section-title" data-i18n="focusTimer">Focus Timer</h2>
+            <p class="section-desc" data-i18n="focusTimerDescription">Configure your focus session preferences</p>
 
             <div class="setting-row">
               <div class="setting-info">
-                <div class="setting-label">Focus Duration</div>
-                <div class="setting-desc">Length of each focus session</div>
+                <div class="setting-label" data-i18n="focusDuration">Focus Duration</div>
+                <div class="setting-desc" data-i18n="focusDurationDescription">Length of each focus session</div>
               </div>
               <select class="select-dropdown custom-select" id="focusDuration">
-                <option value="15">15 minutes</option>
-                <option value="25" selected>25 minutes</option>
-                <option value="30">30 minutes</option>
-                <option value="45">45 minutes</option>
-                <option value="60">60 minutes</option>
+                <option value="15" data-i18n="minutesLong" data-i18n-args='["15"]'>15 minutes</option>
+                <option value="25" selected data-i18n="minutesLong" data-i18n-args='["25"]'>25 minutes</option>
+                <option value="30" data-i18n="minutesLong" data-i18n-args='["30"]'>30 minutes</option>
+                <option value="45" data-i18n="minutesLong" data-i18n-args='["45"]'>45 minutes</option>
+                <option value="60" data-i18n="minutesLong" data-i18n-args='["60"]'>60 minutes</option>
               </select>
             </div>
 
             <div class="setting-row">
               <div class="setting-info">
-                <div class="setting-label">Break Duration</div>
-                <div class="setting-desc">Length of break between sessions</div>
+                <div class="setting-label" data-i18n="breakDuration">Break Duration</div>
+                <div class="setting-desc" data-i18n="breakDurationDescription">Length of break between sessions</div>
               </div>
               <select class="select-dropdown custom-select" id="breakDuration">
-                <option value="5" selected>5 minutes</option>
-                <option value="10">10 minutes</option>
-                <option value="15">15 minutes</option>
+                <option value="5" selected data-i18n="minutesLong" data-i18n-args='["5"]'>5 minutes</option>
+                <option value="10" data-i18n="minutesLong" data-i18n-args='["10"]'>10 minutes</option>
+                <option value="15" data-i18n="minutesLong" data-i18n-args='["15"]'>15 minutes</option>
               </select>
             </div>
 
             <div class="setting-row">
               <div class="setting-info">
-                <div class="setting-label">Auto-start Breaks</div>
-                <div class="setting-desc">
+                <div class="setting-label" data-i18n="autoStartBreaks">Auto-start Breaks</div>
+                <div class="setting-desc" data-i18n="autoStartBreaksDescription">
                   Automatically start break timer after focus ends
                 </div>
               </div>
@@ -1309,8 +1362,8 @@
 
             <div class="setting-row setting-nested">
               <div class="setting-info">
-                <div class="setting-label">Show Break Button</div>
-                <div class="setting-desc">
+                <div class="setting-label" data-i18n="showBreakButton">Show Break Button</div>
+                <div class="setting-desc" data-i18n="showBreakButtonDescription">
                   Display "Take Break" button in popup during focus
                 </div>
               </div>
@@ -1327,8 +1380,8 @@
 
             <div class="setting-row">
               <div class="setting-info">
-                <div class="setting-label">Lock Settings During Timer</div>
-                <div class="setting-desc">
+                <div class="setting-label" data-i18n="lockSettingsDuringTimer">Lock Settings During Timer</div>
+                <div class="setting-desc" data-i18n="lockSettingsDuringTimerDescription">
                   Prevent changes while Focus Timer is active
                 </div>
               </div>
@@ -1343,14 +1396,14 @@
         <section class="settings-section card">
           <div class="section-bar bar-orange"></div>
           <div class="section-content">
-            <h2 class="section-title">Popup Visibility</h2>
-            <p class="section-desc">
+            <h2 class="section-title" data-i18n="popupVisibility">Popup Visibility</h2>
+            <p class="section-desc" data-i18n="popupVisibilityDescription">
               Choose which platforms appear in the popup
             </p>
 
             <div class="setting-row">
               <div class="setting-info">
-                <div class="setting-label">Show YouTube</div>
+                <div class="setting-label" data-i18n="showPlatform" data-i18n-args='["YouTube"]'>Show YouTube</div>
               </div>
               <label class="toggle-switch">
                 <input
@@ -1364,7 +1417,7 @@
             </div>
             <div class="setting-row">
               <div class="setting-info">
-                <div class="setting-label">Show Instagram</div>
+                <div class="setting-label" data-i18n="showPlatform" data-i18n-args='["Instagram"]'>Show Instagram</div>
               </div>
               <label class="toggle-switch">
                 <input
@@ -1378,7 +1431,7 @@
             </div>
             <div class="setting-row">
               <div class="setting-info">
-                <div class="setting-label">Show TikTok</div>
+                <div class="setting-label" data-i18n="showPlatform" data-i18n-args='["TikTok"]'>Show TikTok</div>
               </div>
               <label class="toggle-switch">
                 <input
@@ -1392,7 +1445,7 @@
             </div>
             <div class="setting-row">
               <div class="setting-info">
-                <div class="setting-label">Show Facebook</div>
+                <div class="setting-label" data-i18n="showPlatform" data-i18n-args='["Facebook"]'>Show Facebook</div>
               </div>
               <label class="toggle-switch">
                 <input
@@ -1406,7 +1459,7 @@
             </div>
             <div class="setting-row">
               <div class="setting-info">
-                <div class="setting-label">Show LinkedIn</div>
+                <div class="setting-label" data-i18n="showPlatform" data-i18n-args='["LinkedIn"]'>Show LinkedIn</div>
               </div>
               <label class="toggle-switch">
                 <input
@@ -1420,8 +1473,8 @@
             </div>
             <div class="setting-row">
               <div class="setting-info">
-                <div class="setting-label">Restrict Hidden Platforms</div>
-                <div class="setting-desc">
+                <div class="setting-label" data-i18n="restrictHiddenPlatforms">Restrict Hidden Platforms</div>
+                <div class="setting-desc" data-i18n="restrictHiddenPlatformsDescription">
                   Apply blocking rules even if hidden from popup
                 </div>
               </div>
@@ -1437,8 +1490,8 @@
             </div>
             <div class="setting-row">
               <div class="setting-info">
-                <div class="setting-label">Visual Hiding on Hidden</div>
-                <div class="setting-desc">
+                <div class="setting-label" data-i18n="visualHidingHidden">Visual Hiding on Hidden</div>
+                <div class="setting-desc" data-i18n="visualHidingHiddenDescription">
                   Hide distracting elements on hidden platforms
                 </div>
               </div>
@@ -1458,13 +1511,13 @@
         <section class="settings-section card">
           <div class="section-bar bar-orange"></div>
           <div class="section-content">
-            <h2 class="section-title">Notifications</h2>
-            <p class="section-desc">Manage alerts and reminders</p>
+            <h2 class="section-title" data-i18n="notifications">Notifications</h2>
+            <p class="section-desc" data-i18n="notificationsDescription">Manage alerts and reminders</p>
 
             <div class="setting-row">
               <div class="setting-info">
-                <div class="setting-label">System Notifications</div>
-                <div class="setting-desc">
+                <div class="setting-label" data-i18n="systemNotifications">System Notifications</div>
+                <div class="setting-desc" data-i18n="systemNotificationsDescription">
                   Show notifications when timer ends
                 </div>
               </div>
@@ -1484,8 +1537,8 @@
         <section class="settings-section card">
           <div class="section-bar bar-teal"></div>
           <div class="section-content">
-            <h2 class="section-title">Data & Privacy</h2>
-            <p class="section-desc">Manage your data and statistics</p>
+            <h2 class="section-title" data-i18n="dataPrivacy">Data & Privacy</h2>
+            <p class="section-desc" data-i18n="dataPrivacyDescription">Manage your data and statistics</p>
             <input
               type="file"
               id="importFile"
@@ -1507,7 +1560,7 @@
                   <polyline points="17 8 12 3 7 8" />
                   <line x1="12" x2="12" y1="3" y2="15" />
                 </svg>
-                Import
+                <span data-i18n="import">Import</span>
               </button>
               <button class="action-btn" id="exportData">
                 <svg
@@ -1522,7 +1575,7 @@
                   <polyline points="7 10 12 15 17 10" />
                   <line x1="12" x2="12" y1="15" y2="3" />
                 </svg>
-                Export
+                <span data-i18n="export">Export</span>
               </button>
               <button class="action-btn" id="resetSettings">
                 <svg
@@ -1536,7 +1589,7 @@
                   <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                   <path d="M3 3v5h5" />
                 </svg>
-                Reset
+                <span data-i18n="reset">Reset</span>
               </button>
               <button class="action-btn danger" id="clearData">
                 <svg
@@ -1551,15 +1604,15 @@
                   <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
                   <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
                 </svg>
-                Clear All
+                <span data-i18n="clearAll">Clear All</span>
               </button>
             </div>
           </div>
         </section>
 
         <section class="card about-section">
-          <h2 class="about-title">FocusTube</h2>
-          <p class="about-version">Version 2.3.2</p>
+          <h2 class="about-title" data-i18n="appName">FocusTube</h2>
+          <p class="about-version" data-i18n="aboutVersion" data-i18n-args='["2.3.2"]'>Version 2.3.2</p>
           <div class="about-btns">
             <button class="action-btn" id="starRepo">
               <svg
@@ -1574,7 +1627,7 @@
                   points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
                 />
               </svg>
-              Star Repo
+              <span data-i18n="starRepo">Star Repo</span>
             </button>
             <button class="action-btn" id="rateUs">
               <svg
@@ -1590,7 +1643,7 @@
                 />
                 <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z" />
               </svg>
-              Rate Us
+              <span data-i18n="rateUs">Rate Us</span>
             </button>
             <button class="action-btn" id="reportIssue">
               <svg
@@ -1606,10 +1659,10 @@
                 />
                 <line x1="4" x2="4" y1="22" y2="15" />
               </svg>
-              Report Issue
+              <span data-i18n="reportIssue">Report Issue</span>
             </button>
           </div>
-          <p class="about-desc">
+          <p class="about-desc" data-i18n="aboutDescription">
             An open-source browser extension that helps you stay focused by
             blocking distracting short-form video content.
           </p>
@@ -1619,6 +1672,7 @@
       </div>
     </div>
 
+    <script src="i18n.js"></script>
     <script src="options.js"></script>
   </body>
 </html>

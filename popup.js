@@ -13,6 +13,8 @@ const mainView = document.getElementById("main-view");
 const platformDetail = document.getElementById("platform-detail");
 const backBtn = document.getElementById("backBtn");
 const detailTitle = document.getElementById("detailTitle");
+const msg = (key, substitutions) =>
+  globalThis.FT_I18N?.message(key, substitutions) || "";
 let settings = {
   yt: "strict",
   ig: "strict",
@@ -24,11 +26,11 @@ let currentPlatform = null;
 let timerInterval = null;
 let timerEndTime = null;
 const PLATFORM_NAMES = {
-  yt: "YouTube",
-  ig: "Instagram",
-  tt: "TikTok",
-  fb: "Facebook",
-  li: "LinkedIn",
+  yt: msg("platformYoutube"),
+  ig: msg("platformInstagram"),
+  tt: msg("platformTiktok"),
+  fb: msg("platformFacebook"),
+  li: msg("platformLinkedin"),
 };
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => document.body.classList.remove("preload"), 100);
@@ -65,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (enabledToggle) enabledToggle.checked = isEnabled;
       toggle.checked = result.focusMode !== false;
       applyExtensionEnabledState(isEnabled);
-      timerBtn.innerText = `Start Timer`;
+      timerBtn.textContent = msg("startTimer");
       const isDark = resolveDarkMode(result.darkMode);
       applyTheme(isDark);
       if (result.platformSettings) {
@@ -132,14 +134,22 @@ document.addEventListener("DOMContentLoaded", () => {
 function applyExtensionEnabledState(isEnabled) {
   document.body.classList.toggle("ft-disabled", !isEnabled);
   if (extensionStatusLabel)
-    extensionStatusLabel.textContent = isEnabled ? "Enabled" : "Disabled";
+    extensionStatusLabel.textContent = isEnabled
+      ? msg("enabled")
+      : msg("disabled");
 }
 function updateStats(blocked) {
-  if (statShorts) statShorts.textContent = blocked;
+  if (statShorts)
+    statShorts.textContent = msg("blockedCount", [String(blocked)]);
   if (statTime) {
     const mins = blocked || 0;
-    if (mins < 60) statTime.textContent = `${mins}m`;
-    else statTime.textContent = `${Math.floor(mins / 60)}h ${mins % 60}m`;
+    const time = mins < 60
+      ? msg("minutesCompact", [String(mins)])
+      : msg(
+          "hoursMinutesCompact",
+          [String(Math.floor(mins / 60)), String(mins % 60)],
+        );
+    statTime.textContent = msg("timeSavedCompact", [time]);
   }
 }
 function applyTheme(isDark) {
@@ -245,7 +255,13 @@ function createPlatformButton(platform) {
   btn.className = "platform-icon";
   btn.dataset.platform = platform;
   btn.title = PLATFORM_NAMES[platform];
-  btn.setAttribute("aria-label", `${PLATFORM_NAMES[platform]} settings`);
+  btn.setAttribute(
+    "aria-label",
+    msg(
+      "platformSettings",
+      [PLATFORM_NAMES[platform]],
+    ),
+  );
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 24 24");
   svg.setAttribute("width", "28");
@@ -272,25 +288,25 @@ function updatePlatformIcon(icon, mode) {
 }
 const PLATFORM_SETTINGS = {
   yt: [
-    { key: "hide_yt_shorts_nav", label: "Hide Shorts Button" },
-    { key: "hide_yt_shorts_shelves", label: "Hide Shorts Shelves" },
-    { key: "hide_yt_most_relevant_shelf", label: 'Hide "Most Relevant"' },
+    { key: "hide_yt_shorts_nav", labelKey: "hideShortsButton" },
+    { key: "hide_yt_shorts_shelves", labelKey: "hideShortsShelves" },
+    { key: "hide_yt_most_relevant_shelf", labelKey: "hideMostRelevantShelfShort" },
   ],
   ig: [
-    { key: "hide_ig_stories", label: "Hide Stories" },
-    { key: "hide_ig_reels_nav", label: "Hide Reels Button" },
+    { key: "hide_ig_stories", labelKey: "hideStories" },
+    { key: "hide_ig_reels_nav", labelKey: "hideReelsButton" },
   ],
   fb: [
-    { key: "hide_fb_stories", label: "Hide Stories" },
-    { key: "hide_fb_reels_nav", label: "Hide Reels Button" },
+    { key: "hide_fb_stories", labelKey: "hideStories" },
+    { key: "hide_fb_reels_nav", labelKey: "hideReelsButton" },
     {
       key: "hide_fb_people_you_might_know",
-      label: "Hide People You Might Know",
+      labelKey: "hidePeopleYouMightKnow",
     },
   ],
   li: [
-    { key: "hide_li_feed", label: "Hide Feed" },
-    { key: "hide_li_addfeed", label: 'Hide "Add to Your Feed"' },
+    { key: "hide_li_feed", labelKey: "hideFeed" },
+    { key: "hide_li_addfeed", labelKey: "hideAddToFeedShort" },
   ],
   tt: [],
 };
@@ -317,16 +333,16 @@ function showPlatformDetail(platform) {
       if (desc) {
         if (platform === "li") {
           if (modeVal === "strict")
-            desc.textContent = "Hides feed & distracting elements";
+            desc.textContent = msg("modeLinkedinStrictDescription");
           if (modeVal === "warn")
-            desc.textContent = 'Hides feed, allows "View Anyway"';
-          if (modeVal === "allow") desc.textContent = "Does not hide anything";
+            desc.textContent = msg("modeLinkedinWarnDescription");
+          if (modeVal === "allow") desc.textContent = msg("modeLinkedinPassiveDescription");
         } else if (modeVal === "allow") {
-          desc.textContent = "Normal browsing";
+          desc.textContent = msg("modePassiveDescription");
         } else if (modeVal === "warn") {
-          desc.textContent = "Show warning overlay first";
+          desc.textContent = msg("modeWarnDescription");
         } else if (modeVal === "strict") {
-          desc.textContent = "Block access completely";
+          desc.textContent = msg("modeStrictDescription");
         }
       }
     });
@@ -371,13 +387,14 @@ function showPlatformDetail(platform) {
           row.className = "platform-setting-row";
           const label = document.createElement("span");
           label.className = "platform-setting-label";
-          label.textContent = toggle.label;
+          label.textContent = msg(toggle.labelKey);
           const switchLabel = document.createElement("label");
           switchLabel.className = "mini-switch";
           const input = document.createElement("input");
           input.type = "checkbox";
           input.dataset.key = toggle.key;
           input.checked = isChecked;
+          input.setAttribute("aria-label", msg(toggle.labelKey));
           const slider = document.createElement("span");
           slider.className = "mini-slider";
           switchLabel.append(input, slider);
@@ -590,7 +607,7 @@ function cleanup() {
 }
 function startTimerDisplay(endTime, type) {
   timerBtn.classList.add("active");
-  timerBtn.innerText = "Stop Timer";
+  timerBtn.textContent = msg("stopTimer");
   timerDisplay.classList.remove("hidden", "break");
   timerEndTime = endTime;
   if (type === "break") {
@@ -638,7 +655,7 @@ function resetTimerUI() {
     }
     timerBtn.classList.remove("active");
     chrome.storage.local.get(["focusMode"], (res2) => {
-      timerBtn.innerText = `Start Timer`;
+      timerBtn.textContent = msg("startTimer");
       toggle.checked = res2.focusMode !== false;
     });
     timerDisplay.classList.add("fade-out");
@@ -655,63 +672,71 @@ function resetTimerUI() {
 const TUTORIAL_STEPS = [
   {
     type: "modal",
-    title: "Welcome to FocusTube!",
-    description:
-      "Take a quick tour to learn how to stay focused and block distractions.",
+    title: msg("tutorialWelcomeTitle"),
+    description: msg(
+      "tutorialWelcomeDescription",
+    ),
     icon: "icons/icon128.png",
-    buttonText: "Start Tour",
+    buttonText: msg("tutorialStart"),
   },
   {
     type: "spotlight",
     target: ".platform-grid",
-    title: "Platform Controls",
-    description:
-      "Click any platform icon to change its blocking mode. Manage YouTube, Facebook, Instagram, TikTok, and LinkedIn.",
+    title: msg("tutorialPlatformsTitle"),
+    description: msg(
+      "tutorialPlatformsDescription",
+    ),
     position: "bottom",
-    buttonText: "Next",
+    buttonText: msg("tutorialNext"),
   },
   {
     type: "spotlight",
     target: ".platform-icon",
-    title: "Blocking Modes",
-    description:
-      "Each platform shows a badge: S (Strict) blocks always, W (Warn) asks before showing, P (Paused) allows access.",
+    title: msg("tutorialModesTitle"),
+    description: msg(
+      "tutorialModesDescription",
+    ),
     position: "bottom",
-    buttonText: "Next",
+    buttonText: msg("tutorialNext"),
   },
   {
     type: "spotlight",
     target: ".control-row",
-    title: "Focus Toggle",
-    description:
-      "Turn Focus Mode on or off with this switch. When enabled, your selected blocking rules take effect.",
+    title: msg("tutorialFocusTitle"),
+    description: msg(
+      "tutorialFocusDescription",
+    ),
     position: "top",
-    buttonText: "Next",
+    buttonText: msg("tutorialNext"),
   },
   {
     type: "spotlight",
     target: "#timerBtn",
-    title: "Timer Button",
-    description:
-      "Start a focus or break timer. Work sessions enforce strict blocking, while breaks allow free browsing.",
+    title: msg("tutorialTimerTitle"),
+    description: msg(
+      "tutorialTimerDescription",
+    ),
     position: "top",
-    buttonText: "Next",
+    buttonText: msg("tutorialNext"),
   },
   {
     type: "spotlight",
     target: "#settingsBtn",
-    title: "Settings",
-    description:
-      "Access advanced options, manage hidden elements, set schedules, and customize your focus experience.",
+    title: msg("tutorialSettingsTitle"),
+    description: msg(
+      "tutorialSettingsDescription",
+    ),
     position: "left",
-    buttonText: "Next",
+    buttonText: msg("tutorialNext"),
   },
   {
     type: "modal",
-    title: "You're All Set!",
-    description: "You know the basics. Stay focused and productive!",
+    title: msg("tutorialCompleteTitle"),
+    description: msg(
+      "tutorialCompleteDescription",
+    ),
     icon: "checkmark",
-    buttonText: "Finish",
+    buttonText: msg("tutorialFinish"),
   },
 ];
 const TutorialController = {
@@ -756,11 +781,14 @@ const TutorialController = {
     }
     const indicator = document.getElementById("tutorial-step-indicator");
     if (indicator) {
-      indicator.textContent = `${index + 1} of ${TUTORIAL_STEPS.length}`;
+      indicator.textContent = msg(
+        "tutorialProgress",
+        [String(index + 1), String(TUTORIAL_STEPS.length)],
+      );
     }
     const nextBtn = document.getElementById("tutorialNext");
     if (nextBtn) {
-      nextBtn.textContent = step.buttonText || "Next";
+      nextBtn.textContent = step.buttonText || msg("tutorialNext");
     }
     const title = document.getElementById("tutorial-title");
     const description = document.getElementById("tutorial-description");

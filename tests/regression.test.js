@@ -25,7 +25,7 @@ function assertPerPlatformContentScripts(manifest) {
     assert.ok(entry, `Missing content script entry for ${match}`);
     assert.deepEqual(entry.matches, [match]);
     assert.deepEqual(entry.css, ["content.css"]);
-    assert.deepEqual(entry.js, ["content-common.js", platformScript]);
+    assert.deepEqual(entry.js, ["i18n.js", "content-common.js", platformScript]);
     assert.equal(entry.run_at, "document_start");
   });
 }
@@ -329,7 +329,7 @@ const checks = [
       assert.match(common, /hide_fb_stories/);
       assert.match(common, /hide_fb_people_you_might_know/);
       assert.match(popup, /hide_fb_stories/);
-      assert.match(popup, /Hide Stories/);
+      assert.match(popup, /labelKey:\s*"hideStories"/);
       assert.match(popup, /hide_fb_people_you_might_know/);
       assert.match(options, /hide_fb_stories/);
       assert.match(options, /hide_fb_people_you_might_know/);
@@ -471,9 +471,9 @@ const checks = [
       assert.match(common, /ytMostRelevantShelf: true/);
       assert.match(common, /hide_yt_most_relevant_shelf/);
       assert.match(popup, /hide_yt_most_relevant_shelf/);
-      assert.match(popup, /Hide "Most Relevant"/);
+      assert.match(popup, /labelKey:\s*"hideMostRelevantShelfShort"/);
       assert.match(options, /hide_yt_most_relevant_shelf: true/);
-      assert.match(options, /Hide "Most Relevant" Shelf/);
+      assert.match(options, /msg\("hideMostRelevantShelf"\)/);
 
       const mostRelevantBlock = youtube.slice(
         youtube.indexOf("applyMostRelevantShelfHiding: function"),
@@ -733,7 +733,7 @@ const checks = [
       assert.match(importBlock, /const hasTimerType = hasOwn\(raw, "ft_timer_type"\)/);
       assert.match(
         importBlock,
-        /if \(hasTimerEnd !== hasTimerType\)[\s\S]*ft_timer_end and ft_timer_type must be imported together/,
+        /if \(hasTimerEnd !== hasTimerType\)[\s\S]*errorKey: "importTimerFieldsTogether"/,
       );
       assert.match(
         importBlock,
@@ -744,7 +744,7 @@ const checks = [
       assert.doesNotMatch(importBlock, /value === null\)[\s\S]*sanitized\[key\] = null/);
       assert.match(
         importBlock,
-        /if \(invalidKeys\.length > 0\)[\s\S]*return \{ error:/,
+        /if \(invalidKeys\.length > 0\)[\s\S]*errorKey: "importInvalidValues"/,
       );
       assert.match(
         importBlock,

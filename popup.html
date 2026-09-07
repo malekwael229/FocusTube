@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="styles.css" />
@@ -16,20 +16,20 @@
           <p id="tutorial-description"></p>
         </div>
         <div class="tutorial-tooltip-actions">
-          <button id="tutorialSkip" class="tutorial-btn-skip">Skip</button>
-          <button id="tutorialNext" class="tutorial-btn-next">Next</button>
+          <button id="tutorialSkip" class="tutorial-btn-skip" data-i18n="tutorialSkip">Skip</button>
+          <button id="tutorialNext" class="tutorial-btn-next" data-i18n="tutorialNext">Next</button>
         </div>
         <div class="tutorial-tooltip-progress">
-          <span id="tutorial-step-indicator">1 of 7</span>
+          <span id="tutorial-step-indicator" data-i18n="tutorialProgress" data-i18n-args='["1","7"]'>1 of 7</span>
         </div>
       </div>
     </div>
 
     <div id="review-prompt" class="review-prompt hidden">
-      <p>Enjoying FocusTube? A quick review helps others discover it!</p>
+      <p data-i18n="reviewPrompt">Enjoying FocusTube? A quick review helps others discover it!</p>
       <div class="review-buttons">
-        <button id="reviewLater" class="review-btn-later">Later</button>
-        <button id="reviewNow" class="review-btn-now">⭐ Rate Us</button>
+        <button id="reviewLater" class="review-btn-later" data-i18n="later">Later</button>
+        <button id="reviewNow" class="review-btn-now" data-i18n="rateUsStar">⭐ Rate Us</button>
       </div>
     </div>
 
@@ -37,13 +37,18 @@
       <div id="main-view">
         <div class="header-row">
           <div class="title-group">
-            <h2>FocusTube</h2>
+            <h2 data-i18n="appName">FocusTube</h2>
             <div class="inline-toggle">
-              <span id="extensionStatusLabel" class="inline-toggle-label"
+              <span id="extensionStatusLabel" class="inline-toggle-label" data-i18n="enabled"
                 >Enabled</span
               >
               <label class="switch">
-                <input type="checkbox" id="enabledToggle" checked />
+                <input
+                  type="checkbox"
+                  id="enabledToggle"
+                  checked
+                  aria-labelledby="extensionStatusLabel"
+                />
                 <span class="slider"></span>
               </label>
             </div>
@@ -52,14 +57,23 @@
 
         <div class="control-row">
           <div class="control-text" style="width: 100%; text-align: center">
-            <div class="control-title">Hide UI distractions</div>
+            <div
+              id="hideUiDistractionsLabel"
+              class="control-title"
+              data-i18n="hideUiDistractions"
+            >Hide UI distractions</div>
           </div>
           <div class="control-toggle">
-            <span id="toggleLockedLabel" class="locked-label hidden"
+            <span id="toggleLockedLabel" class="locked-label hidden" data-i18n="locked"
               >LOCKED</span
             >
             <label class="switch">
-              <input type="checkbox" id="mainToggle" checked />
+              <input
+                type="checkbox"
+                id="mainToggle"
+                checked
+                aria-labelledby="hideUiDistractionsLabel"
+              />
               <span class="slider"></span>
             </label>
           </div>
@@ -72,6 +86,7 @@
               data-platform="yt"
               title="YouTube"
               aria-label="YouTube settings"
+              data-i18n-title="platformYoutube"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -91,6 +106,7 @@
               data-platform="ig"
               title="Instagram"
               aria-label="Instagram settings"
+              data-i18n-title="platformInstagram"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -112,6 +128,7 @@
               data-platform="tt"
               title="TikTok"
               aria-label="TikTok settings"
+              data-i18n-title="platformTiktok"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -131,6 +148,7 @@
               data-platform="fb"
               title="Facebook"
               aria-label="Facebook settings"
+              data-i18n-title="platformFacebook"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -152,6 +170,7 @@
               data-platform="li"
               title="LinkedIn"
               aria-label="LinkedIn settings"
+              data-i18n-title="platformLinkedin"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -170,14 +189,14 @@
         </div>
 
         <div class="timer-section-compact">
-          <div id="timerTypeLabel" class="timer-type-label hidden">Focus</div>
+          <div id="timerTypeLabel" class="timer-type-label hidden" data-i18n="focus">Focus</div>
           <div id="timerDisplay" class="timer-display-compact hidden">
             00:00
           </div>
           <div class="timer-controls-compact">
-            <button id="timerBtn" class="timer-btn-compact">Start Timer</button>
+            <button id="timerBtn" class="timer-btn-compact" data-i18n="startTimer">Start Timer</button>
             <div id="breakWrapper" class="break-wrapper hidden">
-              <button id="breakBtn" class="timer-btn-compact break-btn">
+              <button id="breakBtn" class="timer-btn-compact break-btn" data-i18n="takeBreak">
                 Take Break
               </button>
               <button
@@ -185,6 +204,8 @@
                 class="skip-btn"
                 title="Skip Break"
                 aria-label="Skip break"
+                data-i18n-title="skipBreak"
+                data-i18n-aria-label="skipBreak"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -207,8 +228,8 @@
 
         <div class="footer-compact">
           <div class="stats-compact">
-            <span id="statShorts">0</span> blocked ·
-            <span id="statTime">0m</span> saved
+            <span id="statShorts" data-i18n="blockedCount" data-i18n-args='["0"]'>0 blocked</span> ·
+            <span id="statTime" data-i18n="timeSavedCompact" data-i18n-args='["0m"]'>0m saved</span>
           </div>
           <div class="footer-actions">
             <button
@@ -216,6 +237,8 @@
               class="icon-btn"
               title="Open Source Code"
               aria-label="View source code on GitHub"
+              data-i18n-title="openSourceCode"
+              data-i18n-aria-label="viewSourceGithub"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -239,6 +262,8 @@
               class="icon-btn"
               title="Settings"
               aria-label="Open settings"
+              data-i18n-title="settings"
+              data-i18n-aria-label="openSettings"
             >
               <svg
                 width="18"
@@ -267,6 +292,7 @@
             id="backBtn"
             class="back-btn"
             aria-label="Go back to main view"
+            data-i18n-aria-label="goBackMainView"
           >
             <svg
               viewBox="0 0 24 24"
@@ -280,29 +306,29 @@
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </button>
-          <span id="detailTitle" class="detail-title">YouTube</span>
+          <span id="detailTitle" class="detail-title" data-i18n="platformYoutube">YouTube</span>
         </div>
         <div class="detail-content">
           <div class="mode-options-detail">
             <div class="mode-option-detail" data-value="strict">
               <div class="mode-radio"></div>
               <div class="mode-info">
-                <span class="mode-name">Strict Mode</span>
-                <span class="mode-desc">Block access completely</span>
+                <span class="mode-name" data-i18n="modeStrictLong">Strict Mode</span>
+                <span class="mode-desc" data-i18n="modeStrictDescription">Block access completely</span>
               </div>
             </div>
             <div class="mode-option-detail" data-value="warn">
               <div class="mode-radio"></div>
               <div class="mode-info">
-                <span class="mode-name">Warn Mode</span>
-                <span class="mode-desc">Show a warning before entering</span>
+                <span class="mode-name" data-i18n="modeWarnLong">Warn Mode</span>
+                <span class="mode-desc" data-i18n="modeWarnDescription">Show a warning before entering</span>
               </div>
             </div>
             <div class="mode-option-detail" data-value="allow">
               <div class="mode-radio"></div>
               <div class="mode-info">
-                <span class="mode-name">Passive Mode</span>
-                <span class="mode-desc">Normal browsing</span>
+                <span class="mode-name" data-i18n="modePassiveLong">Passive Mode</span>
+                <span class="mode-desc" data-i18n="modePassiveDescription">Normal browsing</span>
               </div>
             </div>
           </div>
@@ -312,6 +338,7 @@
       </div>
     </div>
 
+    <script src="i18n.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>
