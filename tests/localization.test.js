@@ -128,6 +128,20 @@ function collectCatalogKeys() {
   return keys;
 }
 
+function placeholderContract(entry) {
+  return Object.fromEntries(
+    Object.entries(entry.placeholders || {})
+      .map(([name, placeholder]) => [name.toLowerCase(), placeholder.content])
+      .sort(([left], [right]) => left.localeCompare(right)),
+  );
+}
+
+function namedTokens(message) {
+  return [...new Set(message.match(/\$[A-Za-z][A-Za-z0-9_]*\$/g) || [])]
+    .map((token) => token.toLowerCase())
+    .sort();
+}
+
 function run() {
   assert.equal(Object.keys(catalog).length, 158, "canonical English key count");
   for (const [key, entry] of Object.entries(catalog)) {
@@ -255,6 +269,31 @@ function run() {
 
   const { runtimeFiles, supportedLocales } = require("../scripts/prepare-test-builds.js");
   assert.deepEqual(supportedLocales, ["en", "ar", "es", "pt_BR", "fr", "de", "tr", "id"]);
+  const englishKeys = Object.keys(catalog).sort();
+  for (const locale of supportedLocales) {
+    const localizedCatalog = JSON.parse(read(`_locales/${locale}/messages.json`));
+    assert.deepEqual(Object.keys(localizedCatalog).sort(), englishKeys, `${locale} catalog keys`);
+    for (const key of englishKeys) {
+      const entry = localizedCatalog[key];
+      assert.equal(typeof entry.message, "string", `${locale}.${key} has a message`);
+      assert.ok(entry.message.trim(), `${locale}.${key} message is not empty`);
+      assert.deepEqual(
+        placeholderContract(entry),
+        placeholderContract(catalog[key]),
+        `${locale}.${key} placeholder contract`,
+      );
+      assert.deepEqual(
+        namedTokens(entry.message),
+        namedTokens(catalog[key].message),
+        `${locale}.${key} named substitution tokens`,
+      );
+    }
+    assert.ok(localizedCatalog.extensionName.message.length <= 75, `${locale} manifest name length`);
+    assert.ok(
+      localizedCatalog.extensionDescription.message.length <= 132,
+      `${locale} manifest description length`,
+    );
+  }
   assert.ok(runtimeFiles.includes("i18n.js"));
   assert.ok(runtimeFiles.includes("_locales/en/messages.json"));
   assert.match(read("styles.css"), /#timerDisplay[\s\S]*unicode-bidi:\s*isolate/);

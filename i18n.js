@@ -8,7 +8,7 @@
       const translated = api?.getMessage?.(key, substitutions);
       if (translated) return translated;
     } catch (_error) {
-      // Tests and unsupported contexts use the readable English fallback.
+      // Unavailable i18n APIs use the supplied readable fallback.
     }
     return fallback;
   }
