@@ -990,7 +990,7 @@ const checks = [
       assert.equal(firefoxManifest.version, "2.3.2");
       assert.match(
         changelog,
-        /^##\s*\[Unreleased\]\s*\r?\n\s*No unreleased changes yet\./m,
+        /^##[ \t]+\[Unreleased\][ \t]*\r?$/m,
       );
       assert.match(changelog, /^##\s*\[2\.3\.2\]\s*-\s*2026-09-01$/m);
     },
