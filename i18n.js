@@ -26,11 +26,11 @@
   }
 
   function direction() {
-    return message("@@bidi_dir", undefined, "ltr") === "rtl" ? "rtl" : "ltr";
+    return message("catalogDirection", undefined, "ltr") === "rtl" ? "rtl" : "ltr";
   }
 
   function locale() {
-    return message("@@ui_locale", undefined, "en").replace(/_/g, "-");
+    return message("catalogLanguage", undefined, "en").replace(/_/g, "-");
   }
 
   function applyDirection(element) {

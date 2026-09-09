@@ -156,5 +156,7 @@
   "breakOverNotification": { "message": "Break Over! ⏰" },
   "notificationBackToWork": { "message": "Back to work. Distractions blocked." },
   "notificationTimeForBreak": { "message": "Time for a $DURATION$-minute break.", "placeholders": { "duration": { "content": "$1" } } },
-  "notificationFocusComplete": { "message": "Focus session complete." }
+  "notificationFocusComplete": { "message": "Focus session complete." },
+  "catalogLanguage": { "message": "en" },
+  "catalogDirection": { "message": "ltr" }
 }

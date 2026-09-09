@@ -143,7 +143,7 @@ function namedTokens(message) {
 }
 
 function run() {
-  assert.equal(Object.keys(catalog).length, 158, "canonical English key count");
+  assert.equal(Object.keys(catalog).length, 160, "canonical English key count");
   for (const [key, entry] of Object.entries(catalog)) {
     assert.equal(typeof entry.message, "string", `${key} has a message`);
     for (const [name, placeholder] of Object.entries(entry.placeholders || {})) {
@@ -178,8 +178,8 @@ function run() {
   assert.equal(accessible.getAttribute("aria-label"), "YouTube settings");
   assert.deepEqual(Array.from(helper.parseSubstitutions('[1,"two"]')), ["1", "two"]);
   assert.equal(helper.parseSubstitutions("plain"), "plain");
-  assert.equal(extensionDocument.documentElement.getAttribute("dir"), "rtl");
-  assert.equal(extensionDocument.documentElement.getAttribute("lang"), "ar-EG");
+  assert.equal(extensionDocument.documentElement.getAttribute("dir"), "ltr");
+  assert.equal(extensionDocument.documentElement.getAttribute("lang"), "en");
   assert.ok(calls.some(([key, values]) => key === "tutorialProgress" && values[0] === "1"));
 
   const hostText = new FakeElement({ "data-i18n": "enabled" }, "Host label");
@@ -198,7 +198,8 @@ function run() {
   hostHelper.localizePage(scoped);
   hostHelper.applyDirection(scoped);
   assert.equal(scoped.textContent, "Stories Hidden");
-  assert.equal(scoped.getAttribute("dir"), "rtl");
+  assert.equal(scoped.getAttribute("dir"), "ltr");
+  assert.equal(scoped.getAttribute("lang"), "en");
   assert.equal(hostText.textContent, "Host label");
 
   const fallbackDocument = new FakeDocument([]);
@@ -255,6 +256,35 @@ function run() {
   assert.equal(arabicOverlay.getAttribute("lang"), "ar");
   assert.equal(arabicHostDocument.documentElement.getAttribute("dir"), null);
   assert.equal(arabicHostDocument.documentElement.getAttribute("lang"), null);
+
+  for (const [uiLocale, bidiDirection] of [
+    ["ja", "ltr"],
+    ["he", "rtl"],
+  ]) {
+    const getFallbackMessage = (key, substitutions) => {
+      if (key === "@@bidi_dir") return bidiDirection;
+      if (key === "@@ui_locale") return uiLocale;
+      return renderCatalogMessage(catalog, key, substitutions);
+    };
+    const fallbackExtensionDocument = new FakeDocument([]);
+    const { helper: catalogFallbackHelper } = loadHelper({
+      protocol: "chrome-extension:",
+      document: fallbackExtensionDocument,
+      getMessage: getFallbackMessage,
+    });
+    assert.equal(fallbackExtensionDocument.documentElement.getAttribute("dir"), "ltr");
+    assert.equal(fallbackExtensionDocument.documentElement.getAttribute("lang"), "en");
+
+    const fallbackOverlay = new FakeElement(
+      { "data-i18n": "overlayStrictModeActive" },
+      catalog.overlayStrictModeActive.message,
+    );
+    catalogFallbackHelper.localizePage(fallbackOverlay);
+    catalogFallbackHelper.applyDirection(fallbackOverlay);
+    assert.equal(fallbackOverlay.textContent, catalog.overlayStrictModeActive.message);
+    assert.equal(fallbackOverlay.getAttribute("dir"), "ltr");
+    assert.equal(fallbackOverlay.getAttribute("lang"), "en");
+  }
 
   const chromeManifest = JSON.parse(read("chrome-manifest.json"));
   const firefoxManifest = JSON.parse(read("firefox-manifest.json"));

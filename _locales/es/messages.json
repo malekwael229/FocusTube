@@ -543,5 +543,7 @@
   },
   "notificationFocusComplete": {
     "message": "Sesión de concentración completada."
-  }
+  },
+  "catalogLanguage": { "message": "es" },
+  "catalogDirection": { "message": "ltr" }
 }

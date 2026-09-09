@@ -18,11 +18,11 @@ Last reviewed: September 6, 2026.
 
 ## Unreleased Localization Evidence
 
-- Deterministic localization tests cover catalog keys, placeholders, references, package inclusion, fallback behavior, scoped direction handling, and stable internal identities using mocked browser i18n responses.
-- Native Chromium extension tests exercise Arabic localization and right-to-left layout in the popup, options page, and an extension-owned overlay. They also verify fallback to English for an unsupported locale profile.
+- Deterministic localization tests cover catalog keys, placeholders, references, package inclusion, fallback behavior, scoped direction handling, resolved-catalog metadata for supported Arabic and unsupported Japanese/right-to-left browser locales, and stable internal identities using mocked browser i18n responses.
+- Native Chromium extension tests exercise Arabic localization and right-to-left layout in the popup, options page, and an extension-owned overlay. They also verify English text with English language/direction metadata on extension pages and an owned overlay for an unsupported Japanese locale profile, while recording the actual browser UI locale separately.
 - A screenshot review of the native Arabic Chromium run found the tested surfaces readable with no obvious clipping.
 - Supported-site browser smoke tests use local fixtures. Firefox lint validates the staged package but is not a native Firefox runtime test.
-- The fresh serial Windows `test:all` gate passed on September 6, 2026, including package reproducibility, native Chromium Arabic bounded rendering, the unsupported Japanese locale profile's default-English fallback, and Firefox lint with zero errors, notices, or warnings. A separate run of the pinned ESLint 9.39.5 check also passed. Native-speaker review, the manual browser matrix, live-site locale checks, and native Firefox localization validation remain pending. This evidence does not establish complete live-site or cross-browser locale compatibility.
+- A serial Windows `test:all` gate passed on September 6, 2026 on the then-tested tree, including package reproducibility, native Chromium Arabic bounded rendering, the unsupported Japanese locale profile's default-English fallback, and Firefox lint with zero errors, notices, or warnings. That run predates later documentation integration and this catalog-metadata repair; a post-repair aggregate gate remains pending. A separate pinned ESLint 9.39.5 run passed on the earlier tree. Native-speaker review, the manual browser matrix, live-site locale checks, and native Firefox localization validation remain pending. This evidence does not establish complete live-site or cross-browser locale compatibility.
 
 ## OpenSSF
 

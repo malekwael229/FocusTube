@@ -543,5 +543,7 @@
   },
   "notificationFocusComplete": {
     "message": "Sesi fokus selesai."
-  }
+  },
+  "catalogLanguage": { "message": "id" },
+  "catalogDirection": { "message": "ltr" }
 }

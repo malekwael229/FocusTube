@@ -543,5 +543,7 @@
   },
   "notificationFocusComplete": {
     "message": "Sessão de foco concluída."
-  }
+  },
+  "catalogLanguage": { "message": "pt-BR" },
+  "catalogDirection": { "message": "ltr" }
 }

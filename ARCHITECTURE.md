@@ -57,9 +57,9 @@ The shared script defines site detection, configuration, focus and timer state, 
 
 ## Localization Boundary
 
-The browser chooses the extension locale automatically from the packaged catalogs, with English as the fallback. Popup and options markup use catalog keys, while scripts request messages through the shared helper. Extension-owned overlays are localized after creation.
+The browser chooses the extension locale automatically from the packaged catalogs, with English as the fallback. Popup and options markup use catalog keys, while scripts request messages through the shared helper. Extension-owned overlays are localized after creation. Language and direction metadata come from small messages in the resolved catalog rather than the browser UI locale, so unsupported browser locales receive English text with `lang="en"` and `dir="ltr"`.
 
-Arabic right-to-left direction and language metadata apply to extension pages and extension-owned overlay roots. Content scripts do not change the host page's document direction or translate site content. Internal storage keys, runtime message types, timer alarm names, and other protocol identities remain stable and are not localized.
+Resolved-catalog direction and language metadata apply to extension pages and extension-owned overlay roots, including Arabic right-to-left metadata. Content scripts do not change the host page's document direction or translate site content. Internal storage keys, runtime message types, timer alarm names, and other protocol identities remain stable and are not localized.
 
 Automatic localization is limited to the extension UI. Site adapters still recognize site routes and DOM supplied by each platform. The YouTube Subscriptions detector for the "Most relevant" shelf intentionally matches the English label only; a translated shelf label is outside that detector's current contract.
 

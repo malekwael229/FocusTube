@@ -543,5 +543,7 @@
   },
   "notificationFocusComplete": {
     "message": "Odaklanma oturumu tamamlandı."
-  }
+  },
+  "catalogLanguage": { "message": "tr" },
+  "catalogDirection": { "message": "ltr" }
 }

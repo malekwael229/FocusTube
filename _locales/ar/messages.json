@@ -543,5 +543,7 @@
   },
   "notificationFocusComplete": {
     "message": "اكتملت جلسة التركيز."
-  }
+  },
+  "catalogLanguage": { "message": "ar" },
+  "catalogDirection": { "message": "rtl" }
 }

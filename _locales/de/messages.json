@@ -543,5 +543,7 @@
   },
   "notificationFocusComplete": {
     "message": "Fokus-Sitzung abgeschlossen."
-  }
+  },
+  "catalogLanguage": { "message": "de" },
+  "catalogDirection": { "message": "ltr" }
 }

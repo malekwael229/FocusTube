@@ -1172,7 +1172,7 @@ async function verifyNativeEnglishFallback(context, extensionId) {
     bidiDirection: "ltr",
     uiLanguage: "ja",
     dir: "ltr",
-    lang: "ja",
+    lang: "en",
   });
   await popup.getByRole("checkbox", { name: "Enabled" }).waitFor({ state: "attached" });
   await popup.getByRole("checkbox", { name: "Hide UI distractions" }).waitFor({
@@ -1183,7 +1183,30 @@ async function verifyNativeEnglishFallback(context, extensionId) {
   const options = await openExtensionPage(context, extensionId, "options.html");
   assert.match(await options.locator("body").innerText(), /FocusTube Options/);
   await options.close();
-  pass("unsupported native locale profile falls back to canonical English catalog");
+
+  await context.route("https://www.tiktok.com/**", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "text/html",
+      body: tiktokFixtureHtml().replace("<html>", '<html lang="ja" dir="rtl">'),
+    }),
+  );
+  const host = await context.newPage();
+  await host.goto("https://www.tiktok.com/foryou", { waitUntil: "domcontentloaded" });
+  const overlay = host.locator("#focus-tube-warning-overlay");
+  await overlay.waitFor({ state: "visible" });
+  assert.equal(await overlay.getAttribute("dir"), "ltr");
+  assert.equal(await overlay.getAttribute("lang"), "en");
+  assert.match(await overlay.innerText(), /Strict Mode Active/);
+  assert.deepEqual(
+    await host.locator("html").evaluate((element) => ({
+      lang: element.getAttribute("lang"),
+      dir: element.getAttribute("dir"),
+    })),
+    { lang: "ja", dir: "rtl" },
+  );
+  await host.close();
+  pass("unsupported native locale profile uses canonical English text and owned metadata");
 }
 
 async function verifyLinkedInRuntime(context, extensionId) {
