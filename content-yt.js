@@ -76,7 +76,6 @@ const YouTube = {
       this.observer = Utils.trackObserver(
         new MutationObserver(() => {
           this.scheduleInlineHiding();
-          this.runChecks();
         }),
       );
       this.observer.observe(document.body, {

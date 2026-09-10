@@ -2,7 +2,7 @@
 
 This file tracks evidence and remaining work for external validation. It is not a certification claim.
 
-Last reviewed: September 1, 2026.
+Last reviewed: September 9, 2026.
 
 ## Repository Evidence
 
@@ -13,6 +13,16 @@ Last reviewed: September 1, 2026.
 - Release packages are built from an allowlist and checked for reproducibility.
 - Extension pages use a self-only CSP and do not load remote code.
 - Runtime permissions are limited to storage, alarms, notifications, and supported sites.
+- The Unreleased localization work packages eight browser-native catalogs with English as the default. It adds no permissions, CSP allowances, network endpoints, or runtime dependencies, and it leaves storage keys and runtime message identities unchanged.
+- As rechecked on September 6, 2026, the production-only dependency audit reports zero vulnerabilities. The existing dev-tooling findings in the `web-ext` and `addons-linter` chain are unchanged and are not packaged with the extension.
+
+## Unreleased Localization Evidence
+
+- Deterministic localization tests cover catalog keys, placeholders, references, package inclusion, fallback behavior, scoped direction handling, resolved-catalog metadata for supported Arabic and unsupported Japanese/right-to-left browser locales, and stable internal identities using mocked browser i18n responses.
+- Native Chromium extension tests exercise Arabic localization and right-to-left layout in the popup, options page, and an extension-owned overlay. They also verify English text with English language/direction metadata on extension pages and an owned overlay for an unsupported Japanese locale profile, while recording the actual browser UI locale separately.
+- A screenshot review of the native Arabic Chromium run found the tested surfaces readable with no obvious clipping.
+- Supported-site browser smoke tests use local fixtures. Firefox lint validates the staged package but is not a native Firefox runtime test.
+- A serial Windows `test:all` gate passed on September 9, 2026 at commit `fa3d7ad`, including package reproducibility, native Chromium Arabic bounded rendering, the unsupported Japanese locale profile's default-English fallback, and Firefox lint with zero errors, notices, or warnings. A pinned ESLint 9.39.5 check also passed at that commit. This supersedes the September 6 earlier-tree gate for the integrated catalog-metadata repair. Native-speaker review, the manual browser matrix, live-site locale checks, and native Firefox localization validation remain pending. This evidence does not establish complete live-site or cross-browser locale compatibility.
 
 ## OpenSSF
 

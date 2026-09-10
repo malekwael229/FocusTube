@@ -1,0 +1,549 @@
+{
+  "extensionName": {
+    "message": "FocusTube: مانع المشتتات"
+  },
+  "extensionDescription": {
+    "message": "قلّل مشتتات YouTube Shorts وInstagram Reels وTikTok وFacebook Reels وLinkedIn."
+  },
+  "appName": {
+    "message": "FocusTube"
+  },
+  "optionsPageTitle": {
+    "message": "خيارات FocusTube"
+  },
+  "enabled": {
+    "message": "مفعّل"
+  },
+  "disabled": {
+    "message": "معطّل"
+  },
+  "locked": {
+    "message": "مقفل"
+  },
+  "hideUiDistractions": {
+    "message": "إخفاء عناصر الواجهة المشتتة"
+  },
+  "platformYoutube": {
+    "message": "YouTube"
+  },
+  "platformInstagram": {
+    "message": "Instagram"
+  },
+  "platformTiktok": {
+    "message": "TikTok"
+  },
+  "platformFacebook": {
+    "message": "Facebook"
+  },
+  "platformLinkedin": {
+    "message": "LinkedIn"
+  },
+  "platformSettings": {
+    "message": "إعدادات $PLATFORM$",
+    "placeholders": {
+      "platform": {
+        "content": "$1"
+      }
+    }
+  },
+  "modeStrict": {
+    "message": "صارم"
+  },
+  "modeWarn": {
+    "message": "تحذير"
+  },
+  "modePassive": {
+    "message": "سلبي"
+  },
+  "modeStrictLong": {
+    "message": "الوضع الصارم"
+  },
+  "modeWarnLong": {
+    "message": "وضع التحذير"
+  },
+  "modePassiveLong": {
+    "message": "الوضع السلبي"
+  },
+  "modeStrictDescription": {
+    "message": "حظر الوصول بالكامل"
+  },
+  "modeWarnDescription": {
+    "message": "عرض تحذير قبل الدخول"
+  },
+  "modePassiveDescription": {
+    "message": "تصفح عادي"
+  },
+  "modeLinkedinStrictDescription": {
+    "message": "يخفي الموجز والعناصر المشتتة"
+  },
+  "modeLinkedinWarnDescription": {
+    "message": "يخفي الموجز ويسمح بخيار \"العرض على أي حال\""
+  },
+  "modeLinkedinPassiveDescription": {
+    "message": "لا يخفي شيئًا"
+  },
+  "blockingMode": {
+    "message": "وضع الحظر"
+  },
+  "visualHiding": {
+    "message": "الإخفاء المرئي"
+  },
+  "platformConfigurationHint": {
+    "message": "انقر على منصة لضبط وضع الحظر"
+  },
+  "timerActiveModesLocked": {
+    "message": "المؤقت نشط: الأوضاع مقفلة"
+  },
+  "focus": {
+    "message": "تركيز"
+  },
+  "break": {
+    "message": "استراحة"
+  },
+  "startTimer": {
+    "message": "بدء المؤقت"
+  },
+  "stopTimer": {
+    "message": "إيقاف المؤقت"
+  },
+  "takeBreak": {
+    "message": "أخذ استراحة"
+  },
+  "skipBreak": {
+    "message": "تخطي الاستراحة"
+  },
+  "blockedCount": {
+    "message": "تم حظر $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "timeSavedCompact": {
+    "message": "تم توفير $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "minutesCompact": {
+    "message": "$COUNT$ د",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "hoursMinutesCompact": {
+    "message": "$HOURS$ س $MINUTES$ د",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "minutesLong": {
+    "message": "$COUNT$ دقيقة",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "openSourceCode": {
+    "message": "فتح الشفرة المصدرية"
+  },
+  "viewSourceGithub": {
+    "message": "عرض الشفرة المصدرية على GitHub"
+  },
+  "settings": {
+    "message": "الإعدادات"
+  },
+  "openSettings": {
+    "message": "فتح الإعدادات"
+  },
+  "goBackMainView": {
+    "message": "العودة إلى العرض الرئيسي"
+  },
+  "reviewPrompt": {
+    "message": "هل تستمتع باستخدام FocusTube؟ تساعد مراجعة سريعة الآخرين في العثور عليه!"
+  },
+  "later": {
+    "message": "لاحقًا"
+  },
+  "rateUs": {
+    "message": "قيّمنا"
+  },
+  "rateUsStar": {
+    "message": "⭐ قيّمنا"
+  },
+  "tutorialSkip": {
+    "message": "تخطي"
+  },
+  "tutorialNext": {
+    "message": "التالي"
+  },
+  "tutorialStart": {
+    "message": "بدء الجولة"
+  },
+  "tutorialFinish": {
+    "message": "إنهاء"
+  },
+  "tutorialProgress": {
+    "message": "$CURRENT$ من $TOTAL$",
+    "placeholders": {
+      "current": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "tutorialWelcomeTitle": {
+    "message": "مرحبًا بك في FocusTube!"
+  },
+  "tutorialWelcomeDescription": {
+    "message": "قم بجولة سريعة لتتعلم كيف تحافظ على تركيزك وتحظر المشتتات."
+  },
+  "tutorialPlatformsTitle": {
+    "message": "عناصر التحكم بالمنصات"
+  },
+  "tutorialPlatformsDescription": {
+    "message": "انقر على أيقونة أي منصة لتغيير وضع الحظر. يمكنك إدارة YouTube وFacebook وInstagram وTikTok وLinkedIn."
+  },
+  "tutorialModesTitle": {
+    "message": "أوضاع الحظر"
+  },
+  "tutorialModesDescription": {
+    "message": "تعرض كل منصة شارة: S (صارم) يحظر دائمًا، وW (تحذير) يسأل قبل العرض، وP (سلبي) يسمح بالوصول."
+  },
+  "tutorialFocusTitle": {
+    "message": "مفتاح التركيز"
+  },
+  "tutorialFocusDescription": {
+    "message": "شغّل وضع التركيز أو أوقفه بهذا المفتاح. عند تفعيله، تُطبّق قواعد الحظر التي اخترتها."
+  },
+  "tutorialTimerTitle": {
+    "message": "زر المؤقت"
+  },
+  "tutorialTimerDescription": {
+    "message": "ابدأ مؤقت تركيز أو استراحة. تفرض جلسات العمل الحظر الصارم، بينما تسمح الاستراحات بالتصفح الحر."
+  },
+  "tutorialSettingsTitle": {
+    "message": "الإعدادات"
+  },
+  "tutorialSettingsDescription": {
+    "message": "افتح الخيارات المتقدمة، وأدر العناصر المخفية، وخصّص تجربة التركيز."
+  },
+  "tutorialCompleteTitle": {
+    "message": "أصبحت جاهزًا!"
+  },
+  "tutorialCompleteDescription": {
+    "message": "أصبحت تعرف الأساسيات. حافظ على تركيزك وإنتاجيتك!"
+  },
+  "totalBlocked": {
+    "message": "إجمالي المحظور"
+  },
+  "timeSaved": {
+    "message": "الوقت الموفر"
+  },
+  "focusTimer": {
+    "message": "مؤقت التركيز"
+  },
+  "focusTimerDescription": {
+    "message": "اضبط تفضيلات جلسة التركيز"
+  },
+  "focusDuration": {
+    "message": "مدة التركيز"
+  },
+  "focusDurationDescription": {
+    "message": "طول كل جلسة تركيز"
+  },
+  "breakDuration": {
+    "message": "مدة الاستراحة"
+  },
+  "breakDurationDescription": {
+    "message": "طول الاستراحة بين الجلسات"
+  },
+  "autoStartBreaks": {
+    "message": "بدء الاستراحات تلقائيًا"
+  },
+  "autoStartBreaksDescription": {
+    "message": "بدء مؤقت الاستراحة تلقائيًا بعد انتهاء التركيز"
+  },
+  "showBreakButton": {
+    "message": "إظهار زر الاستراحة"
+  },
+  "showBreakButtonDescription": {
+    "message": "إظهار زر \"أخذ استراحة\" في النافذة المنبثقة أثناء التركيز"
+  },
+  "lockSettingsDuringTimer": {
+    "message": "قفل الإعدادات أثناء المؤقت"
+  },
+  "lockSettingsDuringTimerDescription": {
+    "message": "منع التغييرات أثناء نشاط مؤقت التركيز"
+  },
+  "popupVisibility": {
+    "message": "المنصات الظاهرة في النافذة المنبثقة"
+  },
+  "popupVisibilityDescription": {
+    "message": "اختر المنصات التي تظهر في النافذة المنبثقة"
+  },
+  "showPlatform": {
+    "message": "إظهار $PLATFORM$",
+    "placeholders": {
+      "platform": {
+        "content": "$1"
+      }
+    }
+  },
+  "restrictHiddenPlatforms": {
+    "message": "تقييد المنصات المخفية"
+  },
+  "restrictHiddenPlatformsDescription": {
+    "message": "تطبيق قواعد الحظر حتى عند إخفائها من النافذة المنبثقة"
+  },
+  "visualHidingHidden": {
+    "message": "الإخفاء المرئي للمنصات المخفية"
+  },
+  "visualHidingHiddenDescription": {
+    "message": "إخفاء العناصر المشتتة على المنصات المخفية"
+  },
+  "notifications": {
+    "message": "الإشعارات"
+  },
+  "notificationsDescription": {
+    "message": "إدارة التنبيهات والتذكيرات"
+  },
+  "systemNotifications": {
+    "message": "إشعارات النظام"
+  },
+  "systemNotificationsDescription": {
+    "message": "إظهار إشعارات عند انتهاء المؤقت"
+  },
+  "dataPrivacy": {
+    "message": "البيانات والخصوصية"
+  },
+  "dataPrivacyDescription": {
+    "message": "إدارة بياناتك وإحصاءاتك"
+  },
+  "import": {
+    "message": "استيراد"
+  },
+  "export": {
+    "message": "تصدير"
+  },
+  "reset": {
+    "message": "إعادة تعيين"
+  },
+  "clearAll": {
+    "message": "مسح الكل"
+  },
+  "starRepo": {
+    "message": "وضع نجمة للمستودع"
+  },
+  "reportIssue": {
+    "message": "الإبلاغ عن مشكلة"
+  },
+  "aboutVersion": {
+    "message": "الإصدار $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "aboutDescription": {
+    "message": "إضافة متصفح مفتوحة المصدر تساعدك على الحفاظ على تركيزك بحظر محتوى الفيديو القصير المشتت."
+  },
+  "select": {
+    "message": "اختيار"
+  },
+  "importError": {
+    "message": "خطأ في استيراد البيانات: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "importObjectRequired": {
+    "message": "يجب أن يحتوي ملف الاستيراد على كائن JSON."
+  },
+  "importTimerFieldsTogether": {
+    "message": "يجب استيراد ft_timer_end وft_timer_type معًا"
+  },
+  "importInvalidValues": {
+    "message": "قيم غير صالحة لـ: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "importNoSupportedSettings": {
+    "message": "خطأ في استيراد البيانات: لم يتم العثور على إعدادات مدعومة."
+  },
+  "importConfirm": {
+    "message": "سيؤدي استيراد البيانات إلى استبدال إعداداتك وإحصاءاتك الحالية. هل تريد المتابعة؟"
+  },
+  "importReplaceFailed": {
+    "message": "خطأ في استيراد البيانات: تعذر استبدال الإعدادات."
+  },
+  "importSuccess": {
+    "message": "تم استيراد البيانات بنجاح!"
+  },
+  "importInvalidJson": {
+    "message": "خطأ في استيراد البيانات: ملف JSON غير صالح."
+  },
+  "resetConfirm": {
+    "message": "هل تريد بالتأكيد إعادة جميع الإعدادات إلى القيم الافتراضية؟"
+  },
+  "clearAllConfirm": {
+    "message": "هل تريد بالتأكيد مسح جميع البيانات؟ لا يمكن التراجع عن ذلك."
+  },
+  "hideShortsButton": {
+    "message": "إخفاء زر Shorts"
+  },
+  "hideShortsButtonDescription": {
+    "message": "إخفاء رابط Shorts في الشريط الجانبي"
+  },
+  "hideShortsShelves": {
+    "message": "إخفاء أقسام Shorts"
+  },
+  "hideShortsShelvesDescription": {
+    "message": "إخفاء أقسام Shorts في الموجز"
+  },
+  "hideMostRelevantShelf": {
+    "message": "إخفاء قسم \"الأكثر صلة\""
+  },
+  "hideMostRelevantShelfShort": {
+    "message": "إخفاء \"الأكثر صلة\""
+  },
+  "hideMostRelevantShelfDescription": {
+    "message": "إخفاء قسم \"الأكثر صلة\" في الاشتراكات"
+  },
+  "hideStories": {
+    "message": "إخفاء القصص"
+  },
+  "hideInstagramStoriesDescription": {
+    "message": "إخفاء شريط القصص في الأعلى"
+  },
+  "hideFacebookStoriesDescription": {
+    "message": "إخفاء قسم القصص"
+  },
+  "hideReelsButton": {
+    "message": "إخفاء زر Reels"
+  },
+  "hideInstagramReelsDescription": {
+    "message": "إخفاء تبويب Reels في التنقل"
+  },
+  "hideFacebookReelsDescription": {
+    "message": "إخفاء رابط Reels في الشريط الجانبي"
+  },
+  "hidePeopleYouMightKnow": {
+    "message": "إخفاء أشخاص قد تعرفهم"
+  },
+  "hidePeopleYouMightKnowDescription": {
+    "message": "إخفاء اقتراحات الأشخاص في الموجز"
+  },
+  "hideFeed": {
+    "message": "إخفاء الموجز"
+  },
+  "hideFeedDescription": {
+    "message": "إخفاء قسم الموجز الرئيسي"
+  },
+  "hideAddToFeed": {
+    "message": "إخفاء الإضافة إلى الموجز"
+  },
+  "hideAddToFeedShort": {
+    "message": "إخفاء \"إضافة إلى موجزك\""
+  },
+  "hideAddToFeedDescription": {
+    "message": "إخفاء اقتراحات المتابعة"
+  },
+  "overlayStrictModeActive": {
+    "message": "الوضع الصارم نشط"
+  },
+  "overlayDistractionBlocked": {
+    "message": "تم حظر المشتت"
+  },
+  "overlayProductive": {
+    "message": "يساعدك FocusTube على الحفاظ على إنتاجيتك."
+  },
+  "overlayProductiveShort": {
+    "message": "نساعدك على الحفاظ على إنتاجيتك."
+  },
+  "goBack": {
+    "message": "رجوع"
+  },
+  "watchAnyway": {
+    "message": "المشاهدة على أي حال"
+  },
+  "goToMessages": {
+    "message": "الانتقال إلى الرسائل"
+  },
+  "view": {
+    "message": "عرض"
+  },
+  "viewAnyway": {
+    "message": "العرض على أي حال"
+  },
+  "storiesHidden": {
+    "message": "القصص مخفية"
+  },
+  "feedHidden": {
+    "message": "الموجز مخفي"
+  },
+  "hidden": {
+    "message": "مخفي"
+  },
+  "strictModePreventedAccess": {
+    "message": "منع الوضع الصارم الوصول."
+  },
+  "focusSessionComplete": {
+    "message": "اكتملت جلسة التركيز!"
+  },
+  "focusSessionCompleteToast": {
+    "message": "أحسنت! خذ استراحة لمدة $DURATION$ دقيقة.",
+    "placeholders": {
+      "duration": {
+        "content": "$1"
+      }
+    }
+  },
+  "breakOver": {
+    "message": "انتهت الاستراحة!"
+  },
+  "backToWork": {
+    "message": "حان وقت العودة إلى العمل."
+  },
+  "focusTimerCompleteNotification": {
+    "message": "اكتمل مؤقت التركيز! 🎉"
+  },
+  "breakOverNotification": {
+    "message": "انتهت الاستراحة! ⏰"
+  },
+  "notificationBackToWork": {
+    "message": "عد إلى العمل. تم حظر المشتتات."
+  },
+  "notificationTimeForBreak": {
+    "message": "حان وقت استراحة لمدة $DURATION$ دقيقة.",
+    "placeholders": {
+      "duration": {
+        "content": "$1"
+      }
+    }
+  },
+  "notificationFocusComplete": {
+    "message": "اكتملت جلسة التركيز."
+  },
+  "catalogLanguage": { "message": "ar" },
+  "catalogDirection": { "message": "rtl" }
+}

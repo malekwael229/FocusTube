@@ -1,6 +1,6 @@
 # Testing
 
-FocusTube uses deterministic Node tests, a headful Chromium smoke runner, and Firefox package linting. The automated fixture tests do not replace live-site checks.
+FocusTube uses deterministic Node tests, localization contract tests, a headful Chromium smoke runner, and Firefox package linting. The automated fixture tests do not replace live-site checks.
 
 ## Windows Setup
 
@@ -14,7 +14,7 @@ npx.cmd playwright install chromium
 
 The repository requires Node.js 20 or newer. The test dependencies are pinned in `package-lock.json`, including Playwright and `web-ext` 10.6.0.
 
-`npm audit --omit=dev` reports zero vulnerabilities. The full dev-inclusive audit reports three high-severity vulnerability entries in the `web-ext`/`addons-linter` validation chain, driven by two underlying image-size advisories plus an aggregate dependency entry. These findings are dev-only and not packaged in the extension; there is no safe non-breaking current upgrade, so monitor the findings. Audit output is intentionally not suppressed.
+As rechecked on September 6, 2026, `npm audit --omit=dev` reports zero vulnerabilities. The full dev-inclusive audit still reports three high-severity vulnerability entries in the `web-ext`/`addons-linter` validation chain, driven by two underlying image-size advisories plus an aggregate dependency entry. These findings are dev-only and not packaged in the extension; there is no safe non-breaking current upgrade, so monitor the findings. Audit output is intentionally not suppressed.
 
 ## Automated Commands
 
@@ -24,7 +24,7 @@ Run the complete local gate:
 npm.cmd run test:all
 ```
 
-The aggregate runner creates fresh `.tmp/test-builds/chromium` and `.tmp/test-builds/firefox` packages, then runs the package reproducibility check covered by `test:package`, JavaScript syntax checks, regression tests, background timer tests, the Chromium smoke suite, and Firefox lint. It removes the temporary packages after success or failure.
+The aggregate runner creates fresh `.tmp/test-builds/chromium` and `.tmp/test-builds/firefox` packages, then runs the package reproducibility check covered by `test:package`, JavaScript syntax checks, regression tests, background timer tests, localization contract tests, the Chromium smoke suite, and Firefox lint. It removes the temporary packages after success or failure.
 
 Run individual checks when narrowing a failure:
 
@@ -32,6 +32,7 @@ Run individual checks when narrowing a failure:
 npm.cmd run test:regression
 npm.cmd run test:background
 npm.cmd run test:package
+npm.cmd run test:localization
 node scripts/prepare-test-builds.js
 npm.cmd run test:smoke
 node .\node_modules\web-ext\bin\web-ext.js lint --warnings-as-errors --source-dir .tmp\test-builds\firefox
@@ -48,13 +49,16 @@ npm.cmd run test:smoke:youtube
 The deterministic suites cover:
 
 - Manifest parsing, permission and CSP checks, per-platform content-script splitting, icon metadata, and the package allowlist.
+- Localization checks verify the canonical 160-key English catalog, referenced-key and placeholder integrity, all eight packaged catalogs, default English manifest fallback, script order, package inclusion, localized text and accessibility attributes, substitution parsing, safe fallback behavior, scoped host-page localization, resolved-catalog language and direction metadata for supported Arabic and unsupported Japanese/right-to-left browser locales, and stable internal storage keys and message types.
 - Background initialization restores future alarms without consuming expired state. Explicit browser startup completes an overdue timer once when its primary alarm matches, regardless of startup and alarm event order, and otherwise cleans expired state silently. A primary alarm lookup failure preserves the timer and defers reconciliation, future-alarm recreation failure schedules bounded identity-safe recovery, and expired cleanup revalidates timer identity before removal. Stale or mismatched alarms have no side effects.
 - Regression checks verify that `background.js` is the only timer-state mutation authority, `ft_enabled` mutations and timer mutations are requested through serialized background messages, operation-owned enable markers retire on same-value and no-event paths, external `ft_enabled=false` cleanup works without an enabled timer and removes timer state before alarm clear, partial `storage.onChanged` events do not reconstruct timers, and settings replacement is limited to extension-page senders validated by runtime ID and runtime URL origin.
 - Background timer tests cover direct primary-alarm creation and scheduled-time verification for user timer writes, replacement starts, structured storage and alarm errors, MV3 cold-wake completion, external timer replacement races, stale and same-end different-type timer protection, storage read, storage remove, tabs query, completion-write failures, durable retry alarms bound to timer identity and attempt, the three-attempt retry limit, and exact durable completion claims that suppress duplicate notification, runtime, and tab effects across startup, alarm, retry, and fresh contexts.
 - Settings replacement tests cover the prior timer and alarm snapshot, staged writes, rollback-safe storage and alarm failures without `storage.clear`, replacement rollback cleanup of a newly created alarm when storage rollback fails, alarm-clear failures that restore durable timer state and return transactional errors instead of success, and disabled replacement, stop, and disable cleanup that removes timer state before clearing the primary alarm. Work-to-break tests verify that alarm failures retry the new break identity while storage failures retry the still-durable work identity, and disable-during-completion tests verify that notification, extension-message, and tab-message side effects are suppressed.
 - Popup regression checks verify that a failed stop re-reads durable timer end and type before repainting the timer and leaves the active display unchanged when that recovery read fails, while break start and dismiss failures reconcile the prompt from durable state. Background tests verify that `dismissEndedPrompt` returns a structured failure when marker removal fails, and import checks require a valid `ft_timer_end` and `ft_timer_type` pair. Content regression checks verify that a partial timer change re-reads both durable fields atomically before updating state or dispatching an event.
 - Package tests validate safe output roots, remove only known generated FocusTube artifacts, preserve unrelated output, reject unsafe roots without touching sentinels, build Chromium and Firefox ZIPs twice, validate their contents and manifest versions, and compare their hashes byte for byte.
-- One non-resetting pending mutation check for Instagram, TikTok, and Facebook, including disable and re-enable lifecycle behavior.
+- One non-resetting pending mutation check for Instagram, TikTok, Facebook, and LinkedIn, including disable and re-enable lifecycle behavior. LinkedIn coverage also verifies that sustained mutations cannot starve its pending check.
+- Selector and mutation regressions cover bounded LinkedIn feed and sidebar matching, targeted platform hiding, cleanup of pending checks when a platform is disabled, and bounded YouTube inline hiding for late-loaded surfaces. The broad YouTube body observer schedules an animation-frame pass without filtering individual mutation trees or running route checks; route enforcement is covered through navigation, settings-change, and lifecycle paths.
+- Background message regressions verify that null, undefined, primitive, array, and invalid-JSON request shapes are rejected without breaking valid commands.
 - Cleanup of the pre-body `ensureBody()` observer and scoped Facebook Stories selectors.
 - Popup and options rendering, mode and visual-hiding settings, storage persistence after reload, timer start and stop, and removal of retired settings.
 - Chromium fixture behavior for YouTube, Instagram, TikTok, Facebook, and LinkedIn, including route blocking, Warn-mode media recovery, late DOM content, SPA navigation events where covered, and platform-specific visual hiding.
@@ -62,6 +66,14 @@ The deterministic suites cover:
 The regression and package results above are automated test evidence only. They do not claim live-browser validation or a manual Firefox restart validation pass.
 
 Injected failure coverage includes storage set, remove, and read failures; primary alarm creation failures and scheduled-time matching on successful writes; alarm-clear failures; retry alarm failures; startup alarm lookup and future-alarm recreation failures; completion retries; replacement rollback; stale identity protection; and popup recovery-read failures. The tests assert preserved state, transactional error reporting, identity-safe recovery, and no duplicate completion side effects where those paths apply.
+
+## Localization Evidence
+
+`tests/localization.test.js` uses mocked catalogs, DOM objects, and `chrome.i18n.getMessage` behavior. It provides deterministic contract coverage, not a native browser-runtime result.
+
+The Chromium smoke suite loads the packaged extension with a native Arabic browser locale and verifies localized popup, options, and extension-owned overlay rendering, bounded right-to-left layout, accessibility labels, timer digits, and direction metadata. It also starts an unsupported native Japanese locale profile and verifies canonical English text with `lang="en"` and `dir="ltr"` on extension pages and extension-owned overlays while retaining separate proof of the browser's actual Japanese UI locale. The supported-site smoke checks still use local fixtures, including localized route text where relevant.
+
+Firefox lint validates the staged Firefox package, including manifest and packaged-file rules. It does not execute Firefox localization or prove Firefox live-site behavior. A reviewer also checked the current native Arabic Chromium screenshots and found them readable with no obvious clipping. On September 9, 2026, a serial Windows `test:all` gate passed at commit `fa3d7ad`, including package reproducibility, the native Chromium Arabic bounded-rendering check, the unsupported Japanese locale profile's default-English fallback, and Firefox lint with zero errors, notices, or warnings. A pinned ESLint 9.39.5 check also passed at that commit. The September 6 earlier-tree pass remains part of the validation history but is superseded for the integrated repair tree. Native-speaker review, the manual browser matrix, live-site locale checks, and a native Firefox localization pass remain unperformed, so this evidence is not a complete live-site or cross-browser validation claim.
 
 ## Manual Browser Matrix
 

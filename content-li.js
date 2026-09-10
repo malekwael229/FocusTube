@@ -51,16 +51,13 @@ const LinkedIn = {
     if (!document.body) return;
     if (!this.observer) {
       this.observer = Utils.trackObserver(
-        new MutationObserver(() => {
-          if (this.pendingTimeout) clearTimeout(this.pendingTimeout);
-          this.pendingTimeout = setTimeout(() => this.runChecks(), 50);
-        }),
+        new MutationObserver(() => this.scheduleMutationCheck()),
       );
       this.observer.observe(document.body, { childList: true, subtree: true });
     }
   },
   disable: function () {
-    if (this.pendingTimeout) {
+    if (this.pendingTimeout !== null) {
       clearTimeout(this.pendingTimeout);
       this.pendingTimeout = null;
     }
@@ -68,6 +65,13 @@ const LinkedIn = {
     this.clearDismissalFlags();
     if (this.observer) this.observer.disconnect();
     this.observer = null;
+  },
+  scheduleMutationCheck: function () {
+    if (this.pendingTimeout !== null) return;
+    this.pendingTimeout = setTimeout(() => {
+      this.pendingTimeout = null;
+      this.runChecks();
+    }, 50);
   },
   enable: function () {
     if (!document.body) return;
@@ -221,9 +225,9 @@ const LinkedIn = {
     const feedColumn =
       document.querySelector('[data-testid="mainFeed"]') ||
       document.querySelector("main.scaffold-layout__main") ||
+      document.querySelector("main#workspace > div > div > div:nth-child(2)") ||
       document.querySelector("#main-content") ||
-      document.querySelector("main") ||
-      document.querySelector("main#workspace > div > div > div:nth-child(2)");
+      null;
     if (!feedColumn) return;
     Utils.setInlineStyle(feedColumn, "position", "relative");
     Utils.setInlineStyle(feedColumn, "overflow", "hidden");
@@ -231,7 +235,7 @@ const LinkedIn = {
     feedColumn.dataset.ftHidden = "true";
     const overlay = this.createOverlayElement(
       this.feedOverlayId,
-      "Feed Hidden",
+      ftMessage("feedHidden"),
       mode === "warn",
     );
     overlay.dataset.ftMode = mode;
@@ -248,20 +252,18 @@ const LinkedIn = {
     const searchText = normalizeText(headerText);
     const matchesHeader = (element) =>
       normalizeText(element.textContent || "").includes(searchText);
-    const currentCard = Array.from(
-      document.querySelectorAll("div._1f3f3b6f"),
-    ).find(matchesHeader);
-    if (currentCard) return currentCard;
-
     const roots = [
       document.querySelector("aside.scaffold-layout__aside"),
       ...Array.from(document.querySelectorAll("aside")),
-      document.body,
     ].filter(Boolean);
     const visitedRoots = new Set();
     for (const root of roots) {
       if (visitedRoots.has(root)) continue;
       visitedRoots.add(root);
+      const currentCard = Array.from(
+        root.querySelectorAll("div._1f3f3b6f"),
+      ).find(matchesHeader);
+      if (currentCard) return currentCard;
       const walker = document.createTreeWalker(
         root,
         NodeFilter.SHOW_TEXT,
@@ -276,10 +278,16 @@ const LinkedIn = {
         }
         const card =
           node.parentElement && node.parentElement.closest("div._1f3f3b6f");
-        if (card && card !== root) return card;
+        if (card && card !== root && root.contains(card)) return card;
         const artdecoCard =
           node.parentElement && node.parentElement.closest(".artdeco-card");
-        if (artdecoCard && artdecoCard !== root) return artdecoCard;
+        if (
+          artdecoCard &&
+          artdecoCard !== root &&
+          root.contains(artdecoCard)
+        ) {
+          return artdecoCard;
+        }
         let el = node.parentElement;
         let depth = 0;
         while (el && depth < 12 && el !== root) {
@@ -320,7 +328,7 @@ const LinkedIn = {
           Utils.setInlineStyle(addFeedCard, "overflow", "hidden");
           const overlay = this.createSmallOverlay(
             this.addFeedOverlayId,
-            "Hidden",
+            ftMessage("hidden"),
             allowDismiss,
             addFeedCard,
           );
@@ -345,6 +353,7 @@ const LinkedIn = {
     const overlay = document.createElement("div");
     overlay.id = id;
     overlay.className = "ft-stories-overlay";
+    localizeOwnedRoot(overlay);
     overlay.dataset.ftDismiss = showDismiss ? "true" : "false";
     if (CONFIG.isDarkMode) overlay.classList.add("dark");
     const icon = Utils.createBadge("ft-stories-overlay-icon");
@@ -355,7 +364,7 @@ const LinkedIn = {
     if (showDismiss) {
       const btn = document.createElement("button");
       btn.className = "ft-linkedin-overlay-btn";
-      btn.textContent = "View";
+      btn.textContent = ftMessage("view");
       btn.style.cssText =
         "margin-top: 8px; padding: 6px 16px; font-size: 12px; position: relative; z-index: 10; cursor: pointer;";
       btn.addEventListener("click", (e) => {
@@ -372,19 +381,20 @@ const LinkedIn = {
     const overlay = document.createElement("div");
     overlay.id = id;
     overlay.className = "ft-linkedin-overlay";
+    localizeOwnedRoot(overlay);
     if (CONFIG.isDarkMode) overlay.classList.add("dark");
     const icon = Utils.createBadge("ft-linkedin-overlay-icon");
     const h3 = document.createElement("h3");
     h3.textContent = title;
     const subtitle = document.createElement("p");
-    subtitle.textContent = "We're keeping you productive.";
+    subtitle.textContent = ftMessage("overlayProductiveShort");
     overlay.appendChild(icon);
     overlay.appendChild(h3);
     overlay.appendChild(subtitle);
     if (showDismiss) {
       const btn = document.createElement("button");
       btn.className = "ft-linkedin-overlay-btn";
-      btn.textContent = "View Anyway";
+      btn.textContent = ftMessage("viewAnyway");
       btn.onclick = () => {
         Utils.setAllowWindow("li", 5);
         this.removeFeedOverlay();

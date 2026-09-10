@@ -1135,6 +1135,44 @@ body.ft-hide-fb-reels-nav.ft-platform-fb a[aria-label*="Reel"] {
 .tutorial-overlay {
   display: none !important;
 }
+
+html[dir="rtl"] body {
+  direction: rtl;
+}
+
+html[dir="rtl"] .back-btn svg,
+html[dir="rtl"] #backBtn svg {
+  transform: scaleX(-1);
+}
+
+html[dir="rtl"] .switch,
+html[dir="rtl"] .mini-switch,
+html[dir="rtl"] .toggle,
+html[dir="rtl"] .platform-mode-badge,
+html[dir="rtl"] .platform-badge {
+  direction: ltr;
+}
+
+#timerDisplay,
+.timer-display,
+.stat-value,
+.platform-mode-badge,
+.platform-badge {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-variant-numeric: tabular-nums;
+}
+
+.control-text,
+.title-group,
+.setting-info,
+.mode-info,
+.platform-setting-label,
+.tutorial-tooltip-content,
+.review-prompt p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 .tutorial-backdrop {
   position: fixed;
   top: 0;

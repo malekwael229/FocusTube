@@ -13,6 +13,8 @@ The repository keeps one manifest per browser family:
 
 Both manifests declare `storage`, `alarms`, and `notifications`. They grant access only to the YouTube, Instagram, TikTok, Facebook, and LinkedIn host patterns used by the content scripts. Both use extension-page CSP that permits scripts from `self` only. Firefox also declares its extension ID, minimum Firefox version, and no required data collection.
 
+Both manifests set English as `default_locale`. The package includes browser-native message catalogs for English, Arabic, Spanish, Brazilian Portuguese, French, German, Turkish, and Indonesian. Manifest names and descriptions use catalog references, and `i18n.js` loads before the background, popup, options, and content-script code that requests localized text.
+
 The Chromium manifest uses `action`; the Firefox manifest uses `browser_action`. The Chromium manifest puts host patterns in `host_permissions`, while Firefox includes them in `permissions`. Both manifests provide the popup, options page, platform-specific content scripts, shared CSS, and the existing 16, 48, and 128 pixel icons.
 
 ## Build and Packaging
@@ -41,7 +43,7 @@ Listeners register synchronously at the top level before startup reconciliation 
 
 ## Content Scripts
 
-Each supported host receives `content-common.js` followed by one adapter at `document_start`:
+Each supported host receives `i18n.js`, `content-common.js`, and then one adapter at `document_start`:
 
 | Host | Adapter |
 | --- | --- |
@@ -53,17 +55,25 @@ Each supported host receives `content-common.js` followed by one adapter at `doc
 
 The shared script defines site detection, configuration, focus and timer state, DOM utilities, media locking and recovery, overlays, local statistics messages, settings synchronization, and timer-completion handling. The adapter owns route rules and selectors for its site. Adapters add platform classes, apply blocking or Warn overlays, hide configured visual surfaces, and restore page state when disabled.
 
+## Localization Boundary
+
+The browser chooses the extension locale automatically from the packaged catalogs, with English as the fallback. Popup and options markup use catalog keys, while scripts request messages through the shared helper. Extension-owned overlays are localized after creation. Language and direction metadata come from small messages in the resolved catalog rather than the browser UI locale, so unsupported browser locales receive English text with `lang="en"` and `dir="ltr"`.
+
+Resolved-catalog direction and language metadata apply to extension pages and extension-owned overlay roots, including Arabic right-to-left metadata. Content scripts do not change the host page's document direction or translate site content. Internal storage keys, runtime message types, timer alarm names, and other protocol identities remain stable and are not localized.
+
+Automatic localization is limited to the extension UI. Site adapters still recognize site routes and DOM supplied by each platform. The YouTube Subscriptions detector for the "Most relevant" shelf intentionally matches the English label only; a translated shelf label is outside that detector's current contract.
+
 ## DOM and SPA Behavior
 
 Content scripts inspect and modify the site's DOM. They add classes, inject or remove extension overlays and styles, cache inline styles before hiding elements, and track media that must be paused while a warning is visible. The shared `ensureBody()` helper waits for `document.body` when scripts start before the body exists and tracks its temporary observer so disabling can disconnect it.
 
-MutationObservers handle late-loaded page content. YouTube rechecks its DOM and inline hiding on mutations. Instagram, TikTok, and Facebook schedule one pending mutation check per burst without resetting the delay, so sustained mutations cannot postpone a check indefinitely. LinkedIn uses a delayed check. Platform observers and pending timers are cleaned up when a platform or the extension is disabled.
+MutationObservers handle late-loaded page content. YouTube observes the full body subtree and schedules an animation-frame pass for inline hiding on mutations without filtering individual mutation trees or running route checks. Route enforcement runs through navigation, settings-change, and lifecycle paths. Instagram, TikTok, Facebook, and LinkedIn schedule one pending mutation check per burst without resetting the delay, so sustained mutations cannot postpone a check indefinitely. LinkedIn feed and sidebar hiding stays within recognized containers. Platform observers and pending timers are cleaned up when a platform or the extension is disabled.
 
-SPA navigation is handled through `popstate`, site-specific navigation events where available, route checks, settings-change events, and mutation-triggered scans. This lets the extension respond when the document remains loaded while the URL or page content changes.
+SPA navigation is handled through `popstate`, site-specific navigation events where available, route checks, and settings-change events. Mutation-triggered scans handle relevant late-loaded visual surfaces. This lets the extension respond when the document remains loaded while the URL or page content changes.
 
 ## Storage, Alarms, and Messaging
 
-`chrome.storage.local` is the durable source of truth for extension settings, platform modes, visual-hiding toggles, popup visibility, timer state, notification preference, and local blocked-count statistics. Popup, options, background, and content scripts read or react to the same storage area, but only `background.js` mutates timer-state keys. Popup, options, and content scripts request timer mutations through serialized runtime messages handled by the background context. Partial `storage.onChanged` events are not reconstructed into timer state or alarms; timer identity is read from storage before timer side effects.
+`chrome.storage.local` is the durable source of truth for extension settings, platform modes, visual-hiding toggles, popup visibility, timer state, notification preference, and local blocked-count statistics. Localization changes display strings only; storage keys and stored values remain unchanged. Popup, options, background, and content scripts read or react to the same storage area, but only `background.js` mutates timer-state keys. Popup, options, and content scripts request timer mutations through serialized runtime messages handled by the background context. Null, undefined, primitive, array, and invalid-JSON runtime request shapes are rejected, while valid message type names remain unchanged. Partial `storage.onChanged` events are not reconstructed into timer state or alarms; timer identity is read from storage before timer side effects.
 
 The popup starts and stops timers by sending runtime messages to the background context. A failed popup stop does not show a false stopped state; it re-reads the durable timer end and type and repaints an active timer when one remains. If that recovery read fails, it leaves the current active display unchanged. Popup break start waits for a successful response and rereads durable timer state after failure; dismiss waits for a successful response and rereads the durable ended-session marker after failure. `dismissEndedPrompt` returns a structured failure when marker removal fails. Options import and Clear All Data use the `replaceSettings` message; the background accepts it only from a sender whose runtime ID matches `chrome.runtime.id` and whose URL starts with the `chrome.runtime.getURL("")` origin, including Firefox `moz-extension://` pages. Import validation requires `ft_timer_end` and `ft_timer_type` together, with `work` or `break` as the timer type. Replacement stages existing-key writes, obsolete-key removal, and introduced-key writes, and restores the previous storage and primary alarm on failure without using `storage.clear`. A disabled replacement removes timer state before the primary alarm is cleared, and stop and disable operations use the same ordering. The popup derives its display from the stored timestamp, so closing the popup does not stop the timer. Only a matching enabled timer alarm completes a timer: the background optionally creates a browser notification, sends `TIMER_COMPLETE` to extension listeners and supported-site tabs, then transitions from work to break or clears the completed break. Content scripts show the corresponding local toast and update blocking state from storage. When either timer field changes, content scripts re-read `ft_timer_end` and `ft_timer_type` together before updating `CONFIG.timer` or dispatching the settings-change event.
 

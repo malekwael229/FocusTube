@@ -1,3 +1,10 @@
+if (typeof importScripts === "function" && typeof globalThis.FT_I18N === "undefined") {
+  importScripts("i18n.js");
+}
+
+const ftMessage = (key, substitutions) =>
+  globalThis.FT_I18N?.message(key, substitutions) || "";
+
 const TIMER_ALARM_NAME = "focusTubeTimer";
 let statIncrementPending = 0;
 let statIncrementActive = false;
@@ -554,6 +561,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return false;
     }
   }
+  if (!request || typeof request !== "object" || Array.isArray(request)) {
+    return false;
+  }
   if (request.action === "incrementStat") {
     const amount = Math.max(1, Number(request.amount) || 1);
     statIncrementPending += amount;
@@ -891,12 +901,14 @@ function completeTimer(expected, done, retryAttempt = 0, completionClaimOwned = 
       const isWork = expected.type === "work";
       const breakTime = parseInt(res.breakDuration) || 5;
       const autoStart = res.autoStartBreaks !== false;
-      const title = isWork ? "Focus Timer Complete! \u{1F389}" : "Break Over! \u{23F0}";
-      let msg = "Back to work. Distractions blocked.";
+      const title = ftMessage(
+        isWork ? "focusTimerCompleteNotification" : "breakOverNotification",
+      );
+      let msg = ftMessage("notificationBackToWork");
       if (isWork) {
         msg = autoStart
-          ? `Time for a ${breakTime}-minute break.`
-          : "Focus session complete.";
+          ? ftMessage("notificationTimeForBreak", [String(breakTime)])
+          : ftMessage("notificationFocusComplete");
       }
       const notify = (callback) => {
         if (!completionClaimOwned) {

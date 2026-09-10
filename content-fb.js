@@ -125,6 +125,9 @@ const Facebook = {
       Utils.shouldApplyVisualHiding("fb");
     const onReelsPath = this.isReelsPath(path);
     if (onReelsPath) {
+      // The home-page stories overlay can survive SPA navigation into Reels.
+      // Remove it before applying the Reels state so it cannot cover controls.
+      this.removeStoriesOverlay();
       if (
         Utils.isSessionAllowed("fb", warnScope) &&
         CONFIG.platformSettings.fb !== "strict"
@@ -362,10 +365,11 @@ const Facebook = {
     const overlay = document.createElement("div");
     overlay.id = this.storiesOverlayId;
     overlay.className = "ft-stories-overlay";
+    localizeOwnedRoot(overlay);
     if (CONFIG.isDarkMode) overlay.classList.add("dark");
     const icon = Utils.createBadge("ft-stories-overlay-icon");
     const text = document.createElement("span");
-    text.textContent = "Stories Hidden";
+    text.textContent = ftMessage("storiesHidden");
     overlay.appendChild(icon);
     overlay.appendChild(text);
     storyShelf.appendChild(overlay);

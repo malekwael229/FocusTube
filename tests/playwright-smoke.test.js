@@ -76,7 +76,7 @@ function assertPerPlatformContentScripts(manifest, label) {
     assert.deepEqual(entry.css, ["content.css"], `${label} ${match} css`);
     assert.deepEqual(
       entry.js,
-      ["content-common.js", platformScript],
+      ["i18n.js", "content-common.js", platformScript],
       `${label} ${match} js`,
     );
     assert.equal(entry.run_at, "document_start", `${label} ${match} run_at`);
@@ -604,16 +604,32 @@ function instagramFixtureHtml({ warnMedia = false } = {}) {
 </html>`;
 }
 
-function linkedinFixtureHtml() {
+function linkedinFixtureHtml({ genericOnly = false } = {}) {
+  if (genericOnly) {
+    return `<!doctype html>
+<html>
+  <head><title>FocusTube LinkedIn Generic Fixture</title></head>
+  <body>
+    <main id="generic-main">
+      <div id="non-sidebar-card" class="_1f3f3b6f">Add to your feed</div>
+    </main>
+    <div id="outer-sidebar-ancestor" class="artdeco-card">
+      <aside id="generic-sidebar"><span>Add to your feed</span></aside>
+    </div>
+  </body>
+</html>`;
+  }
   return `<!doctype html>
 <html>
   <head><title>FocusTube LinkedIn Fixture</title></head>
   <body>
     <main id="main-content"><p>Normal LinkedIn feed</p></main>
-    <aside id="unrelated-sidebar"><div>Unrelated sidebar content</div></aside>
-    <div id="add-feed-card" class="_739dbf16 _1f3f3b6f">
-      <div class="baa8df48"><p>Add to your feed</p><a href="/in/example/">Example profile</a></div>
-    </div>
+    <main id="generic-main"><div id="non-sidebar-card" class="_1f3f3b6f">Add to your feed</div></main>
+    <aside id="feed-sidebar">
+      <div id="add-feed-card" class="_739dbf16 _1f3f3b6f">
+        <div class="baa8df48"><p>Add to your feed</p><a href="/in/example/">Example profile</a></div>
+      </div>
+    </aside>
   </body>
 </html>`;
 }
@@ -639,12 +655,18 @@ async function verifyYouTubeMostRelevantRuntime(context, extensionId) {
 
   await context.route(
     "https://www.youtube.com/feed/subscriptions**",
-    (route) =>
+    (route) => {
+      const isLocalizedFixture = new URL(route.request().url()).searchParams.has(
+        "localized",
+      );
       route.fulfill({
         status: 200,
         contentType: "text/html",
-        body: youtubeFixtureHtml(),
-      }),
+        body: youtubeFixtureHtml(
+          isLocalizedFixture ? "Más relevantes" : "Most relevant",
+        ),
+      });
+    },
   );
   await context.route("https://www.youtube.com/feed/trending**", (route) =>
     route.fulfill({
@@ -688,6 +710,15 @@ async function verifyYouTubeMostRelevantRuntime(context, extensionId) {
 
   await setStorage(settingsPage, { hide_yt_most_relevant_shelf: true });
   await page.goto("https://www.youtube.com/feed/trending", {
+    waitUntil: "domcontentloaded",
+  });
+  await page.waitForTimeout(500);
+  assert.notEqual(
+    await page.locator("#target-shelf").evaluate((el) => getComputedStyle(el).display),
+    "none",
+  );
+
+  await page.goto("https://www.youtube.com/feed/subscriptions?localized=1", {
     waitUntil: "domcontentloaded",
   });
   await page.waitForTimeout(500);
@@ -741,6 +772,32 @@ async function verifyFacebookRuntime(context, extensionId) {
     "none",
   );
   assert.equal(await home.locator("#focus-tube-warning-overlay").count(), 0);
+
+  await home.evaluate(() => {
+    history.pushState({}, "", "/reel/123");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  });
+  await home.locator("#focus-tube-warning-overlay").waitFor({ state: "visible" });
+  await home.waitForFunction(
+    () => !document.querySelector("#ft-fb-stories-overlay"),
+  );
+  assert.equal(
+    await home.locator("#stories").evaluate((element) => element.style.overflow),
+    "",
+  );
+
+  await home.evaluate(() => {
+    history.pushState({}, "", "/");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  });
+  await home.waitForFunction(
+    () =>
+      !document.querySelector("#focus-tube-warning-overlay") &&
+      document.querySelectorAll("#ft-fb-stories-overlay").length === 1,
+  );
+  await home.evaluate(() => document.body.appendChild(document.createElement("div")));
+  await home.waitForTimeout(100);
+  assert.equal(await home.locator("#ft-fb-stories-overlay").count(), 1);
 
   await setStorage(settingsPage, { hide_fb_people_you_might_know: false });
   await home.waitForFunction(
@@ -945,6 +1002,213 @@ async function verifyLocalizedTikTokRuntime(context, extensionId) {
   pass("TikTok strict blocking recognizes locale-prefixed routes");
 }
 
+async function verifyArabicLocalization(context, extensionId) {
+  await seedStorage(context, extensionId);
+
+  const popup = await openExtensionPage(context, extensionId, "popup.html");
+  const nativeLocale = await popup.evaluate(() => ({
+    enabled: chrome.i18n.getMessage("enabled"),
+    uiLocale: chrome.i18n.getMessage("@@ui_locale"),
+    bidiDirection: chrome.i18n.getMessage("@@bidi_dir"),
+    uiLanguage: chrome.i18n.getUILanguage(),
+  }));
+  assert.deepEqual(nativeLocale, {
+    enabled: "مفعّل",
+    uiLocale: "ar",
+    bidiDirection: "rtl",
+    uiLanguage: "ar",
+  });
+  await popup.waitForFunction(
+    () => document.documentElement.dir === "rtl" && document.documentElement.lang.startsWith("ar"),
+  );
+  assert.match(await popup.locator("body").innerText(), /إخفاء عناصر الواجهة المشتتة/);
+
+  const mainToggle = popup.getByRole("checkbox", {
+    name: "إخفاء عناصر الواجهة المشتتة",
+  });
+  const enabledToggle = popup.getByRole("checkbox", { name: "مفعّل" });
+  await mainToggle.waitFor({ state: "attached" });
+  await enabledToggle.waitFor({ state: "attached" });
+  const brandIconTransform = await popup
+    .locator('.platform-icon[data-platform="fb"] svg')
+    .evaluate((element) => getComputedStyle(element).transform);
+  assert.equal(brandIconTransform, "none", "brand/platform icons stay unmirrored in RTL");
+
+  await popup.locator('button[data-platform="fb"]').click();
+  const storiesToggle = popup.getByRole("checkbox", { name: "إخفاء القصص" });
+  await storiesToggle.waitFor({ state: "attached" });
+  assert.equal(await storiesToggle.isChecked(), true);
+  const storiesSwitch = storiesToggle.locator("..");
+  await storiesSwitch.click();
+  await waitForStorageValue(popup, "hide_fb_stories", false);
+  await storiesSwitch.click();
+  await waitForStorageValue(popup, "hide_fb_stories", true);
+  assert.notEqual(
+    await popup.locator("#backBtn svg").evaluate((element) => getComputedStyle(element).transform),
+    "none",
+    "directional back arrow mirrors in RTL",
+  );
+  await popup.locator("#backBtn").click();
+
+  await setStorage(popup, {
+    ft_timer_end: Date.now() + 5 * 60 * 1000,
+    ft_timer_type: "work",
+  });
+  await popup.reload();
+  await popup.waitForFunction(() => /^\d{2}:\d{2}$/.test(document.querySelector("#timerDisplay")?.textContent || ""));
+  const timerRendering = await popup.locator("#timerDisplay").evaluate((element) => ({
+    text: element.textContent,
+    direction: getComputedStyle(element).direction,
+    unicodeBidi: getComputedStyle(element).unicodeBidi,
+  }));
+  assert.match(timerRendering.text, /^\d{2}:\d{2}$/);
+  assert.equal(timerRendering.direction, "ltr");
+  assert.equal(timerRendering.unicodeBidi, "isolate");
+  const popupBounds = await popup.evaluate(() => {
+    const rect = document.querySelector("#popupControls").getBoundingClientRect();
+    return {
+      left: rect.left,
+      right: rect.right,
+      width: rect.width,
+      viewportWidth: innerWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    };
+  });
+  assert.ok(popupBounds.left >= 0 && popupBounds.right <= popupBounds.viewportWidth);
+  assert.ok(popupBounds.width <= 420);
+  assert.ok(popupBounds.scrollWidth <= popupBounds.viewportWidth);
+  const visualDirectory = path.join(root, ".tmp", "g005-visual");
+  fs.mkdirSync(visualDirectory, { recursive: true });
+  await popup.screenshot({ path: path.join(visualDirectory, "arabic-popup.png") });
+  await popup.close();
+
+  const options = await openExtensionPage(context, extensionId, "options.html");
+  await options.waitForFunction(
+    () => document.documentElement.dir === "rtl" && document.documentElement.lang.startsWith("ar"),
+  );
+  assert.match(await options.locator("body").innerText(), /خيارات FocusTube/);
+  const optionsBounds = await options.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    viewportWidth: innerWidth,
+    controlsOutsideViewport: [...document.querySelectorAll("button, input, select")]
+      .filter((element) => {
+        const rect = element.getBoundingClientRect();
+        return rect.right > innerWidth || rect.left < 0;
+      }).length,
+  }));
+  assert.ok(optionsBounds.scrollWidth <= optionsBounds.viewportWidth);
+  assert.equal(optionsBounds.controlsOutsideViewport, 0);
+  await options.screenshot({
+    path: path.join(visualDirectory, "arabic-options.png"),
+    fullPage: true,
+  });
+  await options.close();
+
+  await context.route("https://www.tiktok.com/**", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "text/html",
+      body: tiktokFixtureHtml().replace("<html>", '<html lang="en" dir="ltr">'),
+    }),
+  );
+  const host = await context.newPage();
+  await host.goto("https://www.tiktok.com/foryou", { waitUntil: "domcontentloaded" });
+  const overlay = host.locator("#focus-tube-warning-overlay");
+  await overlay.waitFor({ state: "visible" });
+  assert.equal(await overlay.getAttribute("dir"), "rtl");
+  assert.match(await overlay.getAttribute("lang"), /^ar(?:-|$)/);
+  assert.match(await overlay.innerText(), /الوضع الصارم نشط/);
+  const overlayBounds = await overlay.evaluate((element) => {
+    const overlayRect = element.getBoundingClientRect();
+    const cardRect = element.querySelector(".focus-tube-card").getBoundingClientRect();
+    return {
+      overlay: {
+        left: overlayRect.left,
+        top: overlayRect.top,
+        right: overlayRect.right,
+        bottom: overlayRect.bottom,
+      },
+      card: {
+        left: cardRect.left,
+        top: cardRect.top,
+        right: cardRect.right,
+        bottom: cardRect.bottom,
+      },
+      viewport: { width: innerWidth, height: innerHeight },
+    };
+  });
+  assert.ok(overlayBounds.overlay.left <= 0 && overlayBounds.overlay.top <= 0);
+  assert.ok(overlayBounds.overlay.right >= overlayBounds.viewport.width);
+  assert.ok(overlayBounds.overlay.bottom >= overlayBounds.viewport.height);
+  assert.ok(overlayBounds.card.left >= 0 && overlayBounds.card.top >= 0);
+  assert.ok(overlayBounds.card.right <= overlayBounds.viewport.width);
+  assert.ok(overlayBounds.card.bottom <= overlayBounds.viewport.height);
+  assert.deepEqual(
+    await host.locator("html").evaluate((element) => ({
+      lang: element.getAttribute("lang"),
+      dir: element.getAttribute("dir"),
+    })),
+    { lang: "en", dir: "ltr" },
+  );
+  await host.screenshot({ path: path.join(visualDirectory, "arabic-overlay.png") });
+  await host.close();
+  pass("native Chromium Arabic locale renders accessible bounded popup, options, and owned overlay RTL");
+}
+
+async function verifyNativeEnglishFallback(context, extensionId) {
+  await seedStorage(context, extensionId);
+  const popup = await openExtensionPage(context, extensionId, "popup.html");
+  const locale = await popup.evaluate(() => ({
+    enabled: chrome.i18n.getMessage("enabled"),
+    uiLocale: chrome.i18n.getMessage("@@ui_locale"),
+    bidiDirection: chrome.i18n.getMessage("@@bidi_dir"),
+    uiLanguage: chrome.i18n.getUILanguage(),
+    dir: document.documentElement.dir,
+    lang: document.documentElement.lang,
+  }));
+  assert.deepEqual(locale, {
+    enabled: "Enabled",
+    uiLocale: "ja",
+    bidiDirection: "ltr",
+    uiLanguage: "ja",
+    dir: "ltr",
+    lang: "en",
+  });
+  await popup.getByRole("checkbox", { name: "Enabled" }).waitFor({ state: "attached" });
+  await popup.getByRole("checkbox", { name: "Hide UI distractions" }).waitFor({
+    state: "attached",
+  });
+  await popup.close();
+
+  const options = await openExtensionPage(context, extensionId, "options.html");
+  assert.match(await options.locator("body").innerText(), /FocusTube Options/);
+  await options.close();
+
+  await context.route("https://www.tiktok.com/**", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "text/html",
+      body: tiktokFixtureHtml().replace("<html>", '<html lang="ja" dir="rtl">'),
+    }),
+  );
+  const host = await context.newPage();
+  await host.goto("https://www.tiktok.com/foryou", { waitUntil: "domcontentloaded" });
+  const overlay = host.locator("#focus-tube-warning-overlay");
+  await overlay.waitFor({ state: "visible" });
+  assert.equal(await overlay.getAttribute("dir"), "ltr");
+  assert.equal(await overlay.getAttribute("lang"), "en");
+  assert.match(await overlay.innerText(), /Strict Mode Active/);
+  assert.deepEqual(
+    await host.locator("html").evaluate((element) => ({
+      lang: element.getAttribute("lang"),
+      dir: element.getAttribute("dir"),
+    })),
+    { lang: "ja", dir: "rtl" },
+  );
+  await host.close();
+  pass("unsupported native locale profile uses canonical English text and owned metadata");
+}
+
 async function verifyLinkedInRuntime(context, extensionId) {
   const settingsPage = await openExtensionPage(context, extensionId, "popup.html");
   await setStorage(settingsPage, {
@@ -954,13 +1218,14 @@ async function verifyLinkedInRuntime(context, extensionId) {
     hide_li_feed: true,
     hide_li_addfeed: true,
   });
-  await context.route("https://www.linkedin.com/feed**", (route) =>
-    route.fulfill({
+  await context.route("https://www.linkedin.com/feed**", (route) => {
+    const genericOnly = new URL(route.request().url()).searchParams.has("generic");
+    return route.fulfill({
       status: 200,
       contentType: "text/html",
-      body: linkedinFixtureHtml(),
-    }),
-  );
+      body: linkedinFixtureHtml({ genericOnly }),
+    });
+  });
   const page = await context.newPage();
   await page.goto("https://www.linkedin.com/feed", { waitUntil: "domcontentloaded" });
   await page.locator("#ft-linkedin-addfeed-overlay").waitFor({ state: "visible" });
@@ -980,9 +1245,38 @@ async function verifyLinkedInRuntime(context, extensionId) {
     .evaluateAll((nodes) => nodes.map((node) => node.id));
   assert.equal(new Set(gradientIds).size, gradientIds.length);
   assert.equal(await page.locator("#add-feed-card").count(), 1);
+  assert.equal(await page.locator("#non-sidebar-card #ft-linkedin-addfeed-overlay").count(), 0);
+  const genericMainStyle = await page.locator("#generic-main").evaluate((element) => ({
+    maxHeight: element.style.maxHeight,
+    overflow: element.style.overflow,
+  }));
+  assert.deepEqual(genericMainStyle, { maxHeight: "", overflow: "" });
   await page.close();
+
+  const genericPage = await context.newPage();
+  await genericPage.goto("https://www.linkedin.com/feed?generic=1", {
+    waitUntil: "domcontentloaded",
+  });
+  await genericPage.waitForTimeout(250);
+  assert.equal(await genericPage.locator("#ft-linkedin-feed-overlay").count(), 0);
+  assert.equal(await genericPage.locator("#ft-linkedin-addfeed-overlay").count(), 0);
+  for (const selector of [
+    "#generic-main",
+    "#non-sidebar-card",
+    "#outer-sidebar-ancestor",
+  ]) {
+    assert.deepEqual(
+      await genericPage.locator(selector).evaluate((element) => ({
+        maxHeight: element.style.maxHeight,
+        overflow: element.style.overflow,
+        position: element.style.position,
+      })),
+      { maxHeight: "", overflow: "", position: "" },
+    );
+  }
+  await genericPage.close();
   await settingsPage.close();
-  pass("LinkedIn Add to your feed hiding finds the current card wrapper");
+  pass("LinkedIn hiding stays inside recognized feed and sidebar containers");
 }
 
 async function verifyYouTubeShortsRedirectFixture(context, extensionId) {
@@ -1075,6 +1369,52 @@ async function runBrowserSmoke() {
       await context.close();
       fs.rmSync(userDataDir, { recursive: true, force: true });
     }
+  }
+
+  const arabicUserDataDir = fs.mkdtempSync(
+    path.join(os.tmpdir(), "focustube-smoke-ar-"),
+  );
+  const arabicContext = await chromium.launchPersistentContext(arabicUserDataDir, {
+    headless: false,
+    locale: "ar",
+    env: { ...process.env, LANGUAGE: "ar", LANG: "C.UTF-8" },
+    args: [
+      `--disable-extensions-except=${chromiumBuild}`,
+      `--load-extension=${chromiumBuild}`,
+      "--disable-default-apps",
+      "--no-first-run",
+      "--lang=ar",
+    ],
+  });
+  try {
+    const extensionId = await getExtensionId(arabicContext);
+    await verifyArabicLocalization(arabicContext, extensionId);
+  } finally {
+    await arabicContext.close();
+    fs.rmSync(arabicUserDataDir, { recursive: true, force: true });
+  }
+
+  const fallbackUserDataDir = fs.mkdtempSync(
+    path.join(os.tmpdir(), "focustube-smoke-fallback-"),
+  );
+  const fallbackContext = await chromium.launchPersistentContext(fallbackUserDataDir, {
+    headless: false,
+    locale: "ja",
+    env: { ...process.env, LANGUAGE: "ja", LANG: "C.UTF-8" },
+    args: [
+      `--disable-extensions-except=${chromiumBuild}`,
+      `--load-extension=${chromiumBuild}`,
+      "--disable-default-apps",
+      "--no-first-run",
+      "--lang=ja",
+    ],
+  });
+  try {
+    const extensionId = await getExtensionId(fallbackContext);
+    await verifyNativeEnglishFallback(fallbackContext, extensionId);
+  } finally {
+    await fallbackContext.close();
+    fs.rmSync(fallbackUserDataDir, { recursive: true, force: true });
   }
 }
 

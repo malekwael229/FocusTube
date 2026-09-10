@@ -25,7 +25,7 @@ function assertPerPlatformContentScripts(manifest) {
     assert.ok(entry, `Missing content script entry for ${match}`);
     assert.deepEqual(entry.matches, [match]);
     assert.deepEqual(entry.css, ["content.css"]);
-    assert.deepEqual(entry.js, ["content-common.js", platformScript]);
+    assert.deepEqual(entry.js, ["i18n.js", "content-common.js", platformScript]);
     assert.equal(entry.run_at, "document_start");
   });
 }
@@ -329,7 +329,7 @@ const checks = [
       assert.match(common, /hide_fb_stories/);
       assert.match(common, /hide_fb_people_you_might_know/);
       assert.match(popup, /hide_fb_stories/);
-      assert.match(popup, /Hide Stories/);
+      assert.match(popup, /labelKey:\s*"hideStories"/);
       assert.match(popup, /hide_fb_people_you_might_know/);
       assert.match(options, /hide_fb_stories/);
       assert.match(options, /hide_fb_people_you_might_know/);
@@ -385,6 +385,7 @@ const checks = [
     () => {
       const facebook = read("content-fb.js");
       assert.match(facebook, /const onReelsPath = this\.isReelsPath\(path\)/);
+      assert.match(facebook, /if \(onReelsPath\) \{[\s\S]*this\.removeStoriesOverlay\(\)/);
       assert.match(facebook, /isReelsPath: function \(path\)/);
       assert.match(facebook, /normalizedPath === "\/reel"/);
       assert.match(facebook, /normalizedPath\.startsWith\("\/reel\/"\)/);
@@ -440,13 +441,23 @@ const checks = [
     },
   ],
   [
-    "LinkedIn Add to your feed hiding supports the current card wrapper",
+    "LinkedIn visual hiding fails open outside scoped feed and sidebar containers",
     () => {
       const linkedin = read("content-li.js");
+      const feedBlock = linkedin.slice(
+        linkedin.indexOf("showFeedOverlay: function"),
+        linkedin.indexOf("findSidebarCard: function"),
+      );
+      const sidebarBlock = linkedin.slice(
+        linkedin.indexOf("findSidebarCard: function"),
+        linkedin.indexOf("showSidebarOverlays: function"),
+      );
 
       assert.match(linkedin, /closest\("div\._1f3f3b6f"\)/);
-      assert.match(linkedin, /querySelectorAll\("div\._1f3f3b6f"\)/);
+      assert.match(linkedin, /root\.querySelectorAll\("div\._1f3f3b6f"\)/);
       assert.match(linkedin, /findSidebarCard: function \(headerText\)/);
+      assert.doesNotMatch(feedBlock, /querySelector\("main"\)/);
+      assert.doesNotMatch(sidebarBlock, /document\.body/);
     },
   ],
   [
@@ -460,9 +471,9 @@ const checks = [
       assert.match(common, /ytMostRelevantShelf: true/);
       assert.match(common, /hide_yt_most_relevant_shelf/);
       assert.match(popup, /hide_yt_most_relevant_shelf/);
-      assert.match(popup, /Hide "Most Relevant"/);
+      assert.match(popup, /labelKey:\s*"hideMostRelevantShelfShort"/);
       assert.match(options, /hide_yt_most_relevant_shelf: true/);
-      assert.match(options, /Hide "Most Relevant" Shelf/);
+      assert.match(options, /msg\("hideMostRelevantShelf"\)/);
 
       const mostRelevantBlock = youtube.slice(
         youtube.indexOf("applyMostRelevantShelfHiding: function"),
@@ -499,8 +510,13 @@ const checks = [
       assert.match(youtube, /scheduleInlineHiding: function/);
       assert.match(
         youtube,
-        /new MutationObserver\(\(\) => \{\s*this\.scheduleInlineHiding\(\);\s*this\.runChecks\(\);/,
+        /new MutationObserver\(\(\) => \{\s*this\.scheduleInlineHiding\(\);\s*\}\)/,
       );
+      const observerBlock = youtube.slice(
+        youtube.indexOf("ensureObservers: function"),
+        youtube.indexOf("disable: function"),
+      );
+      assert.doesNotMatch(observerBlock, /this\.runChecks\(\)/);
       assert.match(youtube, /requestAnimationFrame\(run\)/);
       assert.match(youtube, /this\.applyMostRelevantShelfHiding\(\)/);
       assert.match(youtube, /this\.restoreHidden\(this\.hiddenNavElements\)/);
@@ -717,7 +733,7 @@ const checks = [
       assert.match(importBlock, /const hasTimerType = hasOwn\(raw, "ft_timer_type"\)/);
       assert.match(
         importBlock,
-        /if \(hasTimerEnd !== hasTimerType\)[\s\S]*ft_timer_end and ft_timer_type must be imported together/,
+        /if \(hasTimerEnd !== hasTimerType\)[\s\S]*errorKey: "importTimerFieldsTogether"/,
       );
       assert.match(
         importBlock,
@@ -728,7 +744,7 @@ const checks = [
       assert.doesNotMatch(importBlock, /value === null\)[\s\S]*sanitized\[key\] = null/);
       assert.match(
         importBlock,
-        /if \(invalidKeys\.length > 0\)[\s\S]*return \{ error:/,
+        /if \(invalidKeys\.length > 0\)[\s\S]*errorKey: "importInvalidValues"/,
       );
       assert.match(
         importBlock,
@@ -974,7 +990,7 @@ const checks = [
       assert.equal(firefoxManifest.version, "2.3.2");
       assert.match(
         changelog,
-        /^##\s*\[Unreleased\]\s*\r?\n\s*No unreleased changes yet\./m,
+        /^##[ \t]+\[Unreleased\][ \t]*\r?$/m,
       );
       assert.match(changelog, /^##\s*\[2\.3\.2\]\s*-\s*2026-09-01$/m);
     },
