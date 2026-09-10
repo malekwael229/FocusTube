@@ -58,10 +58,41 @@ function enableReproducibleZipMetadata() {
     }
   };
 
-  const originalReaddir = fs.readdir;
-  fs.readdir = (directory, callback) => originalReaddir(directory, (error, files) => {
-    callback(error, files && files.sort());
-  });
+  const pendingReaddir = [];
+  let drainingReaddir = false;
+
+  function drainReaddirQueue() {
+    if (pendingReaddir.length === 0) {
+      drainingReaddir = false;
+      return;
+    }
+    const next = pendingReaddir.shift();
+    try {
+      next();
+    } finally {
+      if (pendingReaddir.length > 0) {
+        process.nextTick(drainReaddirQueue);
+      } else {
+        drainingReaddir = false;
+      }
+    }
+  }
+
+  fs.readdir = (directory, options, callback) => {
+    const cb = typeof options === "function" ? options : callback;
+    let error = null;
+    let files;
+    try {
+      files = fs.readdirSync(directory).sort();
+    } catch (err) {
+      error = err;
+    }
+    pendingReaddir.push(() => cb(error, files));
+    if (!drainingReaddir) {
+      drainingReaddir = true;
+      process.nextTick(drainReaddirQueue);
+    }
+  };
   fs.stat = (file, callback) => {
     try {
       callback(null, fs.statSync(file));
