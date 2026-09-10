@@ -121,10 +121,6 @@ Impact figures are approximate as of September 1, 2026. Store dashboards use dif
 - Chrome Web Store Featured status.
 - Published on all three stores: Chrome, Edge, and Firefox.
 
-## Development Note
-
-AI tools contributed substantially to the implementation. The maintainer remains responsible for product direction, requirements, UX decisions, testing, debugging, publishing, maintenance, user feedback, and release management.
-
 ---
 
 ## Technical Highlights
