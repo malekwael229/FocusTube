@@ -16,10 +16,10 @@ People seeking relief from Shorts, Reels, or feeds while retaining useful platfo
 Sticky overview navigation leads to the homepage, five `/block-*` guides, and install actions. Each guide uses breadcrumb, behavior summary, mode explanation, privacy/source links, stores, and related guides. Footer links Home, Privacy, and GitHub.
 
 ## Design principles
-Lead with the product promise; describe detected routes and surfaces precisely; keep install actions visible; use existing product visuals; prefer progressive disclosure and short sections; preserve no-JavaScript usability.
+Lead with the product promise; describe detected routes and surfaces precisely; keep install actions visible; use supplied visuals for design reference only; prefer progressive disclosure and short sections; preserve no-JavaScript usability.
 
 ## Visual language
-Light blue-gray backgrounds, deep navy text, teal accents, rounded cards, restrained shadows, and supplied dark product screenshots. System sans typography uses a strong display scale and readable body text. Spacing and colors are owned by `assets/site.css`; imagery is genuine supplied FocusTube artwork.
+Light blue-gray backgrounds, deep navy text, teal accents, rounded cards, and restrained shadows. Supplied product images are design references only and must not be copied into the repository or displayed on the website. System sans typography uses a strong display scale and readable body text. Spacing and colors are owned by `assets/site.css`; the existing extension icon identifies the product.
 
 ## Components
 Shared header/nav, skip link, hero, install-link cards, platform cards, mode cards, trust cards, guide layout, related-link pills, and footer. Components are static HTML patterns styled by `assets/site.css`; no framework or remote assets.
@@ -28,7 +28,7 @@ Shared header/nav, skip link, hero, install-link cards, platform cards, mode car
 Target WCAG 2.1 AA practices: semantic landmarks, one H1 per page, descriptive image alternatives, visible `:focus-visible`, skip link, native links, readable contrast, and keyboard-accessible controls. No motion is required.
 
 ## Responsive behavior
-Desktop uses two-column hero/guide layouts and card grids. At 760px and below layouts stack, navigation scrolls horizontally, and store/platform cards become single-column. Tested at 1440px, 390px, and 320px with no document-level horizontal overflow.
+Desktop uses a single-column hero and guide layout with card grids. At 760px and below navigation scrolls horizontally and store/platform cards become single-column. Verify at 1440px, 390px, and 320px with no document-level horizontal overflow.
 
 ## Interaction states
 Pages are static and usable offline after assets load. Links provide direct navigation; there are no loading, account, form, or tracking states. Broken external stores remain an operational maintenance concern and are covered by link validation against canonical URLs.
