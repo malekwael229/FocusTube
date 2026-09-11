@@ -381,7 +381,7 @@ async function verifyOptions(context, extensionId) {
   await assertControlsUsePageFont(page, "Options page");
   const bodyText = await page.locator("body").innerText();
 
-  assert.match(bodyText, /Version 2\.3\.2/);
+  assert.match(bodyText, /Version 2\.4\.0/);
   assertNoText(bodyText, /1 minute \(testing only\)/, "Options still show temporary one-minute test option");
   assertNoText(bodyText, /play\s*sound/i, "Options still show sound option text");
   assert.equal(await page.locator("#playSound").count(), 0);
