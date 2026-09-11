@@ -10,6 +10,13 @@ All notable project-facing changes are documented here.
 - Added non-resetting pending mutation scheduling for LinkedIn, narrowed its feed and sidebar matching, changed the broad YouTube body observer to schedule animation-frame inline hiding without mutation-tree filtering or route checks, and added guards for null, undefined, primitive, and array background request shapes without changing valid command handling.
 - Removed stale Facebook Stories overlays when SPA navigation reaches Reels.
 
+## [2.4.0] - 2026-09-11
+
+- Added optional Instagram suggested-post and sponsored-post filtering with sanitized structural fixtures and regression coverage.
+- Added optional LinkedIn outside-network, promoted-post, and network-activity filtering with late-render and recycled-node handling.
+- Paused media when filtered posts collapse and preserved local-first behavior without new permissions or network requests.
+- Added a static, subpath-safe project website with platform guides, technical SEO, and official browser-store links.
+
 ## [2.3.2] - 2026-09-01
 
 - Disabled Firefox private-window access so FocusTube does not persist data from private browsing sessions.

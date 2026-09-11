@@ -1,3 +1,6 @@
+const msg = (key, substitutions) =>
+  globalThis.FT_I18N?.message(key, substitutions) || "";
+
 document.addEventListener("DOMContentLoaded", function () {
   const defaultSettings = {
     ft_enabled: true,
@@ -55,19 +58,13 @@ document.addEventListener("DOMContentLoaded", function () {
     ),
     "ft_timer_type",
   ]);
-  const importAllowedKeys = new Set([
-    ...importBooleanKeys,
-    ...importNumberKeys,
-    ...importStringKeys,
-    "platformSettings",
-  ]);
   const importPlatformKeys = ["yt", "ig", "tt", "fb", "li"];
   const importPlatformModes = new Set(["strict", "warn", "allow"]);
   const hasOwn = (object, key) =>
     Object.prototype.hasOwnProperty.call(object, key);
   function sanitizeImportData(raw) {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
-      return { error: "Import file must contain a JSON object." };
+      return { errorKey: "importObjectRequired" };
     }
     const sanitized = {};
     const invalidKeys = [];
@@ -87,7 +84,11 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
       const value = Number(raw[key]);
-      if (Number.isFinite(value) && value >= 0) {
+      if (
+        Number.isFinite(value) &&
+        value >= 0 &&
+        (key !== "ft_timer_end" || value > 0)
+      ) {
         sanitized[key] = key === "ft_stats_blocked" ? Math.floor(value) : value;
       } else {
         invalidKeys.push(key);
@@ -105,9 +106,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
       if (key === "ft_timer_type") {
-        if (value === null) {
-          sanitized[key] = null;
-        } else if (value === "work" || value === "break") {
+        if (value === "work" || value === "break") {
           sanitized[key] = value;
         } else {
           invalidKeys.push(key);
@@ -140,8 +139,22 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
     }
+    const hasTimerEnd = hasOwn(raw, "ft_timer_end");
+    const hasTimerType = hasOwn(raw, "ft_timer_type");
+    if (hasTimerEnd !== hasTimerType) {
+      return {
+        errorKey: "importTimerFieldsTogether",
+      };
+    }
+    if (hasTimerEnd && hasTimerType && raw.ft_timer_end === null) {
+      delete sanitized.ft_timer_end;
+      delete sanitized.ft_timer_type;
+    }
     if (invalidKeys.length > 0) {
-      return { error: `Invalid values for: ${invalidKeys.join(", ")}` };
+      return {
+        errorKey: "importInvalidValues",
+        errorArgs: [invalidKeys.join(", ")],
+      };
     }
     return { sanitized };
   }
@@ -172,18 +185,18 @@ document.addEventListener("DOMContentLoaded", function () {
       setToggle("popup_visible_li", items.popup_visible_li);
       setToggle("restrictHiddenPlatforms", items.restrictHiddenPlatforms);
       setToggle("visualHideHiddenPlatforms", items.visualHideHiddenPlatforms);
-      setToggle("visualHideHiddenPlatforms", items.visualHideHiddenPlatforms);
       if (document.getElementById("totalBlocked"))
         document.getElementById("totalBlocked").textContent =
           items.ft_stats_blocked;
       if (document.getElementById("timeSaved")) {
         const minutes = items.ft_stats_blocked || 0;
-        let timeSavedText = "0m";
-        if (minutes < 60) timeSavedText = `${minutes} min`;
+        let timeSavedText = msg("minutesCompact", ["0"]);
+        if (minutes < 60)
+          timeSavedText = msg("minutesCompact", [String(minutes)]);
         else {
           const h = Math.floor(minutes / 60);
           const m = minutes % 60;
-          timeSavedText = `${h}h ${m}m`;
+          timeSavedText = msg("hoursMinutesCompact", [String(h), String(m)]);
         }
         document.getElementById("timeSaved").textContent = timeSavedText;
       }
@@ -215,7 +228,11 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   function saveSetting(key, value) {
     const setting = {};
-    if (key === "focusDuration") key = "ft_timer_duration";
+    if (key === "focusDuration") {
+      key = "ft_timer_duration";
+      value = Number(value);
+    }
+    if (key === "breakDuration") value = Number(value);
     if (key === "strictMode") key = "focusMode";
     if (key === "theme") {
       key = "darkMode";
@@ -224,14 +241,38 @@ document.addEventListener("DOMContentLoaded", function () {
     setting[key] = value;
     chrome.storage.local.set(setting);
   }
+  function setExtensionEnabled(enabled) {
+    chrome.runtime.sendMessage(
+      { action: "setExtensionEnabled", enabled },
+      (response) => {
+        if (chrome.runtime.lastError || !response || response.enabled !== enabled) {
+          void chrome.runtime.lastError;
+          chrome.storage.local.get(["ft_enabled"], (res) => {
+            if (chrome.runtime.lastError) {
+              void chrome.runtime.lastError;
+              return;
+            }
+            const durableEnabled = res.ft_enabled !== false;
+            setToggle("ft_enabled", durableEnabled);
+            applyExtensionEnabledState(durableEnabled);
+            updateDisabledState();
+          });
+          return;
+        }
+        applyExtensionEnabledState(enabled);
+        updateDisabledState();
+      },
+    );
+  }
   document.querySelectorAll(".toggle-input").forEach((toggle) => {
     toggle.addEventListener("change", function () {
+      if (this.id === "ft_enabled") {
+        setExtensionEnabled(this.checked);
+        return;
+      }
       saveSetting(this.id, this.checked);
       if (this.id === "autoStartBreaks") {
         updateBreakButtonVisibility(this.checked, true);
-      }
-      if (this.id === "ft_enabled") {
-        applyExtensionEnabledState(this.checked);
       }
     });
   });
@@ -245,7 +286,9 @@ document.addEventListener("DOMContentLoaded", function () {
     trigger.className = "custom-select-trigger";
     const selectedOption = select.options[select.selectedIndex];
     const selectedText = document.createElement("span");
-    selectedText.textContent = selectedOption ? selectedOption.text : "Select";
+    selectedText.textContent = selectedOption
+      ? selectedOption.text
+      : msg("select");
     const arrowSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     arrowSvg.setAttribute("class", "custom-arrow");
     arrowSvg.setAttribute("viewBox", "0 0 24 24");
@@ -341,29 +384,34 @@ document.addEventListener("DOMContentLoaded", function () {
       reader.onload = function (e) {
         try {
           const data = JSON.parse(e.target.result);
-          const { sanitized, error } = sanitizeImportData(data);
-          if (error) {
-            alert(`Error importing data: ${error}`);
+          const { sanitized, errorKey, errorArgs } = sanitizeImportData(data);
+          if (errorKey) {
+            alert(msg(errorKey, errorArgs));
             return;
           }
           if (!sanitized || Object.keys(sanitized).length === 0) {
-            alert("Error importing data: No supported settings found.");
+            alert(msg("importNoSupportedSettings"));
             return;
           }
           if (
             confirm(
-              "Importing data will overwrite your current settings and stats. Are you sure you want to continue?",
+              msg("importConfirm"),
             )
           ) {
-            chrome.storage.local.clear(() => {
-              chrome.storage.local.set(sanitized, () => {
-                alert("Data imported successfully!");
+            chrome.runtime.sendMessage(
+              { action: "replaceSettings", settings: sanitized },
+              (response) => {
+                if (!response || response.replaced !== true) {
+                  alert(msg("importReplaceFailed"));
+                  return;
+                }
+                alert(msg("importSuccess"));
                 location.reload();
-              });
-            });
+              },
+            );
           }
         } catch (err) {
-          alert("Error importing data: Invalid JSON file.");
+          alert(msg("importInvalidJson"));
         }
       };
       reader.readAsText(file);
@@ -373,11 +421,15 @@ document.addEventListener("DOMContentLoaded", function () {
   const resetBtn = document.getElementById("resetSettings");
   if (resetBtn) {
     resetBtn.addEventListener("click", function () {
-      if (confirm("Are you sure you want to reset all settings to defaults?")) {
-        chrome.storage.local.set(defaultSettings, function () {
-          loadSettings();
-          location.reload();
-        });
+      if (confirm(msg("resetConfirm"))) {
+        chrome.runtime.sendMessage(
+          { action: "replaceSettings", settings: defaultSettings },
+          function (response) {
+            if (!response || response.replaced !== true) return;
+            loadSettings();
+            location.reload();
+          },
+        );
       }
     });
   }
@@ -386,15 +438,17 @@ document.addEventListener("DOMContentLoaded", function () {
     clearBtn.addEventListener("click", function () {
       if (
         confirm(
-          "Are you sure you want to clear all data? This cannot be undone.",
+          msg("clearAllConfirm"),
         )
       ) {
-        chrome.storage.local.clear(function () {
-          chrome.storage.local.set(defaultSettings, function () {
+        chrome.runtime.sendMessage(
+          { action: "replaceSettings", settings: defaultSettings },
+          function (response) {
+            if (!response || response.replaced !== true) return;
             loadSettings();
             location.reload();
-          });
-        });
+          },
+        );
       }
     });
   }
@@ -569,12 +623,13 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("totalBlocked").textContent = blocked;
       }
       if (document.getElementById("timeSaved")) {
-        let timeSavedText = "0m";
-        if (blocked < 60) timeSavedText = `${blocked} min`;
+        let timeSavedText = msg("minutesCompact", ["0"]);
+        if (blocked < 60)
+          timeSavedText = msg("minutesCompact", [String(blocked)]);
         else {
           const h = Math.floor(blocked / 60);
           const m = blocked % 60;
-          timeSavedText = `${h}h ${m}m`;
+          timeSavedText = msg("hoursMinutesCompact", [String(h), String(m)]);
         }
         document.getElementById("timeSaved").textContent = timeSavedText;
       }
@@ -622,88 +677,73 @@ function applyExtensionEnabledState(isEnabled) {
 }
 const platforms = {
   yt: {
-    name: "YouTube",
+    name: msg("platformYoutube"),
     settings: [
       {
         id: "hide_yt_shorts_nav",
-        label: "Hide Shorts Button",
-        desc: "Hide the Shorts link in sidebar",
+        label: msg("hideShortsButton"),
+        desc: msg("hideShortsButtonDescription"),
       },
       {
         id: "hide_yt_shorts_shelves",
-        label: "Hide Shorts Shelves",
-        desc: "Hide Shorts shelves in feed",
+        label: msg("hideShortsShelves"),
+        desc: msg("hideShortsShelvesDescription"),
       },
       {
         id: "hide_yt_most_relevant_shelf",
-        label: 'Hide "Most Relevant" Shelf',
-        desc: 'Hide the "Most relevant" shelf on Subscriptions',
+        label: msg("hideMostRelevantShelf"),
+        desc: msg("hideMostRelevantShelfDescription"),
       },
     ],
   },
   ig: {
-    name: "Instagram",
+    name: msg("platformInstagram"),
     settings: [
       {
         id: "hide_ig_stories",
-        label: "Hide Stories",
-        desc: "Hide the Stories tray at the top",
+        label: msg("hideStories"),
+        desc: msg("hideInstagramStoriesDescription"),
       },
       {
         id: "hide_ig_reels_nav",
-        label: "Hide Reels Button",
-        desc: "Hide the Reels tab in navigation",
-      },
-      {
-        id: "hide_ig_suggested",
-        label: "Hide posts you don't follow",
-        desc: "Replaces suggested and sponsored posts in the feed with a placeholder. Leaves the rest of the feed alone",
+        label: msg("hideReelsButton"),
+        desc: msg("hideInstagramReelsDescription"),
       },
     ],
   },
-  tt: { name: "TikTok", settings: [] },
+  tt: { name: msg("platformTiktok"), settings: [] },
   fb: {
-    name: "Facebook",
+    name: msg("platformFacebook"),
     settings: [
       {
         id: "hide_fb_stories",
-        label: "Hide Stories",
-        desc: "Hide the Stories section",
+        label: msg("hideStories"),
+        desc: msg("hideFacebookStoriesDescription"),
       },
       {
         id: "hide_fb_reels_nav",
-        label: "Hide Reels Button",
-        desc: "Hide the Reels link in sidebar",
+        label: msg("hideReelsButton"),
+        desc: msg("hideFacebookReelsDescription"),
       },
       {
         id: "hide_fb_people_you_might_know",
-        label: "Hide People You Might Know",
-        desc: "Hide people suggestions in the feed",
+        label: msg("hidePeopleYouMightKnow"),
+        desc: msg("hidePeopleYouMightKnowDescription"),
       },
     ],
   },
   li: {
-    name: "LinkedIn",
+    name: msg("platformLinkedin"),
     settings: [
       {
         id: "hide_li_feed",
-        label: "Cover the whole feed",
-        desc: "Puts one panel over the entire feed. Independent of the setting below - this hides everything, that hides only what is not from your network",
+        label: msg("hideFeed"),
+        desc: msg("hideFeedDescription"),
       },
       {
         id: "hide_li_addfeed",
-        label: "Hide follow suggestions",
-        desc: 'Hides the "Add to your feed" box in the sidebar',
-      },
-      {
-        id: "hide_li_suggested",
-        label: "Hide posts outside your network",
-        desc: "Replaces posts from people you are not connected to, and promoted posts, with a placeholder. Leaves the rest of the feed alone",
-      },
-      {
-        id: "hide_li_activity",
-        label: "Hide what your network reacted to",
-        desc: "Also hides posts that reached you because somebody you know liked or commented on them. Turn this off to keep your network's activity and hide only suggestions and ads. Needs the setting above",
+        label: msg("hideAddToFeed"),
+        desc: msg("hideAddToFeedDescription"),
       },
     ],
   },
@@ -711,37 +751,42 @@ const platforms = {
 const modes = [
   {
     id: "S",
-    label: "Strict",
-    desc: "Block access completely",
+    label: msg("modeStrict"),
+    desc: msg("modeStrictDescription"),
     color: "#ef4444",
   },
   {
     id: "W",
-    label: "Warn",
-    desc: "Show a warning before entering",
+    label: msg("modeWarn"),
+    desc: msg("modeWarnDescription"),
     color: "#f59e0b",
   },
-  { id: "P", label: "Passive", desc: "Normal browsing", color: "#4facfe" },
+  {
+    id: "P",
+    label: msg("modePassive"),
+    desc: msg("modePassiveDescription"),
+    color: "#4facfe",
+  },
 ];
 const modesByPlatform = {
   default: modes,
   li: [
     {
       id: "S",
-      label: "Strict",
-      desc: "Hides feed & distracting elements",
+      label: msg("modeStrict"),
+      desc: msg("modeLinkedinStrictDescription"),
       color: "#ef4444",
     },
     {
       id: "W",
-      label: "Warn",
-      desc: 'Hides feed, allows "View Anyway"',
+      label: msg("modeWarn"),
+      desc: msg("modeLinkedinWarnDescription"),
       color: "#f59e0b",
     },
     {
       id: "P",
-      label: "Passive",
-      desc: "Does not hide anything",
+      label: msg("modePassive"),
+      desc: msg("modeLinkedinPassiveDescription"),
       color: "#4facfe",
     },
   ],
@@ -788,6 +833,14 @@ function initPlatformGrid() {
   const platformDetail = document.getElementById("platformDetail");
   const backBtn = document.getElementById("backBtn");
   document.querySelectorAll(".platform-btn").forEach((btn) => {
+    const platform = platforms[btn.dataset.platform];
+    if (platform) {
+      btn.title = platform.name;
+      btn.setAttribute(
+        "aria-label",
+        msg("platformSettings", [platform.name]),
+      );
+    }
     btn.addEventListener("click", () => {
       currentPlatform = btn.dataset.platform;
       showPlatformDetail(currentPlatform);
@@ -817,7 +870,6 @@ function initPlatformGrid() {
       );
     });
   }
-  updateAllBadges();
   loadPlatformModes();
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === "local") {

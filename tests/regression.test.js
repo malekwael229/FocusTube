@@ -985,7 +985,7 @@ const checks = [
       const firefoxManifest = readJson("firefox-manifest.json");
 
       assert.match(read("options.js"), /action:\s*["']replaceSettings["']/);
-      assert.match(options, /Version\s+2\.3\.2/);
+      assert.match(options, /Version\s+2\.4\.0/);
       assert.equal(chromeManifest.version, "2.4.0");
       assert.equal(firefoxManifest.version, "2.4.0");
       assert.match(
