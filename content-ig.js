@@ -56,7 +56,7 @@ const Instagram = {
   scheduleChecks: function () {
     if (this.checkScheduled) return;
     this.checkScheduled = true;
-    requestAnimationFrame(() => {
+    scheduleFrame(() => {
       this.checkScheduled = false;
       this.runChecks();
     });
@@ -485,7 +485,7 @@ const IGFeed = {
     const run = () => {
       this.trailingTimer = null;
       this.lastTick = Date.now();
-      requestAnimationFrame(() => {
+      scheduleFrame(() => {
         this.scheduled = false;
         this.tick();
       });
@@ -973,3 +973,7 @@ if (Site.isIG()) {
     },
   });
 }
+const scheduleFrame = (callback) =>
+  typeof requestAnimationFrame === "function"
+    ? requestAnimationFrame(callback)
+    : setTimeout(callback, 0);
