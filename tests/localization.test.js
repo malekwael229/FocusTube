@@ -143,7 +143,7 @@ function namedTokens(message) {
 }
 
 function run() {
-  assert.equal(Object.keys(catalog).length, 160, "canonical English key count");
+  assert.equal(Object.keys(catalog).length, 164, "canonical English key count");
   for (const [key, entry] of Object.entries(catalog)) {
     assert.equal(typeof entry.message, "string", `${key} has a message`);
     for (const [name, placeholder] of Object.entries(entry.placeholders || {})) {
