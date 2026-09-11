@@ -1,7 +1,16 @@
+const scheduleFrame = (callback) =>
+  typeof requestAnimationFrame === "function"
+    ? requestAnimationFrame(callback)
+    : setTimeout(callback, 0);
+
+const cancelFrame = (id) =>
+  typeof cancelAnimationFrame === "function" ? cancelAnimationFrame(id) : clearTimeout(id);
+
 const Instagram = {
   initialized: false,
   observer: null,
   checkScheduled: false,
+  checkFrame: null,
   isRedirecting: false,
   currentMode: "strict",
   lastPath: "",
@@ -56,12 +65,16 @@ const Instagram = {
   scheduleChecks: function () {
     if (this.checkScheduled) return;
     this.checkScheduled = true;
-    scheduleFrame(() => {
+    this.checkFrame = scheduleFrame(() => {
+      this.checkFrame = null;
       this.checkScheduled = false;
       this.runChecks();
     });
   },
   disable: function () {
+    if (this.checkFrame !== null) cancelFrame(this.checkFrame);
+    this.checkFrame = null;
+    this.checkScheduled = false;
     this.isRedirecting = false;
     UI.remove();
     IGFeed.disable();
@@ -973,7 +986,3 @@ if (Site.isIG()) {
     },
   });
 }
-const scheduleFrame = (callback) =>
-  typeof requestAnimationFrame === "function"
-    ? requestAnimationFrame(callback)
-    : setTimeout(callback, 0);
