@@ -17,6 +17,9 @@
     "test:live:harness": "node --test tests/live/report.test.js",
     "test:all": "node scripts/run-test-all.js"
   },
+  "overrides": {
+    "adm-zip": "0.6.1"
+  },
   "devDependencies": {
     "playwright": "1.62.1",
     "web-ext": "10.6.0"

@@ -28,7 +28,7 @@
     <a href="https://www.bestpractices.dev/projects/14395"><img alt="OpenSSF Best Practices Passing" src="https://www.bestpractices.dev/projects/14395/badge" /></a>
     <a href="https://www.bestpractices.dev/projects/14395"><img alt="OpenSSF Best Practices Baseline Level 1" src="https://www.bestpractices.dev/projects/14395/baseline" /></a>
     <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" />
-    <img alt="Version: 2.3.2" src="https://img.shields.io/badge/version-2.3.2-green.svg" />
+    <img alt="Version: 2.4.0" src="https://img.shields.io/badge/version-2.4.0-green.svg" />
     <img alt="Firefox compatible" src="https://img.shields.io/badge/firefox-compatible-orange.svg" />
   </p>
 </div>

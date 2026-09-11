@@ -77,7 +77,11 @@ a:hover { color: var(--accent); }
 .button.secondary:hover { color: var(--accent-dark); background: var(--accent-soft); }
 
 main { overflow: hidden; }
-.hero { padding: clamp(3.5rem, 8vw, 7rem) 0 4rem; }
+.hero { padding: clamp(3.5rem, 8vw, 7rem) 0 4rem; background: radial-gradient(circle at 85% 15%, rgba(0, 213, 190, .2), transparent 32%), #0f1d2a; color: #fff; }
+.hero .lead { color: #c7d6dc; }
+.hero .eyebrow { color: #65e4d5; }
+.hero .button.secondary { color: #b9f3ec; border-color: #65e4d5; }
+.hero .button.secondary:hover { color: #0f1d2a; background: #b9f3ec; }
 .hero-grid, .split, .trust-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2rem; align-items: center; }
 .eyebrow { margin: 0 0 .85rem; color: var(--accent-dark); font-weight: 800; letter-spacing: .11em; text-transform: uppercase; font-size: .78rem; }
 h1, h2, h3 { line-height: 1.15; letter-spacing: -.025em; }

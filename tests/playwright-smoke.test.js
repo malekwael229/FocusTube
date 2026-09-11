@@ -101,9 +101,9 @@ function verifyManifests() {
   ];
 
   assert.equal(chromeManifest.manifest_version, 3);
-  assert.equal(chromeManifest.version, "2.3.2");
-  assert.equal(buildManifest.version, "2.3.2");
-  assert.equal(firefoxManifest.version, "2.3.2");
+  assert.equal(chromeManifest.version, "2.4.0");
+  assert.equal(buildManifest.version, "2.4.0");
+  assert.equal(firefoxManifest.version, "2.4.0");
   assert.equal(buildManifest.manifest_version, 3);
   assert.equal(firefoxManifest.manifest_version, 2);
   assert.deepEqual(chromeManifest.content_security_policy, {

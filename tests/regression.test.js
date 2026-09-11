@@ -977,7 +977,7 @@ const checks = [
     },
   ],
   [
-    "settings replacement and displayed version remain release-gated at 2.3.2",
+    "settings replacement and displayed version remain release-gated at 2.4.0",
     () => {
       const options = read("options.html");
       const changelog = read("CHANGELOG.md");
@@ -986,8 +986,8 @@ const checks = [
 
       assert.match(read("options.js"), /action:\s*["']replaceSettings["']/);
       assert.match(options, /Version\s+2\.3\.2/);
-      assert.equal(chromeManifest.version, "2.3.2");
-      assert.equal(firefoxManifest.version, "2.3.2");
+      assert.equal(chromeManifest.version, "2.4.0");
+      assert.equal(firefoxManifest.version, "2.4.0");
       assert.match(
         changelog,
         /^##[ \t]+\[Unreleased\][ \t]*\r?$/m,
@@ -1003,8 +1003,8 @@ const checks = [
 
       assert.equal(chromeManifest.manifest_version, 3);
       assert.equal(firefoxManifest.manifest_version, 2);
-      assert.equal(chromeManifest.version, "2.3.2");
-      assert.equal(firefoxManifest.version, "2.3.2");
+      assert.equal(chromeManifest.version, "2.4.0");
+      assert.equal(firefoxManifest.version, "2.4.0");
       assert.deepEqual(chromeManifest.content_security_policy, {
         extension_pages: "script-src 'self'; object-src 'self';",
       });
