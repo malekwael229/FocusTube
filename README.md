@@ -66,11 +66,13 @@ The project supports Chromium browsers with a Manifest V3 build and Firefox with
 
 ## Installation
 
+The [FocusTube project website](https://malekwael229.github.io/FocusTube/) includes platform-specific guides and the same official store links used by the extension.
+
 ### Official Stores
 
 - **Chrome Web Store:** [FocusTube](https://chromewebstore.google.com/detail/focustube-distraction-blo/ppdjgkniggbikifojmkindmbhppmoell)
-- **Microsoft Edge Add-ons:** [FocusTube](https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog)
-- **Firefox Add-ons:** [FocusTube](https://addons.mozilla.org/addon/focus-tube/)
+- **Microsoft Edge Add-ons:** [FocusTube](https://microsoftedge.microsoft.com/addons/detail/focustube-distraction-bl/emffahlehkfdlknpmpndaabhigchhoog)
+- **Firefox Add-ons:** [FocusTube](https://addons.mozilla.org/en-US/firefox/addon/focus-tube/)
 
 ### Manual Installation
 
@@ -113,13 +115,12 @@ Click the extension icon to open the popup:
 
 ## Project Impact
 
-Impact figures are approximate as of September 1, 2026. Store dashboards use different activity windows, so the combined audience is rounded:
+The following figures are a recorded snapshot from September 1, 2026. Store dashboards use different activity windows, so each source is shown separately:
 
-- Approximately 700 users across the Chrome Web Store, Microsoft Edge Add-ons, and Firefox Add-ons.
-- 32 GitHub stars and 4 forks.
-- 5.0 from 7 Chrome Web Store ratings and 5.0 from 3 Firefox Add-ons reviews.
-- Chrome Web Store Featured status.
-- Published on all three stores: Chrome, Edge, and Firefox.
+- Chrome Web Store: 5.0 from 7 ratings and Featured status.
+- Firefox Add-ons: 5.0 from 3 reviews.
+- GitHub: 32 stars and 4 forks.
+- Published listings: Chrome, Firefox, and Edge.
 
 ---
 
