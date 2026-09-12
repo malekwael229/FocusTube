@@ -453,6 +453,10 @@
   "hidePeopleYouMightKnowDescription": {
     "message": "إخفاء اقتراحات الأشخاص في الموجز"
   },
+  "hideSuggestedPosts": { "message": "Hide posts you do not follow" },
+  "hideSuggestedPostsDescription": { "message": "Hide suggested and sponsored posts when detected" },
+  "hideNetworkActivity": { "message": "Hide network activity" },
+  "hideNetworkActivityDescription": { "message": "Hide posts surfaced by reactions from your network" },
   "hideFeed": {
     "message": "إخفاء الموجز"
   },

@@ -6,9 +6,16 @@ All notable project-facing changes are documented here.
 
 - Added packaged browser-native localization for English, Arabic, Spanish, Brazilian Portuguese, French, German, Turkish, and Indonesian, with English as the default fallback.
 - Localized extension pages and extension-owned overlays automatically while keeping storage keys, runtime messages, alarm names, and other protocol identities stable. Language and direction metadata now follow the resolved catalog, so Arabic right-to-left handling stays scoped to Arabic extension-owned UI and unsupported locales receive English metadata with the English fallback catalog.
-- Added deterministic catalog and localization contract checks, native Chromium Arabic and unsupported-locale fallback text/metadata coverage, and package checks for all eight 160-key catalogs. Manual, live-site, native-speaker, and native Firefox localization checks remain pending.
+- Added deterministic catalog and localization contract checks, native Chromium Arabic and unsupported-locale fallback text/metadata coverage, and package checks for all eight 164-key catalogs. Manual, live-site, native-speaker, and native Firefox localization checks remain pending.
 - Added non-resetting pending mutation scheduling for LinkedIn, narrowed its feed and sidebar matching, changed the broad YouTube body observer to schedule animation-frame inline hiding without mutation-tree filtering or route checks, and added guards for null, undefined, primitive, and array background request shapes without changing valid command handling.
 - Removed stale Facebook Stories overlays when SPA navigation reaches Reels.
+
+## [2.4.0] - 2026-09-11
+
+- Added optional Instagram suggested-post and sponsored-post filtering with sanitized structural fixtures and regression coverage.
+- Added optional LinkedIn outside-network, promoted-post, and network-activity filtering with late-render and recycled-node handling.
+- Paused media when filtered posts collapse and preserved local-first behavior without new permissions or network requests.
+- Added a static, subpath-safe project website with platform guides, technical SEO, and official browser-store links.
 
 ## [2.3.2] - 2026-09-01
 

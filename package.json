@@ -11,10 +11,14 @@
     "test:smoke:youtube": "node tests/playwright-smoke.test.js --youtube",
     "test:package": "node tests/package-reproducibility.test.js",
     "test:localization": "node tests/localization.test.js",
+    "test:website": "node tests/website-validation.test.js",
     "test:syntax": "node scripts/run-test-all.js --syntax",
     "test:live": "node tests/live-browser.test.js",
     "test:live:harness": "node --test tests/live/report.test.js",
     "test:all": "node scripts/run-test-all.js"
+  },
+  "overrides": {
+    "adm-zip": "0.6.1"
   },
   "devDependencies": {
     "playwright": "1.62.1",

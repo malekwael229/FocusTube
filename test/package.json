@@ -1,0 +1,12 @@
+{
+  "name": "focustube-test",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node igfeed.test.mjs && node lifeed.test.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1"
+  },
+  "//": "jsdom is pinned to ^29: version 27 silently drops !important from setProperty(), which is what the height-preservation assertions rely on, so it reports a failure no browser would."
+}
