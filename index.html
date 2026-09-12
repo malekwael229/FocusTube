@@ -18,7 +18,7 @@
   <a class="skip-link" href="#main-content">Skip to main content</a>
   <header class="site-header">
     <div class="header-inner">
-      <a class="brand" href="./" aria-label="FocusTube home"><img src="./icons/icon48.png" alt="" width="32" height="32"><span>FocusTube</span><small>v2.3.2</small></a>
+      <a class="brand" href="./" aria-label="FocusTube home"><img src="./icons/icon48.png" alt="" width="32" height="32"><span>FocusTube</span><small>v2.4.0</small></a>
       <nav class="site-nav" aria-label="Primary navigation">
         <a href="./" aria-current="page">Overview</a>
         <a href="./block-youtube-shorts/">YouTube</a>
@@ -36,13 +36,24 @@
       <div class="container hero-grid">
         <div>
           <p class="eyebrow">Privacy-first browser extension</p>
-          <h1>Block Shorts, Reels &amp; distracting feeds without blocking the websites you need.</h1>
-          <p class="lead">FocusTube targets specific routes, navigation elements, shelves, overlays, and feed surfaces on five major platforms. Search, messages, jobs, profiles, and long-form pages stay available where the extension has a safe boundary.</p>
+          <h1>Block the feed.<br><span class="gradient-text">Keep the website.</span></h1>
+          <p class="lead">Less Shorts, Reels, and endless scrolling. FocusTube hides specific distractions so you can use the parts of the web you came for.</p>
           <div class="hero-actions">
-            <a class="button" href="#install">Choose your browser</a>
+            <a class="button" href="https://chromewebstore.google.com/detail/focustube-distraction-blo/ppdjgkniggbikifojmkindmbhppmoell">Add to Chrome ↗</a>
+            <a class="button secondary" href="https://addons.mozilla.org/en-US/firefox/addon/focus-tube/">Firefox ↗</a>
+            <a class="button secondary" href="https://microsoftedge.microsoft.com/addons/detail/focustube-distraction-bl/emffahlehkfdlknpmpndaabhigchhoog">Edge ↗</a>
             <a class="button secondary" href="https://github.com/malekwael229/FocusTube" target="_blank" rel="noopener noreferrer">View source on GitHub</a>
           </div>
+          <p class="hero-note">Open source · MIT licensed · No analytics</p>
         </div>
+        <aside class="focus-map" aria-label="Examples of distractions and useful destinations">
+          <p class="eyebrow">Make room for what matters</p>
+          <div class="map-row"><span class="map-number">01</span><div><strong>YouTube</strong><p>Shorts out. Long-form videos still available.</p></div><span class="map-mark" aria-hidden="true">↗</span></div>
+          <div class="map-row"><span class="map-number">02</span><div><strong>Instagram &amp; Facebook</strong><p>Target Reels. Keep messages within reach.</p></div><span class="map-mark" aria-hidden="true">↗</span></div>
+          <div class="map-row"><span class="map-number">03</span><div><strong>TikTok</strong><p>Leave the feeds. Reach messages and uploads.</p></div><span class="map-mark" aria-hidden="true">↗</span></div>
+          <div class="map-row"><span class="map-number">04</span><div><strong>LinkedIn</strong><p>Hide the feed. Get back to jobs and messaging.</p></div><span class="map-mark" aria-hidden="true">↗</span></div>
+          <a class="map-footer" href="#platforms">See exactly what each platform supports →</a>
+        </aside>
       </div>
     </section>
 
@@ -50,8 +61,8 @@
       <div class="container">
         <div class="section-intro">
           <p class="eyebrow">Get FocusTube</p>
-          <h2>Install from your browser’s official store</h2>
-          <p>Use the listing for your browser. The repository keeps these links aligned with the extension’s own store links.</p>
+          <h2>Your browser. Your boundaries.</h2>
+          <p>Install from an official store, choose a mode for each platform, and get back to what you meant to do.</p>
         </div>
         <div class="install-grid">
           <a class="install-link" href="https://chromewebstore.google.com/detail/focustube-distraction-blo/ppdjgkniggbikifojmkindmbhppmoell" target="_blank" rel="noopener noreferrer"><strong>Chrome Web Store</strong><span>Chromium browsers</span></a>
@@ -65,8 +76,8 @@
       <div class="container">
         <div class="section-intro">
           <p class="eyebrow">Block the feed, not the website</p>
-          <h2>Five focused platform guides</h2>
-          <p>Each guide describes the routes and surfaces the current adapter recognizes, plus the useful parts it deliberately leaves alone.</p>
+          <h2>Less distraction.<br>More of the useful parts.</h2>
+          <p>Different websites need different boundaries. Explore what FocusTube hides, redirects, and leaves available on each one.</p>
         </div>
         <div class="cards">
           <article class="card"><span class="surface-label">YouTube</span><h3>Shorts and shelves</h3><p>Redirects <code>/shorts/</code> in Strict Mode and can hide Shorts navigation and shelves during focus.</p><a href="./block-youtube-shorts/">Read the YouTube guide →</a></article>
@@ -123,7 +134,7 @@
     <section class="section">
       <div class="container callout">
         <h2>Want the implementation details?</h2>
-        <p>Read the <a href="https://github.com/malekwael229/FocusTube/blob/main/ARCHITECTURE.md">architecture guide</a>, <a href="https://github.com/malekwael229/FocusTube/blob/main/TESTING.md">testing guide</a>, and for the project’s boundaries and review history.</p>
+        <p>Read the <a href="https://github.com/malekwael229/FocusTube/blob/main/ARCHITECTURE.md">architecture guide</a> and <a href="https://github.com/malekwael229/FocusTube/blob/main/TESTING.md">testing guide</a> for the project’s boundaries.</p>
       </div>
     </section>
   </main>

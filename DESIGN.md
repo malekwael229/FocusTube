@@ -1,7 +1,7 @@
 # Design
 
 ## Source of truth
-Status: Active. Date: 2026-09-11. Surfaces: static GitHub Pages homepage and five platform guide pages. Evidence: current extension adapters and manifests, README, security guidance, supplied Release screenshots, and Playwright renders at desktop, 390px, and 320px. No existing design system or component library was present.
+Status: Active. Date: 2026-09-12. Surfaces: static GitHub Pages homepage and five platform guide pages. Evidence: current extension adapters and manifests, README, security guidance, the supplied Apple design skill, and local renders at desktop, 390px, and 320px. Downloaded images and HTML references are design inspiration only and are not shipped.
 
 ## Brand
 FocusTube is calm, direct, privacy-first, and open source. Trust comes from accurate route-level claims, MIT licensing, browser-store links, and visible source/security links. Avoid hype, fabricated metrics, dark patterns, and claims about blocking algorithms.
@@ -16,10 +16,10 @@ People seeking relief from Shorts, Reels, or feeds while retaining useful platfo
 Sticky overview navigation leads to the homepage, five `/block-*` guides, and install actions. Each guide uses breadcrumb, behavior summary, mode explanation, privacy/source links, stores, and related guides. Footer links Home, Privacy, and GitHub.
 
 ## Design principles
-Lead with the product promise; describe detected routes and surfaces precisely; keep install actions visible; use supplied visuals for design reference only; prefer progressive disclosure and short sections; preserve no-JavaScript usability.
+Lead with the product promise; describe detected routes and surfaces precisely; keep install actions visible; use restraint, clear hierarchy, and direct feedback; preserve no-JavaScript usability. Apply the Apple guidance as a visual foundation: purposeful composition, calm materials, optical typography, responsive spacing, visible focus, and reduced motion. There are no gesture-driven interactions, so the site does not add decorative animation or a motion library.
 
 ## Visual language
-Light blue-gray backgrounds, deep navy text, teal accents, rounded cards, and restrained shadows. Supplied product images are design references only and must not be copied into the repository or displayed on the website. System sans typography uses a strong display scale and readable body text. Spacing and colors are owned by `assets/site.css`; the existing extension icon identifies the product.
+Deep charcoal surfaces, cyan and blue accents, subtle translucent panels, rounded cards, and restrained shadows create a focused material system. The existing extension icon identifies the product; no downloaded reference image is copied or displayed. System sans typography uses optical display sizing, tight tracking for headings, and readable body text. Spacing and colors are owned by `assets/site.css`.
 
 ## Components
 Shared header/nav, skip link, hero, install-link cards, platform cards, mode cards, trust cards, guide layout, related-link pills, and footer. Components are static HTML patterns styled by `assets/site.css`; no framework or remote assets.

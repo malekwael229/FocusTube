@@ -709,6 +709,11 @@ const platforms = {
         label: msg("hideReelsButton"),
         desc: msg("hideInstagramReelsDescription"),
       },
+      {
+        id: "hide_ig_suggested",
+        label: msg("hideSuggestedPosts"),
+        desc: msg("hideSuggestedPostsDescription"),
+      },
     ],
   },
   tt: { name: msg("platformTiktok"), settings: [] },
@@ -744,6 +749,16 @@ const platforms = {
         id: "hide_li_addfeed",
         label: msg("hideAddToFeed"),
         desc: msg("hideAddToFeedDescription"),
+      },
+      {
+        id: "hide_li_suggested",
+        label: msg("hideSuggestedPosts"),
+        desc: msg("hideSuggestedPostsDescription"),
+      },
+      {
+        id: "hide_li_activity",
+        label: msg("hideNetworkActivity"),
+        desc: msg("hideNetworkActivityDescription"),
       },
     ],
   },

@@ -82,6 +82,7 @@ main { overflow: hidden; }
 .hero .eyebrow { color: #65e4d5; }
 .hero .button.secondary { color: #b9f3ec; border-color: #65e4d5; }
 .hero .button.secondary:hover { color: #0f1d2a; background: #b9f3ec; }
+.gradient-text{background:linear-gradient(100deg,#5a8cff,#35d8ff);-webkit-background-clip:text;background-clip:text;color:transparent}.hero-note{margin-top:1.4rem;color:#8fa3ad;font-size:.9rem}.focus-map{padding:1.2rem;background:#22262cdd;border:1px solid #3f7181;border-radius:22px;box-shadow:0 25px 60px #0005;backdrop-filter:blur(18px)}.map-row{display:grid;grid-template-columns:2.2rem 1fr auto;gap:.8rem;align-items:start;padding:1rem 0;border-bottom:1px solid #39424d}.map-number{color:#35d8ff;font:700 .8rem ui-monospace,monospace}.map-row strong{font-size:1.05rem}.map-row p{margin:.2rem 0 0;color:#a9b3bd;font-size:.9rem}.map-mark{color:#35d8ff;font-size:1.3rem}.map-footer{display:block;padding-top:1rem;font-weight:750;text-decoration:none}
 .hero-grid, .split, .trust-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2rem; align-items: center; }
 .eyebrow { margin: 0 0 .85rem; color: var(--accent-dark); font-weight: 800; letter-spacing: .11em; text-transform: uppercase; font-size: .78rem; }
 h1, h2, h3 { line-height: 1.15; letter-spacing: -.025em; }
