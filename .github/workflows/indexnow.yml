@@ -1,0 +1,41 @@
+name: IndexNow
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Submit FocusTube pages to IndexNow
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "Content-Type: application/json; charset=utf-8" \
+            --data @- \
+            "https://api.indexnow.org/indexnow" <<'JSON'
+          {
+            "host": "malekwael229.github.io",
+            "key": "dae4597daa134840914ca54177932f71",
+            "keyLocation": "https://malekwael229.github.io/FocusTube/dae4597daa134840914ca54177932f71.txt",
+            "urlList": [
+              "https://malekwael229.github.io/FocusTube/",
+              "https://malekwael229.github.io/FocusTube/block-youtube-shorts/",
+              "https://malekwael229.github.io/FocusTube/block-instagram-reels/",
+              "https://malekwael229.github.io/FocusTube/block-tiktok-feed/",
+              "https://malekwael229.github.io/FocusTube/block-facebook-reels/",
+              "https://malekwael229.github.io/FocusTube/block-linkedin-feed/"
+            ]
+          }
+          JSON
