@@ -977,7 +977,24 @@ const checks = [
     },
   ],
   [
-    "settings replacement and displayed version remain release-gated at 2.3.2",
+    "Instagram suggested posts use a compact presentation without fixed height state",
+    () => {
+      const instagram = read("content-ig.js");
+      const css = read("content.css");
+
+      assert.doesNotMatch(instagram, /MIN_COLLAPSED_HEIGHT|measureHeight|ftIgHeight/);
+      assert.match(instagram, /document\.createElement\("span"\)[\s\S]*ftMessage\("hidden"\)/);
+      assert.doesNotMatch(instagram, /createBadge\("ft-ig-stub-icon"\)/);
+      assert.doesNotMatch(instagram, /ftMessage\("overlayProductiveShort"\)/);
+      assert.match(
+        css,
+        /body\.ft-hide-ig-suggested\.ft-platform-ig article\.ft-ig-collapsed\s*\{[\s\S]*height:\s*auto !important;[\s\S]*min-height:\s*0 !important;[\s\S]*block-size:\s*auto !important;[\s\S]*min-block-size:\s*0 !important;/,
+      );
+      assert.match(css, /\.ft-ig-stub-btn:focus-visible\s*\{[\s\S]*outline:/);
+    },
+  ],
+  [
+    "settings replacement and displayed version remain release-gated at 2.4.0",
     () => {
       const options = read("options.html");
       const changelog = read("CHANGELOG.md");
@@ -985,9 +1002,9 @@ const checks = [
       const firefoxManifest = readJson("firefox-manifest.json");
 
       assert.match(read("options.js"), /action:\s*["']replaceSettings["']/);
-      assert.match(options, /Version\s+2\.3\.2/);
-      assert.equal(chromeManifest.version, "2.3.2");
-      assert.equal(firefoxManifest.version, "2.3.2");
+      assert.match(options, /Version\s+2\.4\.0/);
+      assert.equal(chromeManifest.version, "2.4.0");
+      assert.equal(firefoxManifest.version, "2.4.0");
       assert.match(
         changelog,
         /^##[ \t]+\[Unreleased\][ \t]*\r?$/m,
@@ -1003,8 +1020,8 @@ const checks = [
 
       assert.equal(chromeManifest.manifest_version, 3);
       assert.equal(firefoxManifest.manifest_version, 2);
-      assert.equal(chromeManifest.version, "2.3.2");
-      assert.equal(firefoxManifest.version, "2.3.2");
+      assert.equal(chromeManifest.version, "2.4.0");
+      assert.equal(firefoxManifest.version, "2.4.0");
       assert.deepEqual(chromeManifest.content_security_policy, {
         extension_pages: "script-src 'self'; object-src 'self';",
       });

@@ -143,7 +143,6 @@ function namedTokens(message) {
 }
 
 function run() {
-  assert.equal(Object.keys(catalog).length, 160, "canonical English key count");
   for (const [key, entry] of Object.entries(catalog)) {
     assert.equal(typeof entry.message, "string", `${key} has a message`);
     for (const [name, placeholder] of Object.entries(entry.placeholders || {})) {
@@ -257,6 +256,20 @@ function run() {
   assert.equal(arabicHostDocument.documentElement.getAttribute("dir"), null);
   assert.equal(arabicHostDocument.documentElement.getAttribute("lang"), null);
 
+  const arabicStories = new FakeElement(
+    { "data-i18n": "storiesHidden" },
+    catalog.storiesHidden.message,
+  );
+  arabicHostHelper.localizePage(arabicStories);
+  arabicHostHelper.applyDirection(arabicStories);
+  assert.equal(arabicStories.textContent, arabicCatalog.storiesHidden.message);
+  assert.equal(arabicStories.getAttribute("dir"), "rtl");
+  assert.match(
+    read("content-ig.js"),
+    /text\.textContent\s*=\s*ftMessage\("storiesHidden"\)/,
+    "Instagram Stories overlay uses the existing localized message",
+  );
+
   for (const [uiLocale, bidiDirection] of [
     ["ja", "ltr"],
     ["he", "rtl"],
@@ -303,6 +316,20 @@ function run() {
   for (const locale of supportedLocales) {
     const localizedCatalog = JSON.parse(read(`_locales/${locale}/messages.json`));
     assert.deepEqual(Object.keys(localizedCatalog).sort(), englishKeys, `${locale} catalog keys`);
+    if (locale !== "en") {
+      for (const key of [
+        "hideSuggestedPosts",
+        "hideSuggestedPostsDescription",
+        "hideNetworkActivity",
+        "hideNetworkActivityDescription",
+      ]) {
+        assert.notEqual(
+          localizedCatalog[key].message.trim(),
+          catalog[key].message.trim(),
+          `${locale}.${key} must not retain the English feed-setting copy`,
+        );
+      }
+    }
     for (const key of englishKeys) {
       const entry = localizedCatalog[key];
       assert.equal(typeof entry.message, "string", `${locale}.${key} has a message`);

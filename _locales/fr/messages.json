@@ -453,6 +453,10 @@
   "hidePeopleYouMightKnowDescription": {
     "message": "Masquer les suggestions de personnes dans le fil"
   },
+  "hideSuggestedPosts": { "message": "Masquer les publications suggérées" },
+  "hideSuggestedPostsDescription": { "message": "Masquer les publications suggérées et sponsorisées lorsqu’elles sont détectées" },
+  "hideNetworkActivity": { "message": "Masquer l’activité de votre réseau" },
+  "hideNetworkActivityDescription": { "message": "Masquer les publications affichées par les réactions de votre réseau" },
   "hideFeed": {
     "message": "Masquer le fil"
   },
