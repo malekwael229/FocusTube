@@ -977,6 +977,23 @@ const checks = [
     },
   ],
   [
+    "Instagram suggested posts use a compact presentation without fixed height state",
+    () => {
+      const instagram = read("content-ig.js");
+      const css = read("content.css");
+
+      assert.doesNotMatch(instagram, /MIN_COLLAPSED_HEIGHT|measureHeight|ftIgHeight/);
+      assert.match(instagram, /document\.createElement\("span"\)[\s\S]*ftMessage\("hidden"\)/);
+      assert.doesNotMatch(instagram, /createBadge\("ft-ig-stub-icon"\)/);
+      assert.doesNotMatch(instagram, /ftMessage\("overlayProductiveShort"\)/);
+      assert.match(
+        css,
+        /body\.ft-hide-ig-suggested\.ft-platform-ig article\.ft-ig-collapsed\s*\{[\s\S]*height:\s*auto !important;[\s\S]*min-height:\s*0 !important;[\s\S]*block-size:\s*auto !important;[\s\S]*min-block-size:\s*0 !important;/,
+      );
+      assert.match(css, /\.ft-ig-stub-btn:focus-visible\s*\{[\s\S]*outline:/);
+    },
+  ],
+  [
     "settings replacement and displayed version remain release-gated at 2.4.0",
     () => {
       const options = read("options.html");

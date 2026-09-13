@@ -119,14 +119,67 @@ async function main() {
    const { page, change, collapsed, settle, close } = env;
    await settle();
    await collapsed('target', false); // actual CONFIG defaults opt out
+   if (platform === 'ig') {
+    await page.evaluate(() => {
+     const post = document.querySelector('#target');
+     post.style.minHeight = '340px';
+     post.style.padding = '17px';
+     window.igOriginalChildren = [...post.children];
+     window.igOriginalStyle = post.getAttribute('style');
+    });
+   }
    await change({ [`hide_${platform}_suggested`]: true, platformSettings: { [platform]: 'warn' } });
    await collapsed('target', true);
+   if (platform === 'ig') {
+    const compact = await page.evaluate(() => {
+     const post = document.querySelector('#target');
+     return {
+      height: post.getBoundingClientRect().height,
+      childCount: [...post.children].filter(child => !child.classList.contains('ft-ig-stub')).length,
+      childIdentity: [...post.children].filter(child => !child.classList.contains('ft-ig-stub')).every((child, index) => child === window.igOriginalChildren[index]),
+      style: post.getAttribute('style'),
+      hiddenText: post.querySelector('.ft-ig-stub span')?.textContent,
+      hasIcon: !!post.querySelector('.ft-ig-stub-icon'),
+      hasParagraph: !!post.querySelector('.ft-ig-stub p'),
+     };
+    });
+    assert.ok(compact.height > 0 && compact.height <= 64, `IG collapsed post should be compact, got ${compact.height}px`);
+    assert.equal(compact.childCount, await page.evaluate(() => window.igOriginalChildren.length), 'IG collapse preserves child count');
+    assert.equal(compact.childIdentity, true, 'IG collapse preserves original child nodes');
+    assert.equal(compact.style, await page.evaluate(() => window.igOriginalStyle), 'IG collapse preserves inline site styles');
+    assert.equal(compact.hiddenText, 'Hidden', 'IG stub uses localized hidden text');
+    assert.equal(compact.hasIcon, false, 'IG stub has no large icon');
+    assert.equal(compact.hasParagraph, false, 'IG stub has no productivity paragraph');
+    checks += 7;
+    await change({ darkMode: false });
+    assert.equal(await page.locator('#target .ft-ig-stub.dark').count(), 0, 'IG stub follows light theme');
+    assert.equal(await page.locator('#target .ft-ig-stub span').textContent(), 'Hidden');
+    assert.ok(await page.locator('#target').evaluate(post => post.getBoundingClientRect().height > 0 && post.getBoundingClientRect().height <= 64));
+    await change({ darkMode: true });
+    assert.equal(await page.locator('#target .ft-ig-stub.dark').count(), 1, 'IG stub follows dark theme');
+    assert.equal(await page.evaluate(() => {
+     const children = [...document.querySelector('#target').children].filter(child => !child.classList.contains('ft-ig-stub'));
+     return children.length === window.igOriginalChildren.length && children.every((child, index) => child === window.igOriginalChildren[index]);
+    }), true, 'IG theme update preserves child identity');
+    checks += 5;
+   }
    await collapsed('normal', false);
    await collapsed('unknown', false);
    assert.equal(await page.locator(`#target .ft-${platform}-stub`).count(), 1);
    assert.equal(await page.locator('#target video').isVisible(), false);
    await page.locator(`#target .ft-${platform}-stub button`).click();
    await collapsed('target', false);
+   if (platform === 'ig') {
+    await page.evaluate(() => {
+     const post = document.querySelector('#target');
+     const children = [...post.children];
+     if (children.length !== window.igOriginalChildren.length || children.some((child, index) => child !== window.igOriginalChildren[index])) throw new Error('unexpected child replacement after IG restore');
+     if (post.getAttribute('style') !== window.igOriginalStyle) throw new Error('inline site style changed after IG restore');
+     if (post.querySelector('.ft-ig-stub')) throw new Error('IG stub remained after restore');
+     if (getComputedStyle(post).minHeight !== '340px' || getComputedStyle(post).paddingTop !== '17px' || post.getBoundingClientRect().height < 340) throw new Error('IG site layout did not restore');
+    });
+    checks++;
+   }
    await page.evaluate(() => document.querySelector('#target').className = 'site-updated');
    await settle(); await collapsed('target', false);
    await page.evaluate(platform => { const p = document.querySelector('#target'); if (platform === 'ig') p.querySelector('a[href^="/p/"]').setAttribute('href', '/p/recycled/'); else p.setAttribute('componentkey', 'recycled'); }, platform);

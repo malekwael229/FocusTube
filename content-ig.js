@@ -349,13 +349,10 @@ const Instagram = {
 // Optional home-feed filtering uses exact English labels in post chrome.
 // The site's language is independent of the extension locale. Unknown labels,
 // divider cards and ambiguous controls fail open; no followed-only guarantee.
-// Collapsed posts retain their height and never trigger scrolling/pagination.
+// Collapsed posts stay compact. The filter itself does not scroll or request posts.
 const IGFeed = {
   COLLAPSED_CLASS: "ft-ig-collapsed",
   STUB_CLASS: "ft-ig-stub",
-  // A collapsed post keeps the height it had, so collapsing a run of posts
-  // cannot make the page shorter than it already was.
-  MIN_COLLAPSED_HEIGHT: 400,
   MAX_COLLAPSE_PER_TICK: 8,
   MAX_STUB_REPAIRS: 3,
   TICK_INTERVAL_MS: 100,
@@ -645,16 +642,7 @@ const IGFeed = {
     post.dataset.ftIgClass = kind;
     return kind;
   },
-  measureHeight: function (post) {
-    // Measured before collapsing, while the post is still laid out. The floor
-    // covers a post whose media has not loaded yet and would otherwise pin
-    // the page at a height it never really had.
-    const height = Math.round(post.getBoundingClientRect().height);
-    return Math.max(height, this.MIN_COLLAPSED_HEIGHT);
-  },
   collapse: function (post, kind) {
-    // The owned stub preserves height without overwriting site-owned styles.
-    post.dataset.ftIgHeight = String(this.measureHeight(post));
     post.classList.add(this.COLLAPSED_CLASS);
     this.collapsed.add(post);
     this.hushMedia(post);
@@ -663,7 +651,6 @@ const IGFeed = {
   restore: function (post) {
     if (!post) return;
     post.classList.remove(this.COLLAPSED_CLASS);
-    delete post.dataset.ftIgHeight;
     post
       .querySelectorAll(":scope > ." + this.STUB_CLASS)
       .forEach((el) => el.remove());
@@ -703,20 +690,11 @@ const IGFeed = {
       );
     }
     stub.classList.toggle("dark", !!CONFIG.isDarkMode);
-    const height = parseInt(post.dataset.ftIgHeight || "0", 10);
-    if (height > 0) stub.style.setProperty("height", height + "px", "important");
     while (stub.firstChild) stub.removeChild(stub.firstChild);
 
-    const icon = Utils.createBadge("ft-ig-stub-icon");
-    stub.appendChild(icon);
-
-    const title = document.createElement("h3");
+    const title = document.createElement("span");
     title.textContent = ftMessage("hidden");
     stub.appendChild(title);
-
-    const subtitle = document.createElement("p");
-    subtitle.textContent = ftMessage("overlayProductiveShort");
-    stub.appendChild(subtitle);
 
     if (this.revealAllowed()) {
       const button = document.createElement("button");

@@ -69,7 +69,7 @@ Automatic localization is limited to the extension UI. Site adapters still recog
 
 LinkedIn suggestion/promotion and network-activity settings are independent; granular processing is suspended while the whole-feed overlay is active. With Focus Mode active, Strict offers no reveal button; Warn and Passive permit a page-local reveal. A work timer forces Strict, and breaks or disabling the setting/extension restore filtered posts. New post identity or classification invalidates earlier decisions on recycled nodes.
 
-The filters coalesce mutation bursts within the detected feed root, restore detached/replaced nodes, and bound stub repair attempts. A collapsed post keeps a placeholder for its measured height without scrolling or requesting more posts. Hidden media is paused, including subsequent play events; restoration does not start playback. Extension-owned notices use the existing localization helpers and scoped direction metadata. No feed content is stored or sent elsewhere.
+The filters coalesce mutation bursts within the detected feed root, restore detached/replaced nodes, and bound stub repair attempts. Instagram uses a compact collapsed placeholder while LinkedIn preserves the post's measured height; the filters do not scroll or request more posts. Hidden media is paused, including subsequent play events; restoration does not start playback. Extension-owned notices use the existing localization helpers and scoped direction metadata. No feed content is stored or sent elsewhere.
 
 ## DOM and SPA Behavior
 
