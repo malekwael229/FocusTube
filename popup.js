@@ -295,6 +295,7 @@ const PLATFORM_SETTINGS = {
   ig: [
     { key: "hide_ig_stories", labelKey: "hideStories" },
     { key: "hide_ig_reels_nav", labelKey: "hideReelsButton" },
+    { key: "hide_ig_suggested", labelKey: "hideSuggestedPosts", defaultValue: false },
   ],
   fb: [
     { key: "hide_fb_stories", labelKey: "hideStories" },
@@ -307,6 +308,8 @@ const PLATFORM_SETTINGS = {
   li: [
     { key: "hide_li_feed", labelKey: "hideFeed" },
     { key: "hide_li_addfeed", labelKey: "hideAddToFeedShort" },
+    { key: "hide_li_suggested", labelKey: "hideSuggestedPosts", defaultValue: false },
+    { key: "hide_li_activity", labelKey: "hideNetworkActivity", defaultValue: false },
   ],
   tt: [],
 };
@@ -382,7 +385,10 @@ function showPlatformDetail(platform) {
       platformToggles.map((t) => t.key),
       (result) => {
         platformToggles.forEach((toggle) => {
-          const isChecked = result[toggle.key] !== false;
+          const defaultValue = toggle.defaultValue !== false;
+          const isChecked = result[toggle.key] === undefined
+            ? defaultValue
+            : result[toggle.key] === true;
           const row = document.createElement("div");
           row.className = "platform-setting-row";
           const label = document.createElement("span");
@@ -483,7 +489,11 @@ function setupEventListeners() {
         `.mini-switch input[data-key="${key}"]`,
       );
       if (toggle) {
-        toggle.checked = newValue !== false;
+        const descriptor = Object.values(PLATFORM_SETTINGS)
+          .flat()
+          .find((setting) => setting.key === key);
+        const defaultValue = descriptor ? descriptor.defaultValue !== false : true;
+        toggle.checked = newValue === undefined ? defaultValue : newValue === true;
       }
     }
   });

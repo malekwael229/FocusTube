@@ -453,6 +453,10 @@
   "hidePeopleYouMightKnowDescription": {
     "message": "Akıştaki kişi önerilerini gizle"
   },
+  "hideSuggestedPosts": { "message": "Önerilen gönderileri gizle" },
+  "hideSuggestedPostsDescription": { "message": "Algılandığında önerilen ve sponsorlu gönderileri gizle" },
+  "hideNetworkActivity": { "message": "Ağ etkinliğini gizle" },
+  "hideNetworkActivityDescription": { "message": "Ağınızın etkileşimleriyle gösterilen gönderileri gizle" },
   "hideFeed": {
     "message": "Akışı Gizle"
   },

@@ -18,6 +18,8 @@ As rechecked on September 6, 2026, `npm audit --omit=dev` reports zero vulnerabi
 
 ## Automated Commands
 
+The development-only `adm-zip` override pins 0.6.1 because it includes upstream fixes for extraction through destination symlinks and malformed ZIP data ([release notes](https://github.com/cthackers/adm-zip/releases/tag/v0.6.1), [advisory](https://github.com/advisories/GHSA-vwc7-r8mq-g2x9)). It is used by Firefox tooling and package-content checks and is not shipped inside the extension. No additional DOM-test dependency is required.
+
 Run the complete local gate:
 
 ```powershell
@@ -33,6 +35,7 @@ npm.cmd run test:regression
 npm.cmd run test:background
 npm.cmd run test:package
 npm.cmd run test:localization
+npm.cmd run test:feeds
 node scripts/prepare-test-builds.js
 npm.cmd run test:smoke
 node .\node_modules\web-ext\bin\web-ext.js lint --warnings-as-errors --source-dir .tmp\test-builds\firefox
@@ -46,10 +49,12 @@ npm.cmd run test:smoke:youtube
 
 ## Automated Coverage
 
+`test:feeds` runs sanitized Instagram/LinkedIn fixtures in Chromium with real DOM layout, mutation observers and content scripts, substituting only browser-extension APIs and site responses. It is included in `test:all`. Positive, negative, settings, timer, restoration, recycled-node and media cases exercise the opt-in filters. Requests are intercepted; these checks provide no evidence about a signed-in account or today's production site markup. Native-speaker review and authenticated cross-browser site checks remain manual release-review items.
+
 The deterministic suites cover:
 
 - Manifest parsing, permission and CSP checks, per-platform content-script splitting, icon metadata, and the package allowlist.
-- Localization checks verify the canonical 160-key English catalog, referenced-key and placeholder integrity, all eight packaged catalogs, default English manifest fallback, script order, package inclusion, localized text and accessibility attributes, substitution parsing, safe fallback behavior, scoped host-page localization, resolved-catalog language and direction metadata for supported Arabic and unsupported Japanese/right-to-left browser locales, and stable internal storage keys and message types.
+- Localization checks verify the canonical 164-key English catalog, referenced-key and placeholder integrity, all eight packaged catalogs, default English manifest fallback, script order, package inclusion, localized text and accessibility attributes, substitution parsing, safe fallback behavior, scoped host-page localization, resolved-catalog language and direction metadata for supported Arabic and unsupported Japanese/right-to-left browser locales, and stable internal storage keys and message types.
 - Background initialization restores future alarms without consuming expired state. Explicit browser startup completes an overdue timer once when its primary alarm matches, regardless of startup and alarm event order, and otherwise cleans expired state silently. A primary alarm lookup failure preserves the timer and defers reconciliation, future-alarm recreation failure schedules bounded identity-safe recovery, and expired cleanup revalidates timer identity before removal. Stale or mismatched alarms have no side effects.
 - Regression checks verify that `background.js` is the only timer-state mutation authority, `ft_enabled` mutations and timer mutations are requested through serialized background messages, operation-owned enable markers retire on same-value and no-event paths, external `ft_enabled=false` cleanup works without an enabled timer and removes timer state before alarm clear, partial `storage.onChanged` events do not reconstruct timers, and settings replacement is limited to extension-page senders validated by runtime ID and runtime URL origin.
 - Background timer tests cover direct primary-alarm creation and scheduled-time verification for user timer writes, replacement starts, structured storage and alarm errors, MV3 cold-wake completion, external timer replacement races, stale and same-end different-type timer protection, storage read, storage remove, tabs query, completion-write failures, durable retry alarms bound to timer identity and attempt, the three-attempt retry limit, and exact durable completion claims that suppress duplicate notification, runtime, and tab effects across startup, alarm, retry, and fresh contexts.

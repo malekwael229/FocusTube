@@ -453,6 +453,10 @@
   "hidePeopleYouMightKnowDescription": {
     "message": "Ocultar sugestões de pessoas no feed"
   },
+  "hideSuggestedPosts": { "message": "Ocultar publicações sugeridas" },
+  "hideSuggestedPostsDescription": { "message": "Ocultar publicações sugeridas e patrocinadas quando detectadas" },
+  "hideNetworkActivity": { "message": "Ocultar atividades da sua rede" },
+  "hideNetworkActivityDescription": { "message": "Ocultar publicações exibidas pelas reações da sua rede" },
   "hideFeed": {
     "message": "Ocultar feed"
   },

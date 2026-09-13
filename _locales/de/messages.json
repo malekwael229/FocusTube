@@ -453,6 +453,10 @@
   "hidePeopleYouMightKnowDescription": {
     "message": "Personenvorschläge im Feed ausblenden"
   },
+  "hideSuggestedPosts": { "message": "Vorgeschlagene Beiträge ausblenden" },
+  "hideSuggestedPostsDescription": { "message": "Vorgeschlagene und gesponserte Beiträge ausblenden, wenn sie erkannt werden" },
+  "hideNetworkActivity": { "message": "Netzwerkaktivitäten ausblenden" },
+  "hideNetworkActivityDescription": { "message": "Beiträge ausblenden, die durch Reaktionen deines Netzwerks angezeigt werden" },
   "hideFeed": {
     "message": "Feed ausblenden"
   },

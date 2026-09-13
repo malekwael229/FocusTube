@@ -63,6 +63,14 @@ Resolved-catalog direction and language metadata apply to extension pages and ex
 
 Automatic localization is limited to the extension UI. Site adapters still recognize site routes and DOM supplied by each platform. The YouTube Subscriptions detector for the "Most relevant" shelf intentionally matches the English label only; a translated shelf label is outside that detector's current contract.
 
+## Optional Per-Post Filters
+
+`hide_ig_suggested`, `hide_li_suggested`, and `hide_li_activity` default to false, including when a stored key is missing. They do not infer a user's follow graph. Instagram filtering is limited to the home route and exact detected English suggested/sponsored labels before the post's action section. Divider position, link redirects and generic buttons are not sufficient evidence. LinkedIn filtering is limited to the home and feed routes and uses scoped author controls, identity and promotion labels; first-degree/following signals and ambiguous cards fail open. Site UI language is independent of the extension locale. Translated or changed site markup may remain visible.
+
+LinkedIn suggestion/promotion and network-activity settings are independent; granular processing is suspended while the whole-feed overlay is active. With Focus Mode active, Strict offers no reveal button; Warn and Passive permit a page-local reveal. A work timer forces Strict, and breaks or disabling the setting/extension restore filtered posts. New post identity or classification invalidates earlier decisions on recycled nodes.
+
+The filters coalesce mutation bursts within the detected feed root, restore detached/replaced nodes, and bound stub repair attempts. A collapsed post keeps a placeholder for its measured height without scrolling or requesting more posts. Hidden media is paused, including subsequent play events; restoration does not start playback. Extension-owned notices use the existing localization helpers and scoped direction metadata. No feed content is stored or sent elsewhere.
+
 ## DOM and SPA Behavior
 
 Content scripts inspect and modify the site's DOM. They add classes, inject or remove extension overlays and styles, cache inline styles before hiding elements, and track media that must be paused while a warning is visible. The shared `ensureBody()` helper waits for `document.body` when scripts start before the body exists and tracks its temporary observer so disabling can disconnect it.

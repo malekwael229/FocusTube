@@ -453,6 +453,10 @@
   "hidePeopleYouMightKnowDescription": {
     "message": "Sembunyikan saran orang di beranda"
   },
+  "hideSuggestedPosts": { "message": "Sembunyikan postingan yang disarankan" },
+  "hideSuggestedPostsDescription": { "message": "Sembunyikan postingan yang disarankan dan bersponsor saat terdeteksi" },
+  "hideNetworkActivity": { "message": "Sembunyikan aktivitas jaringan" },
+  "hideNetworkActivityDescription": { "message": "Sembunyikan postingan yang ditampilkan dari reaksi jaringan Anda" },
   "hideFeed": {
     "message": "Sembunyikan Beranda"
   },

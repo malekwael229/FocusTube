@@ -25,10 +25,13 @@ document.addEventListener("DOMContentLoaded", function () {
     hide_yt_shorts_shelves: true,
     hide_yt_most_relevant_shelf: true,
     hide_ig_reels_nav: true,
+    hide_ig_suggested: false,
     hide_fb_reels_nav: true,
     hide_fb_people_you_might_know: true,
     hide_li_feed: true,
     hide_li_addfeed: true,
+    hide_li_suggested: false,
+    hide_li_activity: false,
     showBreakButton: true,
     accentColor: "#4facfe",
   };
@@ -706,6 +709,12 @@ const platforms = {
         label: msg("hideReelsButton"),
         desc: msg("hideInstagramReelsDescription"),
       },
+      {
+        id: "hide_ig_suggested",
+        defaultValue: false,
+        label: msg("hideSuggestedPosts"),
+        desc: msg("hideSuggestedPostsDescription"),
+      },
     ],
   },
   tt: { name: msg("platformTiktok"), settings: [] },
@@ -741,6 +750,18 @@ const platforms = {
         id: "hide_li_addfeed",
         label: msg("hideAddToFeed"),
         desc: msg("hideAddToFeedDescription"),
+      },
+      {
+        id: "hide_li_suggested",
+        defaultValue: false,
+        label: msg("hideSuggestedPosts"),
+        desc: msg("hideSuggestedPostsDescription"),
+      },
+      {
+        id: "hide_li_activity",
+        defaultValue: false,
+        label: msg("hideNetworkActivity"),
+        desc: msg("hideNetworkActivityDescription"),
       },
     ],
   },
@@ -959,7 +980,9 @@ function showPlatformDetail(id) {
     chrome.storage.local.get(settingKeys, (res) => {
       settingsContainer.replaceChildren(
         ...platform.settings.map((setting) => {
-          const isOn = res[setting.id] !== false;
+          const isOn = setting.defaultValue === false
+            ? res[setting.id] === true
+            : res[setting.id] !== false;
           const row = document.createElement("div");
           row.className = "setting-row";
 
