@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const vm = require("node:vm");
 
 const root = path.resolve(__dirname, "..", "docs");
 const base = "https://malekwael229.github.io/FocusTube/";
@@ -73,7 +74,19 @@ for (const page of pages) {
   assert.equal(canonical, page.url, `Wrong canonical on ${page.file}`);
   assert.equal(ogUrl, page.url, `Wrong og:url on ${page.file}`);
   assert.equal((html.match(/<h1\b/gi) || []).length, 1, `${page.file} must have one h1`);
-  for (const store of stores) assert.ok(html.includes(store), `${page.file} missing store link: ${store}`);
+  for (const [index, store] of stores.entries()) {
+    const browser = ["chrome", "firefox", "edge"][index];
+    const label = ["Add to Chrome", "Add to Firefox", "Get for Edge"][index];
+    const buttons = [...html.matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/gi)]
+      .map((match) => match[0]).filter((anchor) => anchor.includes(`href="${store}"`) && /class="button(?:\s|")/.test(anchor));
+    assert.ok(buttons.length > 0, `${page.file} missing store link: ${store}`);
+    for (const button of buttons) {
+      assert.ok(button.includes(`data-store="${browser}"`), `${page.file} store selector missing`);
+      assert.ok(button.includes(`<span>${label}</span>`), `${page.file} store label is wrong`);
+      const classes = button.match(/\bclass="([^"]+)"/)?.[1].split(/\s+/) || [];
+      assert.equal(classes.includes("primary"), browser === "chrome", `${page.file} must default to Chrome without JavaScript`);
+    }
+  }
   for (const match of html.matchAll(/<img\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi)) {
     const src = match[1];
     localTarget(page.url, src);
@@ -101,8 +114,52 @@ for (const page of pages) {
   }
   for (const match of html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)) validateStyles(match[1], page.url);
   for (const match of html.matchAll(/\bstyle=("([^"]*)"|'([^']*)')/gi)) validateStyles(match[2] ?? match[3], page.url);
-  assert.equal(/<(script|iframe|object|embed)\b/i.test(html), false, `${page.file} must not load remote scripts or embeds`);
+  const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
+  assert.equal(scripts.length, 1, `${page.file} needs only the local store CTA enhancement`);
+  const [, attributes, inlineCode] = scripts[0];
+  const scriptSrc = attributes.match(/\bsrc=["']([^"']+)["']/i)?.[1];
+  assert.ok(scriptSrc, `${page.file} script needs a local source`);
+  const scriptTarget = localTarget(page.url, scriptSrc);
+  assert.equal(scriptTarget?.file, path.join(root, "assets", "store-cta.js"), `${page.file} has an unexpected script`);
+  assert.ok(/\bdefer\b/i.test(attributes), `${page.file} must defer the enhancement`);
+  assert.equal(inlineCode.trim(), "", `${page.file} must not contain inline script code`);
+  assert.equal(/<(iframe|object|embed)\b/i.test(html), false, `${page.file} must not load embeds`);
   assert.equal(tracking.test(html), false, `${page.file} contains tracking code`);
+}
+
+// Run the enhancement with only its local DOM capabilities. Network, storage,
+// timers and navigation APIs are deliberately unavailable in this sandbox.
+const enhancement = fs.readFileSync(path.join(root, "assets", "store-cta.js"), "utf8");
+assert.equal(tracking.test(enhancement), false, "Store enhancement contains tracking code");
+for (const [userAgent, preferred] of [
+  ["Mozilla/5.0 Chrome/130.0.0.0 Safari/537.36", "chrome"],
+  ["Mozilla/5.0 Firefox/130.0", "firefox"],
+  ["Mozilla/5.0 Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0", "edge"],
+  ["Mozilla/5.0 Chrome/130.0.0.0 EdgA/130.0", "edge"],
+  ["Mozilla/5.0 EdgiOS/130.0 Mobile Safari/605.1", "edge"],
+  ["Mozilla/5.0 FxiOS/130.0 Mobile Safari/605.1", "firefox"],
+  ["Mozilla/5.0 Version/18.0 Safari/605.1.15", "chrome"],
+  ["unknown", "chrome"],
+  ["", "chrome"],
+]) {
+  const buttons = Array.from({ length: 2 }, () => ["chrome", "firefox", "edge"])
+    .flat().map((store) => ({
+      dataset: { store },
+      primary: store === "chrome",
+      classList: { toggle(name, enabled) {
+        assert.equal(name, "primary");
+        this.owner.primary = enabled;
+      } },
+    }));
+  buttons.forEach((button) => { button.classList.owner = button; });
+  vm.runInNewContext(enhancement, {
+    navigator: { userAgent },
+    document: { querySelectorAll(selector) {
+      assert.equal(selector, ".install-actions [data-store]");
+      return buttons;
+    } },
+  }, { timeout: 1000 });
+  for (const button of buttons) assert.equal(button.primary, button.dataset.store === preferred, `Wrong preferred CTA for ${userAgent}`);
 }
 
 const robots = fs.readFileSync(path.join(root, "robots.txt"), "utf8");
