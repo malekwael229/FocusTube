@@ -10,8 +10,8 @@
   <p>
     <strong>Install:</strong>
     <a href="https://chromewebstore.google.com/detail/focustube-distraction-blo/ppdjgkniggbikifojmkindmbhppmoell">Chrome</a> |
-    <a href="https://addons.mozilla.org/addon/focus-tube/">Firefox</a> |
-    <a href="https://microsoftedge.microsoft.com/addons/detail/focustube/emffahlehkfdlknpmpndaabhigchhoog">Edge</a>
+    <a href="https://addons.mozilla.org/en-US/firefox/addon/focus-tube/">Firefox</a> |
+    <a href="https://microsoftedge.microsoft.com/addons/detail/focustube-distraction-bl/emffahlehkfdlknpmpndaabhigchhoog">Edge</a>
   </p>
 
   <p>
@@ -115,11 +115,12 @@ Click the extension icon to open the popup:
 
 ## Project Impact
 
-The following figures are a recorded snapshot from September 1, 2026. Store dashboards use different activity windows, so each source is shown separately:
+Snapshot refreshed September 13, 2026. Store analytics use different activity windows, so the figures below are kept separate rather than summed:
 
-- Chrome Web Store: 5.0 from 7 ratings and Featured status.
-- Firefox Add-ons: 5.0 from 3 reviews.
-- GitHub: 32 stars and 4 forks.
+- Chrome Web Store: 390 weekly users on September 11; 5.0 from 7 ratings; Featured status.
+- Firefox Add-ons: 298 daily users on September 12; 5.0 from 3 reviews.
+- Microsoft Edge Add-ons: 129 users in the week ending September 6, including 110 enabled and 19 disabled.
+- GitHub: 33 stars and 4 forks.
 - Published listings: Chrome, Firefox, and Edge.
 
 ---
