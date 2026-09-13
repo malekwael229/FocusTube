@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const root = path.resolve(__dirname, "..");
+const root = path.resolve(__dirname, "..", "docs");
 const base = "https://malekwael229.github.io/FocusTube/";
 const pages = [
   { file: "index.html", url: base },
@@ -28,7 +28,7 @@ function localTarget(sourceUrl, href) {
   assert.ok(url.pathname.startsWith(projectPath), `URL escapes /FocusTube/: ${href} from ${sourceUrl}`);
   let resolved = path.resolve(root, decodeURIComponent(url.pathname.slice(projectPath.length)));
   const relative = path.relative(root, resolved);
-  assert.ok(relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative), `Path escapes repository: ${href}`);
+  assert.ok(relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative), `Path escapes site root: ${href}`);
   assert.ok(fs.existsSync(resolved), `Missing local target: ${href} from ${sourceUrl}`);
   if (fs.statSync(resolved).isDirectory()) resolved = path.join(resolved, "index.html");
   assert.ok(fs.existsSync(resolved), `Missing index page: ${href} from ${sourceUrl}`);
@@ -43,7 +43,6 @@ function validateStyles(css, sourceUrl) {
     .map((match) => match[1] ?? match[2] ?? match[3]);
   const imports = [...css.matchAll(/@import\s+["']([^"']+)["']/gi)].map((match) => match[1]);
   for (const href of [...urls, ...imports]) {
-    // SVG paint/filter fragments refer to the rendered document, not a CSS file.
     if (href.startsWith("#")) continue;
     const target = localTarget(sourceUrl, href);
     if (target && path.extname(target.file) === ".css") validateStylesheet(target);
