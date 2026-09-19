@@ -679,6 +679,7 @@ const IGFeed = {
     this.renderStub(post, kind);
   },
   renderStub: function (post) {
+    const revealAllowed = this.revealAllowed();
     let stub = post.querySelector(":scope > ." + this.STUB_CLASS);
     if (!stub) {
       stub = document.createElement("div");
@@ -690,25 +691,26 @@ const IGFeed = {
       );
     }
     stub.classList.toggle("dark", !!CONFIG.isDarkMode);
+    stub.hidden = !revealAllowed;
     while (stub.firstChild) stub.removeChild(stub.firstChild);
+
+    if (!revealAllowed) return;
 
     const title = document.createElement("span");
     title.textContent = ftMessage("hidden");
     stub.appendChild(title);
 
-    if (this.revealAllowed()) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "ft-ig-stub-btn";
-      button.textContent = ftMessage("viewAnyway");
-      button.addEventListener("click", (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        post.dataset.ftIgReveal = "1";
-        this.restore(post);
-      });
-      stub.appendChild(button);
-    }
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "ft-ig-stub-btn";
+    button.textContent = ftMessage("viewAnyway");
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      post.dataset.ftIgReveal = "1";
+      this.restore(post);
+    });
+    stub.appendChild(button);
   },
 };
 

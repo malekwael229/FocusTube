@@ -370,6 +370,9 @@ body.ft-hide-ig-suggested.ft-platform-ig article.ft-ig-collapsed {
   min-height: 0;
   user-select: none !important;
 }
+.ft-ig-stub[hidden] {
+  display: none !important;
+}
 .ft-ig-stub.dark {
   background: #1b1f23;
   border-color: #38434f;

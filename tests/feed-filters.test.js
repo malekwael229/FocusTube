@@ -199,15 +199,67 @@ async function main() {
    await page.evaluate(label => { const p = document.querySelector('#target'); const e = document.createElement('span'); e.className = 'label'; e.textContent = label; p.insertBefore(e, p.querySelector('section, [data-testid="expandable-text-box"]')); }, label); await settle();
    await settle();
    await collapsed('target', true);
+   if (platform === 'ig') await page.evaluate(() => { window.igOriginalChildren = [...document.querySelector('#target').children].filter(child => !child.classList.contains('ft-ig-stub')); window.igOriginalStyle = document.querySelector('#target').getAttribute('style'); });
    for (const mode of ['strict', 'warn', 'allow']) {
     await change({ platformSettings: { [platform]: mode } });
     await collapsed('target', true);
-    assert.equal(await page.locator(`#target .ft-${platform}-stub button`).count(), mode === 'strict' ? 0 : 1, mode);
-    checks++;
+    if (platform === 'ig') {
+     const stubState = await page.evaluate(() => {
+      const post = document.querySelector('#target');
+      const stub = post.querySelector('.ft-ig-stub');
+      return {
+       hidden: stub.hidden,
+       display: getComputedStyle(stub).display,
+       height: post.getBoundingClientRect().height,
+       stubHeight: stub.getBoundingClientRect().height,
+       children: stub.children.length,
+       text: stub.querySelector('span')?.textContent,
+       button: !!stub.querySelector('button'),
+       style: post.getAttribute('style'),
+       childIdentity: window.igOriginalChildren.length === post.children.length - 1 && [...post.children].filter(child => !child.classList.contains('ft-ig-stub')).every((child, index) => child === window.igOriginalChildren[index]),
+      };
+     });
+     if (mode === 'strict') {
+      assert.equal(stubState.hidden, true, 'IG strict keeps the owned stub hidden');
+      assert.equal(stubState.display, 'none', 'IG strict sentinel is display:none');
+      assert.equal(stubState.children, 0, 'IG strict sentinel has no visible content');
+      assert.ok(stubState.height <= 8, `IG strict collapse should be <=8px, got ${stubState.height}px`);
+      assert.equal(stubState.stubHeight, 0, 'IG strict sentinel has no geometry');
+      assert.equal(stubState.childIdentity, true, 'IG strict preserves original child nodes');
+      assert.equal(stubState.style, await page.evaluate(() => window.igOriginalStyle), 'IG strict preserves inline site styles');
+      await change({ darkMode: true });
+      const darkStrict = await page.evaluate(() => { const stub = document.querySelector('#target .ft-ig-stub'); return { hidden: stub.hidden, display: getComputedStyle(stub).display, children: stub.children.length }; });
+      assert.deepEqual(darkStrict, { hidden: true, display: 'none', children: 0 }, 'IG dark mode stays silent in strict mode');
+      await change({ darkMode: false });
+      checks += 8;
+     } else {
+      assert.equal(stubState.hidden, false, `IG ${mode} keeps the view row visible`);
+      assert.ok(stubState.height > 0 && stubState.height <= 64, `IG ${mode} row should be compact, got ${stubState.height}px`);
+      assert.ok(stubState.stubHeight > 0 && stubState.stubHeight <= 64, `IG ${mode} stub should be compact, got ${stubState.stubHeight}px`);
+      assert.equal(stubState.children, 2, `IG ${mode} stub has localized label and button`);
+      assert.equal(stubState.text, 'Hidden', `IG ${mode} stub uses localized hidden text`);
+      assert.equal(stubState.button, true, `IG ${mode} exposes View anyway`);
+      checks += 6;
+     }
+    } else {
+     assert.equal(await page.locator(`#target .ft-${platform}-stub button`).count(), mode === 'strict' ? 0 : 1, mode);
+     checks++;
+    }
    }
    await change({ ft_timer_end: Date.now() + 60000, ft_timer_type: 'work' });
-   assert.equal(await page.locator(`#target .ft-${platform}-stub button`).count(), 0);
-   await change({ ft_timer_type: 'break' }); await collapsed('target', false);
+   if (platform === 'ig') {
+    for (const mode of ['strict', 'warn', 'allow']) {
+     await change({ platformSettings: { [platform]: mode } });
+     const workState = await page.evaluate(() => { const post = document.querySelector('#target'); const stub = post.querySelector('.ft-ig-stub'); return { hidden: stub.hidden, display: getComputedStyle(stub).display, children: stub.children.length, height: post.getBoundingClientRect().height }; });
+     assert.deepEqual(workState, { hidden: true, display: 'none', children: 0, height: 0 }, `IG work overrides ${mode}`);
+    }
+    await change({ platformSettings: { ig: 'allow' }, ft_timer_end: Date.now() - 1, ft_timer_type: 'work' });
+    await collapsed('target', true);
+    assert.equal(await page.locator('#target .ft-ig-stub').evaluate(stub => stub.hidden), false, 'IG work completion restores the current mode row');
+    assert.ok(await page.locator('#target').evaluate(post => post.getBoundingClientRect().height > 0 && post.getBoundingClientRect().height <= 64));
+    checks += 5;
+   } else assert.equal(await page.locator(`#target .ft-${platform}-stub button`).count(), 0);
+   await change({ ft_timer_type: 'break', ft_timer_end: Date.now() + 60000 }); await collapsed('target', false);
    await change({ ft_timer_end: null }); await collapsed('target', true);
    await change({ focusMode: false }); await collapsed('target', false);
    await change({ focusMode: true }); await collapsed('target', true);
