@@ -390,6 +390,124 @@ async function verifyPopup(context, extensionId) {
   pass("popup loads and platform settings match expected controls");
 }
 
+async function verifyRatingPrompt(context, extensionId) {
+  const page = await openExtensionPage(context, extensionId, "popup.html");
+  await page.setViewportSize({ width: 300, height: 600 });
+  await setStorage(page, {
+    reviewDismissed: false,
+    ft_stats_blocked: 4,
+    ft_work_session_ended: true,
+    autoStartBreaks: false,
+    showBreakButton: true,
+    darkMode: true,
+  });
+  await page.evaluate(() => chrome.storage.local.remove("reviewNextBlock"));
+  await page.reload();
+  await page.waitForFunction(() => document.querySelector("#breakBtn")?.classList.contains("hidden") === false);
+  assert.equal(await page.locator("#review-prompt").isVisible(), false, "default threshold is five blocked items");
+
+  await setStorage(page, { ft_stats_blocked: 5 });
+  await page.locator("#review-prompt").waitFor({ state: "visible" });
+  await page.waitForTimeout(350);
+  const firstLayout = await page.evaluate(() => {
+    const prompt = document.querySelector("#review-prompt").getBoundingClientRect();
+    const controls = document.querySelector("#popupControls").getBoundingClientRect();
+    const visibleControls = [...document.querySelectorAll("button, input, select")]
+      .filter((element) => getComputedStyle(element).display !== "none" && element.getBoundingClientRect().width > 0)
+      .map((element) => {
+        const rect = element.getBoundingClientRect();
+        return { id: element.id, label: element.getAttribute("aria-label") || element.textContent.trim(), left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom };
+      });
+    return {
+      prompt: { left: prompt.left, top: prompt.top, right: prompt.right, bottom: prompt.bottom },
+      controls: { left: controls.left, top: controls.top, right: controls.right, bottom: controls.bottom },
+      visibleControls,
+      viewport: { width: innerWidth, height: innerHeight },
+      overflow: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight },
+    };
+  });
+  assert.ok(firstLayout.prompt.left >= 0 && firstLayout.prompt.right <= 300, "review prompt fits popup width");
+  assert.ok(firstLayout.prompt.bottom <= firstLayout.controls.top, "review prompt stays in normal flow ahead of controls");
+  assert.ok(firstLayout.controls.bottom <= 600,
+    `main controls including the break action fit popup height: ${JSON.stringify(firstLayout)}`);
+  assert.ok(firstLayout.overflow.width <= 300 && firstLayout.overflow.height <= 600,
+    `popup has no scroll overflow: ${JSON.stringify(firstLayout)}`);
+  assert.ok(firstLayout.visibleControls.some((item) => item.id === "breakBtn"), "break action remains visible");
+  for (const control of firstLayout.visibleControls) {
+    assert.ok(control.left >= 0 && control.right <= 300 && control.top >= 0 && control.bottom <= 600,
+      `control ${control.id || control.label} stays inside popup`);
+  }
+
+  const readPromptLayout = () => page.evaluate(() => {
+    const body = document.body.getBoundingClientRect();
+    const controls = document.querySelector("#popupControls").getBoundingClientRect();
+    return {
+      bodyHeight: body.height,
+      controlsHeight: controls.height,
+      documentHeight: document.documentElement.scrollHeight,
+      bodyScrollHeight: document.body.scrollHeight,
+      inlineDocumentHeight: document.documentElement.style.height,
+      inlineBodyHeight: document.body.style.height,
+    };
+  });
+  const repeatedLayouts = [];
+  for (const blockedCount of [6, 7, 8, 9, 10, 11, 12]) {
+    await setStorage(page, { ft_stats_blocked: blockedCount });
+    await page.waitForTimeout(120);
+    repeatedLayouts.push(await readPromptLayout());
+  }
+  for (const key of ["bodyHeight", "controlsHeight", "documentHeight", "bodyScrollHeight"]) {
+    const values = repeatedLayouts.map((layout) => layout[key]);
+    assert.ok(Math.max(...values) - Math.min(...values) <= 1,
+      `repeated eligible updates keep ${key} stable`);
+  }
+  assert.deepEqual(repeatedLayouts.at(-1).inlineDocumentHeight, "", "review prompt does not set document height");
+  assert.deepEqual(repeatedLayouts.at(-1).inlineBodyHeight, "", "review prompt does not set body height");
+
+  for (const darkMode of [false, true]) {
+    await setStorage(page, { darkMode, ft_stats_blocked: 13 });
+    await page.waitForTimeout(350);
+    const layout = await page.evaluate(() => ({
+      height: document.documentElement.getBoundingClientRect().height,
+      promptVisible: !document.querySelector("#review-prompt").classList.contains("hidden"),
+      theme: document.body.classList.contains("dark-mode"),
+    }));
+    assert.equal(layout.promptVisible, true);
+    assert.equal(layout.theme, darkMode);
+    assert.ok(layout.height <= 600, "review prompt stays within the popup viewport");
+  }
+
+  await setStorage(page, { ft_stats_blocked: 17 });
+  await page.locator("#reviewLater").click();
+  await waitForStorageValue(page, "reviewNextBlock", 37);
+  await page.reload();
+  assert.equal(await page.locator("#review-prompt").isVisible(), false, "Later defers by twenty blocked items");
+  await setStorage(page, { ft_stats_blocked: 37 });
+  await page.locator("#review-prompt").waitFor({ state: "visible" });
+
+  const rateUrl = await page.evaluate(() => {
+    window.__openedStoreUrl = null;
+    chrome.tabs.create = ({ url }) => { window.__openedStoreUrl = url; };
+    return new Promise((resolve) => {
+      document.querySelector("#reviewNow").addEventListener("click", () => {
+        setTimeout(() => resolve(window.__openedStoreUrl), 0);
+      }, { once: true });
+      document.querySelector("#reviewNow").click();
+    });
+  });
+  assert.equal(rateUrl, "https://chromewebstore.google.com/detail/focustube-distraction-blo/ppdjgkniggbikifojmkindmbhppmoell");
+  const dismissed = await getStorage(page, ["reviewDismissed", "reviewNextBlock"]);
+  assert.equal(dismissed.reviewDismissed, true, "Rate Us permanently dismisses the prompt");
+  assert.equal(dismissed.reviewNextBlock, null, "Rate Us clears the temporary snooze threshold");
+  await setStorage(page, { ft_stats_blocked: 100 });
+  await page.reload();
+  await page.waitForTimeout(350);
+  assert.equal(await page.locator("#review-prompt").isVisible(), false,
+    "permanent dismissal survives later blocked-count updates");
+  await page.close();
+  pass("rating prompt thresholds, deferral, dismissal, and 300x600 layout pass");
+}
+
 async function verifyOptions(context, extensionId) {
   const page = await openExtensionPage(context, extensionId, "options.html");
   await assertControlsUsePageFont(page, "Options page");
@@ -1363,6 +1481,7 @@ async function runBrowserSmoke() {
 
     await seedStorage(context, extensionId);
     await verifyPopup(context, extensionId);
+    await verifyRatingPrompt(context, extensionId);
     await verifyOptions(context, extensionId);
     await verifyTimer(context, extensionId);
     await verifyFacebookRuntime(context, extensionId);
@@ -1403,6 +1522,7 @@ async function runBrowserSmoke() {
   try {
     const extensionId = await getExtensionId(arabicContext);
     await verifyArabicLocalization(arabicContext, extensionId);
+    await verifyRatingPrompt(arabicContext, extensionId);
   } finally {
     await arabicContext.close();
     fs.rmSync(arabicUserDataDir, { recursive: true, force: true });

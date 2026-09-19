@@ -16,6 +16,8 @@ All notable project-facing changes are documented here.
 - Added optional LinkedIn outside-network, promoted-post, and network-activity filtering with late-render and recycled-node handling.
 - All three new per-post filters default off, including on upgrade. Ambiguous posts remain visible; site-language detection is independent of the extension's translated UI.
 - Paused media when filtered posts collapse and preserved local-first behavior without new permissions or network requests.
+- Collapsed filtered Instagram posts without a visible placeholder in Strict mode and during work timers; Warn and Passive retain a compact, localized row with View anyway.
+- Show the first review prompt after five blocked items, preserve the twenty-item Later reminder, and keep the popup layout stable while the prompt is visible.
 - Updated the development-only `adm-zip` dependency to 0.6.1 to include upstream extraction safety fixes.
 - The static project website and platform guides were merged separately in #38 and are inherited by this candidate.
 

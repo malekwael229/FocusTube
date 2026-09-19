@@ -32,6 +32,7 @@ const PLATFORM_NAMES = {
   fb: msg("platformFacebook"),
   li: msg("platformLinkedin"),
 };
+let reviewHideTimeout = null;
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => document.body.classList.remove("preload"), 100);
   initReviewPrompt();
@@ -1039,50 +1040,36 @@ function checkReviewPrompt(blockedCount) {
   chrome.storage.local.get(["reviewDismissed", "reviewNextBlock"], (res) => {
     if (res.reviewDismissed) return;
     const threshold =
-      typeof res.reviewNextBlock === "number" ? res.reviewNextBlock : 20;
+      typeof res.reviewNextBlock === "number" ? res.reviewNextBlock : 5;
     if (blockedCount >= threshold) showReviewPrompt();
   });
 }
 function showReviewPrompt() {
   const prompt = document.getElementById("review-prompt");
+  if (reviewHideTimeout !== null) {
+    clearTimeout(reviewHideTimeout);
+    reviewHideTimeout = null;
+  }
   if (prompt) {
+    prompt.classList.remove("fade-out");
     prompt.classList.remove("hidden");
     prompt.classList.add("show");
   }
   document.body.classList.add("review-visible");
   document.documentElement.classList.add("review-visible");
-  adjustPopupHeight();
 }
 function hideReviewPrompt() {
   const prompt = document.getElementById("review-prompt");
-  if (prompt) {
+  if (prompt && !prompt.classList.contains("hidden")) {
+    if (reviewHideTimeout !== null) clearTimeout(reviewHideTimeout);
     prompt.classList.add("fade-out");
     prompt.classList.remove("show");
-    setTimeout(() => {
+    reviewHideTimeout = setTimeout(() => {
       prompt.classList.add("hidden");
       prompt.classList.remove("fade-out");
+      reviewHideTimeout = null;
     }, 300);
   }
   document.body.classList.remove("review-visible");
   document.documentElement.classList.remove("review-visible");
-  adjustPopupHeight(true);
-}
-function adjustPopupHeight(reset = false) {
-  const root = document.documentElement;
-  const body = document.body;
-  if (reset) {
-    root.style.height = "";
-    body.style.height = "";
-    return;
-  }
-  const content = document.getElementById("popupControls");
-  if (!content) return;
-  const desired =
-    Math.max(
-      content.scrollHeight,
-      document.body.scrollHeight,
-      document.documentElement.scrollHeight,
-    ) + 12;
-  root.style.height = desired + "px";
-  body.style.height = desired + "px";
 }
