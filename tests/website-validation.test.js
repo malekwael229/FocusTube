@@ -56,6 +56,22 @@ function validateStylesheet(target) {
   validateStyles(fs.readFileSync(target.file, "utf8"), target.url);
 }
 
+function getSingleScript(html, source) {
+  const openingTags = [...html.matchAll(/<script\b[^>]*>/gi)];
+  const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script(?=[\s/>])[^>]*>/gi)];
+  assert.equal(scripts.length, openingTags.length, `${source} contains an unclosed script`);
+  assert.equal(scripts.length, 1, `${source} needs only the local store CTA enhancement`);
+  return scripts[0];
+}
+
+for (const closingTag of ["</script>", "</script >", "</script\n>", "</script foo=bar>", "</script/>"]) {
+  assert.equal(getSingleScript(`<script src="local.js">${closingTag}`, "script matcher test")[2], "",
+    `Script matcher missed ${JSON.stringify(closingTag)}`);
+}
+assert.throws(() => getSingleScript("<script src=\"one.js\"></script><script src=\"two.js\"></script>", "script matcher test"),
+  /needs only the local store CTA enhancement/);
+assert.throws(() => getSingleScript("<script src=\"one.js\">", "script matcher test"), /contains an unclosed script/);
+
 const titles = new Set();
 const descriptions = new Set();
 for (const page of pages) {
@@ -114,9 +130,7 @@ for (const page of pages) {
   }
   for (const match of html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)) validateStyles(match[1], page.url);
   for (const match of html.matchAll(/\bstyle=("([^"]*)"|'([^']*)')/gi)) validateStyles(match[2] ?? match[3], page.url);
-  const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
-  assert.equal(scripts.length, 1, `${page.file} needs only the local store CTA enhancement`);
-  const [, attributes, inlineCode] = scripts[0];
+  const [, attributes, inlineCode] = getSingleScript(html, page.file);
   const scriptSrc = attributes.match(/\bsrc=["']([^"']+)["']/i)?.[1];
   assert.ok(scriptSrc, `${page.file} script needs a local source`);
   const scriptTarget = localTarget(page.url, scriptSrc);
