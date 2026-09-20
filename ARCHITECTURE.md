@@ -79,6 +79,8 @@ MutationObservers handle late-loaded page content. YouTube observes the full bod
 
 SPA navigation is handled through `popstate`, site-specific navigation events where available, route checks, and settings-change events. Mutation-triggered scans handle relevant late-loaded visual surfaces. This lets the extension respond when the document remains loaded while the URL or page content changes.
 
+Instagram also compares the pathname every 250ms while enabled, because `pushState` and `replaceState` do not emit `popstate` and may not change the DOM. Unchanged paths do not trigger scans. The single pending route timer is canceled on disable and restarted on enable.
+
 ## Storage, Alarms, and Messaging
 
 `chrome.storage.local` is the durable source of truth for extension settings, platform modes, visual-hiding toggles, popup visibility, timer state, notification preference, and local blocked-count statistics. Localization changes display strings only; storage keys and stored values remain unchanged. Popup, options, background, and content scripts read or react to the same storage area, but only `background.js` mutates timer-state keys. Popup, options, and content scripts request timer mutations through serialized runtime messages handled by the background context. Null, undefined, primitive, array, and invalid-JSON runtime request shapes are rejected, while valid message type names remain unchanged. Partial `storage.onChanged` events are not reconstructed into timer state or alarms; timer identity is read from storage before timer side effects.

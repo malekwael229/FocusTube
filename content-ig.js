@@ -11,6 +11,7 @@ const Instagram = {
   observer: null,
   checkScheduled: false,
   checkFrame: null,
+  routeCheckTimer: null,
   isRedirecting: false,
   currentMode: "strict",
   lastPath: "",
@@ -31,7 +32,9 @@ const Instagram = {
     this.initialized = true;
     document.body.classList.add("ft-platform-ig");
     this.isRedirecting = false;
+    this.lastPath = window.location.pathname;
     this.ensureObservers();
+    this.startRouteWatcher();
     window.addEventListener("popstate", () => this.runChecks());
     chrome.storage.onChanged.addListener((changes) => {
       if (
@@ -62,6 +65,19 @@ const Instagram = {
       this.observer.observe(document.body, { childList: true, subtree: true });
     }
   },
+  startRouteWatcher: function () {
+    if (this.routeCheckTimer === null) {
+      const checkRoute = () => {
+        const path = window.location.pathname;
+        if (path !== this.lastPath) {
+          this.lastPath = path;
+          this.runChecks();
+        }
+        this.routeCheckTimer = setTimeout(checkRoute, 250);
+      };
+      this.routeCheckTimer = setTimeout(checkRoute, 250);
+    }
+  },
   scheduleChecks: function () {
     if (this.checkScheduled) return;
     this.checkScheduled = true;
@@ -75,6 +91,11 @@ const Instagram = {
     if (this.checkFrame !== null) cancelFrame(this.checkFrame);
     this.checkFrame = null;
     this.checkScheduled = false;
+    if (this.routeCheckTimer !== null) {
+      clearTimeout(this.routeCheckTimer);
+      this.routeCheckTimer = null;
+    }
+    this.lastPath = "";
     this.isRedirecting = false;
     UI.remove();
     IGFeed.disable();
@@ -90,6 +111,7 @@ const Instagram = {
     if (!document.body) return;
     document.body.classList.add("ft-platform-ig");
     this.ensureObservers();
+    this.startRouteWatcher();
     this.runChecks();
     this.checkKick();
   },

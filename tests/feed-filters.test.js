@@ -306,6 +306,31 @@ async function main() {
    await page.waitForTimeout(650);
    assert.ok(await page.evaluate(() => window.mutations) < 20, 'idle observers settle without self-induced churn'); checks++;
    assert.ok(await page.evaluate(() => window.tickCalls) < 5, 'idle feed processing settles'); checks++;
+   if (platform === 'ig') {
+    await change({ platformSettings: { ig: 'allow' }, ft_timer_end: null });
+    await page.evaluate(() => history.pushState({}, '', '/reels/passive-without-timer'));
+    await page.waitForTimeout(350);
+    assert.equal(await page.evaluate(() => location.pathname), '/reels/passive-without-timer', 'IG route watcher leaves a passive route in place without a timer');
+    await page.evaluate(() => history.replaceState({}, '', '/'));
+
+    await change({ platformSettings: { ig: 'allow' }, ft_timer_end: Date.now() + 60000, ft_timer_type: 'break' });
+    await page.evaluate(() => history.pushState({}, '', '/reels/break-without-popstate'));
+    await page.waitForTimeout(350);
+    assert.equal(await page.evaluate(() => location.pathname), '/reels/break-without-popstate', 'IG route watcher leaves a break route in place');
+    await page.evaluate(() => history.replaceState({}, '', '/'));
+
+    await change({ ft_enabled: false, ft_timer_type: 'work' });
+    await page.evaluate(() => history.pushState({}, '', '/reels/disabled-without-popstate'));
+    await page.waitForTimeout(350);
+    assert.equal(await page.evaluate(() => location.pathname), '/reels/disabled-without-popstate', 'IG route watcher leaves a route in place when disabled');
+    await page.evaluate(() => history.replaceState({}, '', '/'));
+
+    await change({ ft_enabled: true, ft_timer_end: Date.now() + 60000, ft_timer_type: 'work' });
+    await page.evaluate(() => history.replaceState({}, '', '/reels/work-without-popstate'));
+    await page.waitForURL(url => url.pathname === '/', { timeout: 3000 });
+    assert.equal(await page.evaluate(() => location.pathname), '/', 'IG redirects a naturally reached reels route during work');
+    checks += 4;
+   }
    await settle(); await close();
   }
   console.log(`Feed browser validation passed: ${checks} assertions (Chromium fixtures; no authenticated live-site coverage).`);
