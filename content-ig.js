@@ -72,11 +72,66 @@ const Instagram = {
         if (path !== this.lastPath) {
           this.lastPath = path;
           this.runChecks();
+        } else if (
+          /^\/p\/[A-Za-z0-9_-]+\/?$/.test(path) &&
+          Utils.isExtensionEnabled() &&
+          !FocusState.isBreak &&
+          (FocusState.isWork || CONFIG.platformSettings.ig === "strict") &&
+          this.getReelPermalinkArticle(path)
+        ) {
+          this.runChecks();
         }
         this.routeCheckTimer = setTimeout(checkRoute, 250);
       };
       this.routeCheckTimer = setTimeout(checkRoute, 250);
     }
+  },
+  getReelPermalinkArticle: function (path) {
+    const permalink = /^\/p\/([A-Za-z0-9_-]+)\/?$/.exec(path);
+    if (!permalink) return null;
+    const code = permalink[1];
+    const isVisible = (element) => {
+      if (!element || !element.isConnected || !element.getClientRects().length) return false;
+      for (let current = element; current; current = current.parentElement) {
+        if (current.hidden || current.getAttribute("aria-hidden") === "true") return false;
+        const style = getComputedStyle(current);
+        if (style.display === "none" || style.visibility === "hidden" || style.visibility === "collapse") return false;
+      }
+      return true;
+    };
+    const dialogs = [...document.querySelectorAll('[role="dialog"][aria-modal="true"]')]
+      .filter(isVisible);
+    if (dialogs.length !== 1) return null;
+    const dialog = dialogs[0];
+    const articles = [...dialog.querySelectorAll("article")].filter((article) =>
+      isVisible(article) &&
+      article.closest('[role="dialog"]') === dialog &&
+      !article.parentElement?.closest("article"),
+    );
+    if (articles.length !== 1) return null;
+    const article = articles[0];
+    const timestampAnchors = [];
+    for (const time of article.querySelectorAll("time[datetime]")) {
+      if (
+        time.closest("ul, ol, li, [role='list'], [role='listitem']") ||
+        time.closest("article") !== article ||
+        time.closest('[role="dialog"]') !== dialog
+      ) continue;
+      if (!isVisible(time)) continue;
+      const anchor = time.closest("a[href]");
+      if (!anchor || !article.contains(anchor) || !isVisible(anchor)) continue;
+      timestampAnchors.push(anchor);
+    }
+    if (timestampAnchors.length !== 1) return null;
+    let url;
+    try {
+      url = new URL(timestampAnchors[0].href, window.location.origin);
+    } catch (error) {
+      return null;
+    }
+    if (url.origin !== window.location.origin) return null;
+    const identity = /^\/(?:[^/]+\/)?reel\/([A-Za-z0-9_-]+)\/?$/.exec(url.pathname);
+    return identity && identity[1] === code ? article : null;
   },
   scheduleChecks: function () {
     if (this.checkScheduled) return;
@@ -153,6 +208,23 @@ const Instagram = {
         reason,
       });
       return;
+    }
+    if (FocusState.isWork || mode === "strict") {
+      const reelArticle = this.getReelPermalinkArticle(path);
+      if (reelArticle) {
+        IGFeed.hushMedia(reelArticle);
+        Utils.debugLog("ig", {
+          path,
+          mode: this.currentMode,
+          isWork: FocusState.isWork,
+          isBreak: FocusState.isBreak,
+          isFocusActive,
+          action: "redirect",
+          reason: "reel permalink",
+        });
+        this.rapidKick(path);
+        return;
+      }
     }
     const shouldHideNav =
       isFocusActive &&

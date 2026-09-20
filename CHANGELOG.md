@@ -18,6 +18,7 @@ All notable project-facing changes are documented here.
 - Paused media when filtered posts collapse and preserved local-first behavior without new permissions or network requests.
 - Collapsed filtered Instagram posts without a visible placeholder in Strict mode and during work timers; Warn and Passive retain a compact, localized row with View anyway.
 - Recheck Instagram blocking after SPA pathname changes that emit neither a history event nor a DOM mutation.
+- Detect DM-opened Instagram Reels on `/p/` routes in Strict mode and work timers using the visible modal post's matching Reel timestamp permalink; preserve ordinary photo/carousel posts and existing break/Passive behavior.
 - Show the first review prompt after five blocked items, preserve the twenty-item Later reminder, and keep the popup layout stable while the prompt is visible.
 - Updated the development-only `adm-zip` dependency to 0.6.1 to include upstream extraction safety fixes.
 - The static project website and platform guides were merged separately in #38 and are inherited by this candidate.

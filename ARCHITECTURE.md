@@ -79,7 +79,9 @@ MutationObservers handle late-loaded page content. YouTube observes the full bod
 
 SPA navigation is handled through `popstate`, site-specific navigation events where available, route checks, and settings-change events. Mutation-triggered scans handle relevant late-loaded visual surfaces. This lets the extension respond when the document remains loaded while the URL or page content changes.
 
-Instagram also compares the pathname every 250ms while enabled, because `pushState` and `replaceState` do not emit `popstate` and may not change the DOM. Unchanged paths do not trigger scans. The single pending route timer is canceled on disable and restarted on enable.
+Instagram also compares the pathname every 250ms while enabled, because `pushState` and `replaceState` do not emit `popstate` and may not change the DOM. On unchanged eligible `/p/<shortcode>/` views during Strict/work blocking, the poll checks for a matching Reel identity that may arrive after navigation and runs the full blocking checks only after a match. Other unchanged paths do not trigger scans. The single pending route timer is canceled on disable and restarted on enable.
+
+For DM-opened Reels using `/p/<shortcode>/`, Strict/work blocking requires exactly one visible modal and one article belonging to it, with one visible linked timestamp outside comment lists. That timestamp must point to `/reel/<same-shortcode>/` or `/<author>/reel/<same-shortcode>/` on the same origin. Nested articles, comment-list timestamps, unrelated links, hidden content, and ambiguous identities are excluded. A video element alone is not evidence of a Reel. Matching article media is paused before the existing redirect; ordinary photo/carousel permalinks remain allowed. This detection is limited to the observed modal structure, without a standalone-post fallback or a new Warn-mode behavior.
 
 ## Storage, Alarms, and Messaging
 
