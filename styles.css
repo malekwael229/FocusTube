@@ -191,27 +191,32 @@ body.preload .checkmark {
   overflow: hidden;
 }
 .focustube-popup-body.review-visible {
-  padding: 8px 8px 0;
+  padding: 6px 7px 0;
 }
 .focustube-popup-body.review-visible #popupControls {
-  padding: 10px;
+  padding: 8px;
 }
 .focustube-popup-body.review-visible .header-row {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 .focustube-popup-body.review-visible .timer-section-compact {
-  padding: 4px 0;
+  padding: 2px 0;
 }
 .focustube-popup-body.review-visible .control-row {
-  padding: 8px 10px;
-  margin-bottom: 8px;
+  padding: 6px 8px;
+  margin-bottom: 6px;
 }
 .focustube-popup-body.review-visible .platform-grid {
-  gap: 8px;
-  padding: 8px 0 4px;
+  gap: 6px;
+  padding: 6px 0 2px;
+}
+.focustube-popup-body.review-visible .platform-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
 }
 .focustube-popup-body.review-visible .footer-compact {
-  padding-top: 8px;
+  padding-top: 6px;
 }
 .focustube-popup-body .header-row {
   display: flex;

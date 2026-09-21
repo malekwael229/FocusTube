@@ -563,11 +563,11 @@ async function verifyRatingPrompt(context, extensionId) {
     });
     assert.ok(
       timerLayout.controlsBottom <= 600,
-      `${timerType} timer controls stay inside the 300x600 popup`,
+      `${timerType} timer controls stay inside the 300x600 popup: ${JSON.stringify(timerLayout)}`,
     );
     assert.ok(
       timerLayout.width <= 300 && timerLayout.height <= 600,
-      `${timerType} timer + review prompt has no popup scrollbar`,
+      `${timerType} timer + review prompt has no popup scrollbar: ${JSON.stringify(timerLayout)}`,
     );
     assert.equal(timerLayout.promptCount, 1, `${timerType} timer does not duplicate the review prompt`);
   }
