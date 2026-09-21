@@ -171,7 +171,21 @@
     "message": "Kembali ke tampilan utama"
   },
   "reviewPrompt": {
-    "message": "Menikmati FocusTube? Ulasan singkat membantu orang lain menemukannya!"
+    "message": "FocusTube telah memblokir $COUNT$ gangguan untukmu.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "reviewFavor": {
+    "message": "Mau membalasnya dengan ulasan singkat? 🤝"
+  },
+  "reviewDeal": {
+    "message": "Sepakat 🤝"
+  },
+  "reviewNoThanks": {
+    "message": "Tidak, terima kasih"
   },
   "later": {
     "message": "Nanti"

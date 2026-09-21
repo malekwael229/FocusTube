@@ -171,7 +171,21 @@
     "message": "Voltar à tela principal"
   },
   "reviewPrompt": {
-    "message": "Está gostando do FocusTube? Uma avaliação rápida ajuda outras pessoas a encontrá-lo!"
+    "message": "O FocusTube bloqueou $COUNT$ distrações para você.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "reviewFavor": {
+    "message": "Que tal retribuir com uma avaliação rápida? 🤝"
+  },
+  "reviewDeal": {
+    "message": "Fechado 🤝"
+  },
+  "reviewNoThanks": {
+    "message": "Não, obrigado"
   },
   "later": {
     "message": "Mais tarde"

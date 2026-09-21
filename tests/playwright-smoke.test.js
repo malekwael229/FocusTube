@@ -204,6 +204,44 @@ async function setCheckboxValue(page, selector, checked) {
   );
 }
 
+async function readCustomSelectState(page, selector) {
+  return page.evaluate((selectSelector) => {
+    const select = document.querySelector(selectSelector);
+    const wrapper = select?.nextElementSibling;
+    const selectedCustomOption = wrapper?.querySelector(".custom-option.selected");
+    return {
+      value: select?.value,
+      visibleText: wrapper?.querySelector(".custom-select-trigger span")?.textContent?.trim(),
+      selectedValue: selectedCustomOption?.dataset?.value,
+      hidden: wrapper?.hidden,
+      ariaDisabled: wrapper?.querySelector(".custom-select-trigger")?.getAttribute("aria-disabled"),
+    };
+  }, selector);
+}
+
+async function assertCustomSelectState(page, selector, expectedValue, label) {
+  await page.waitForFunction(
+    ({ selectSelector, value }) => {
+      const select = document.querySelector(selectSelector);
+      const wrapper = select?.nextElementSibling;
+      return (
+        select?.value === value &&
+        wrapper?.hidden === false &&
+        wrapper?.querySelector(".custom-option.selected")?.dataset?.value === value &&
+        wrapper?.querySelector(".custom-select-trigger span")?.textContent?.includes(value)
+      );
+    },
+    { selectSelector: selector, value: String(expectedValue) },
+    { timeout: 5000 },
+  );
+  const state = await readCustomSelectState(page, selector);
+  assert.equal(state.value, String(expectedValue), `${label} native select value`);
+  assert.equal(state.selectedValue, String(expectedValue), `${label} highlighted custom option`);
+  assert.match(state.visibleText || "", new RegExp(`\\b${expectedValue}\\b`), `${label} visible custom text`);
+  assert.equal(state.hidden, false, `${label} custom select is visible after hydration`);
+  return state;
+}
+
 async function seedStorage(context, extensionId) {
   const page = await context.newPage();
   await page.goto(`chrome-extension://${extensionId}/popup.html`);
@@ -409,6 +447,25 @@ async function verifyRatingPrompt(context, extensionId) {
   await setStorage(page, { ft_stats_blocked: 5 });
   await page.locator("#review-prompt").waitFor({ state: "visible" });
   await page.waitForTimeout(350);
+  const localizedReviewCopy = await page.evaluate(() => ({
+    prompt: document.querySelector("#reviewBlockedCount")?.textContent?.trim(),
+    expectedPrompt: globalThis.FT_I18N?.message("reviewPrompt", ["5"]),
+    favor: document.querySelector(".review-favor")?.textContent?.trim(),
+    expectedFavor: globalThis.FT_I18N?.message("reviewFavor"),
+    deal: document.querySelector("#reviewNow")?.textContent?.trim(),
+    expectedDeal: globalThis.FT_I18N?.message("reviewDeal"),
+    later: document.querySelector("#reviewLater")?.textContent?.trim(),
+    expectedLater: globalThis.FT_I18N?.message("later"),
+    noThanks: document.querySelector("#reviewNoThanks")?.textContent?.trim(),
+    expectedNoThanks: globalThis.FT_I18N?.message("reviewNoThanks"),
+    promptCount: document.querySelectorAll("#review-prompt").length,
+  }));
+  assert.equal(localizedReviewCopy.prompt, localizedReviewCopy.expectedPrompt);
+  assert.equal(localizedReviewCopy.favor, localizedReviewCopy.expectedFavor);
+  assert.equal(localizedReviewCopy.deal, localizedReviewCopy.expectedDeal);
+  assert.equal(localizedReviewCopy.later, localizedReviewCopy.expectedLater);
+  assert.equal(localizedReviewCopy.noThanks, localizedReviewCopy.expectedNoThanks);
+  assert.equal(localizedReviewCopy.promptCount, 1, "review prompt is not duplicated");
   const firstLayout = await page.evaluate(() => {
     const prompt = document.querySelector("#review-prompt").getBoundingClientRect();
     const controls = document.querySelector("#popupControls").getBoundingClientRect();
@@ -455,6 +512,14 @@ async function verifyRatingPrompt(context, extensionId) {
     await setStorage(page, { ft_stats_blocked: blockedCount });
     await page.waitForTimeout(120);
     repeatedLayouts.push(await readPromptLayout());
+    assert.equal(
+      await page.locator("#reviewBlockedCount").innerText(),
+      await page.evaluate(
+        (count) => globalThis.FT_I18N?.message("reviewPrompt", [String(count)]),
+        blockedCount,
+      ),
+      "review copy tracks the real current blocked count",
+    );
   }
   for (const key of ["bodyHeight", "controlsHeight", "documentHeight", "bodyScrollHeight"]) {
     const values = repeatedLayouts.map((layout) => layout[key]);
@@ -477,7 +542,67 @@ async function verifyRatingPrompt(context, extensionId) {
     assert.ok(layout.height <= 600, "review prompt stays within the popup viewport");
   }
 
-  await setStorage(page, { ft_stats_blocked: 17 });
+  for (const timerType of ["work", "break"]) {
+    await setStorage(page, {
+      ft_stats_blocked: 14,
+      ft_timer_end: Date.now() + 10 * 60_000,
+      ft_timer_type: timerType,
+      ft_work_session_ended: false,
+    });
+    await page.reload();
+    await page.locator("#review-prompt").waitFor({ state: "visible" });
+    await page.waitForFunction(() => document.querySelector("#timerBtn")?.classList.contains("active"));
+    const timerLayout = await page.evaluate(() => {
+      const controls = document.querySelector("#popupControls").getBoundingClientRect();
+      return {
+        controlsBottom: controls.bottom,
+        width: document.documentElement.scrollWidth,
+        height: document.documentElement.scrollHeight,
+        promptCount: document.querySelectorAll("#review-prompt").length,
+      };
+    });
+    assert.ok(
+      timerLayout.controlsBottom <= 600,
+      `${timerType} timer controls stay inside the 300x600 popup`,
+    );
+    assert.ok(
+      timerLayout.width <= 300 && timerLayout.height <= 600,
+      `${timerType} timer + review prompt has no popup scrollbar`,
+    );
+    assert.equal(timerLayout.promptCount, 1, `${timerType} timer does not duplicate the review prompt`);
+  }
+  await page.evaluate(
+    () =>
+      new Promise((resolve) =>
+        chrome.storage.local.remove(
+          ["ft_timer_end", "ft_timer_type", "ft_work_session_ended"],
+          resolve,
+        ),
+      ),
+  );
+
+  await setStorage(page, { reviewDismissed: false, ft_stats_blocked: 5 });
+  await page.evaluate(() => chrome.storage.local.remove("reviewNextBlock"));
+  await page.reload();
+  await page.locator("#review-prompt").waitFor({ state: "visible" });
+  await page.locator("#reviewNoThanks").click();
+  await waitForStorageValue(page, "reviewDismissed", true);
+  const noThanksDismissed = await getStorage(page, ["reviewDismissed", "reviewNextBlock"]);
+  assert.equal(noThanksDismissed.reviewDismissed, true, "No thanks permanently dismisses the prompt");
+  assert.equal(noThanksDismissed.reviewNextBlock, null, "No thanks clears the temporary snooze threshold");
+  await setStorage(page, { ft_stats_blocked: 100 });
+  await page.reload();
+  await page.waitForTimeout(350);
+  assert.equal(
+    await page.locator("#review-prompt").isVisible(),
+    false,
+    "No thanks dismissal survives reopening and later blocked-count updates",
+  );
+
+  await setStorage(page, { reviewDismissed: false, ft_stats_blocked: 17 });
+  await page.evaluate(() => chrome.storage.local.remove("reviewNextBlock"));
+  await page.reload();
+  await page.locator("#review-prompt").waitFor({ state: "visible" });
   await page.locator("#reviewLater").click();
   await waitForStorageValue(page, "reviewNextBlock", 37);
   await page.reload();
@@ -497,19 +622,20 @@ async function verifyRatingPrompt(context, extensionId) {
   });
   assert.equal(rateUrl, "https://chromewebstore.google.com/detail/focustube-distraction-blo/ppdjgkniggbikifojmkindmbhppmoell");
   const dismissed = await getStorage(page, ["reviewDismissed", "reviewNextBlock"]);
-  assert.equal(dismissed.reviewDismissed, true, "Rate Us permanently dismisses the prompt");
-  assert.equal(dismissed.reviewNextBlock, null, "Rate Us clears the temporary snooze threshold");
+  assert.equal(dismissed.reviewDismissed, true, "Deal permanently dismisses the prompt");
+  assert.equal(dismissed.reviewNextBlock, null, "Deal clears the temporary snooze threshold");
   await setStorage(page, { ft_stats_blocked: 100 });
   await page.reload();
   await page.waitForTimeout(350);
   assert.equal(await page.locator("#review-prompt").isVisible(), false,
     "permanent dismissal survives later blocked-count updates");
   await page.close();
-  pass("rating prompt thresholds, deferral, dismissal, and 300x600 layout pass");
+  pass("review prompt copy, thresholds, deferral, dismissal, timer states, RTL, and 300x600 layout pass");
 }
 
 async function verifyOptions(context, extensionId) {
   const page = await openExtensionPage(context, extensionId, "options.html");
+  const storagePage = await openExtensionPage(context, extensionId, "popup.html");
   await assertControlsUsePageFont(page, "Options page");
   const bodyText = await page.locator("body").innerText();
 
@@ -572,26 +698,93 @@ async function verifyOptions(context, extensionId) {
   await setCheckboxValue(page, "#showNotifications", true);
   await waitForStorageValue(page, "showNotifications", true);
 
-  await page.evaluate(() => {
-    const select = document.querySelector("#focusDuration");
-    select.value = "45";
-    select.dispatchEvent(new Event("change", { bubbles: true }));
-  });
-  await waitForStorageValue(page, "ft_timer_duration", 45);
+  await setStorage(storagePage, { ft_timer_duration: 15 });
   await page.reload();
   await page.waitForLoadState("domcontentloaded");
-  const duration = await page.locator("#focusDuration").evaluate((select) => select.value);
-  assert.equal(duration, "45");
+  await assertCustomSelectState(page, "#focusDuration", 15, "stored 15-minute focus duration");
 
-  await page.evaluate(() => {
-    const select = document.querySelector("#focusDuration");
-    select.value = "25";
-    select.dispatchEvent(new Event("change", { bubbles: true }));
+  for (const duration of [25, 30, 45, 60, 15]) {
+    await setStorage(storagePage, { ft_timer_duration: duration });
+    await assertCustomSelectState(
+      page,
+      "#focusDuration",
+      duration,
+      `external ${duration}-minute focus duration`,
+    );
+  }
+
+  await setStorage(storagePage, { breakDuration: 10 });
+  await assertCustomSelectState(page, "#breakDuration", 10, "external 10-minute break duration");
+
+  await storagePage.evaluate(
+    () =>
+      new Promise((resolve) => {
+        chrome.storage.local.set({ ft_timer_duration: 15 }, () => {
+          chrome.storage.local.set({ ft_timer_duration: 60 }, () => {
+            chrome.storage.local.set({ ft_timer_duration: 25 }, () => {
+              chrome.storage.local.set({ ft_timer_duration: 30 }, resolve);
+            });
+          });
+        });
+      }),
+  );
+  await assertCustomSelectState(page, "#focusDuration", 30, "rapid duration updates settle on 30");
+  assert.equal(
+    (await getStorage(storagePage, ["ft_timer_duration"])).ft_timer_duration,
+    30,
+    "rapid duration updates settle storage on 30",
+  );
+
+  const patchedStorageSet = await page.evaluate(() => {
+    const originalSet = chrome.storage.local.set.bind(chrome.storage.local);
+    window.__ftOriginalStorageSet = originalSet;
+    window.__ftDurationWriteCount = 0;
+    try {
+      chrome.storage.local.set = (items, callback) => {
+        if (Object.prototype.hasOwnProperty.call(items, "ft_timer_duration")) {
+          window.__ftDurationWriteCount += 1;
+        }
+        return originalSet(items, callback);
+      };
+      return chrome.storage.local.set !== originalSet;
+    } catch (_error) {
+      return false;
+    }
   });
-  await waitForStorageValue(page, "ft_timer_duration", 25);
+  assert.equal(patchedStorageSet, true, "storage.set can be instrumented for one-write assertion");
+  await page.locator("#focusDuration + .custom-select-wrapper .custom-select-trigger").click();
+  await page.locator('#focusDuration + .custom-select-wrapper .custom-option[data-value="45"]').click();
+  await waitForStorageValue(storagePage, "ft_timer_duration", 45);
+  await assertCustomSelectState(page, "#focusDuration", 45, "user-selected 45-minute focus duration");
+  const durationWriteCount = await page.evaluate(() => {
+    const count = window.__ftDurationWriteCount;
+    chrome.storage.local.set = window.__ftOriginalStorageSet;
+    delete window.__ftOriginalStorageSet;
+    return count;
+  });
+  assert.equal(durationWriteCount, 1, "one user duration change performs one settings write");
 
+  await page.reload();
+  await page.waitForLoadState("domcontentloaded");
+  await assertCustomSelectState(page, "#focusDuration", 45, "reopened 45-minute focus duration");
+
+  await storagePage.evaluate(
+    () => new Promise((resolve) => chrome.storage.local.remove("ft_timer_duration", resolve)),
+  );
+  await assertCustomSelectState(page, "#focusDuration", 25, "empty storage focus default");
+  assert.equal(
+    (await getStorage(storagePage, ["ft_timer_duration"])).ft_timer_duration,
+    undefined,
+    "empty storage remains empty while Settings displays the 25-minute default",
+  );
+
+  await setStorage(storagePage, { ft_timer_duration: 25, breakDuration: 5 });
+  await assertCustomSelectState(page, "#focusDuration", 25, "restored 25-minute focus duration");
+  await assertCustomSelectState(page, "#breakDuration", 5, "restored 5-minute break duration");
+
+  await storagePage.close();
   await page.close();
-  pass("options page loads, removed options stay removed, and settings persist after reload");
+  pass("options page timer selects stay synchronized with storage and persist after reload");
 }
 
 async function verifyTimer(context, extensionId) {
@@ -614,28 +807,45 @@ async function verifyTimer(context, extensionId) {
   assert.equal(breakColors.displayColor, breakColors.textColor);
   assert.equal(breakColors.labelColor, breakColors.textColor);
 
-  await timerButton.click();
-  await page.waitForFunction(
-    () => document.querySelector("#timerBtn")?.classList.contains("active"),
-    null,
-    { timeout: 5000 },
-  );
-  const activeTimer = await getStorage(page, ["ft_timer_end", "ft_timer_type"]);
-  assert.equal(activeTimer.ft_timer_type, "work");
-  assert.ok(activeTimer.ft_timer_end > Date.now());
+  for (const duration of [undefined, 15, 25, 30, 45, 60]) {
+    if (duration === undefined) {
+      await page.evaluate(
+        () => new Promise((resolve) => chrome.storage.local.remove("ft_timer_duration", resolve)),
+      );
+    } else {
+      await setStorage(page, { ft_timer_duration: duration });
+    }
+    const expectedDuration = duration ?? 25;
+    const startedAt = Date.now();
+    await timerButton.click();
+    await page.waitForFunction(
+      () => document.querySelector("#timerBtn")?.classList.contains("active"),
+      null,
+      { timeout: 5000 },
+    );
+    const activeTimer = await getStorage(page, ["ft_timer_end", "ft_timer_type"]);
+    assert.equal(activeTimer.ft_timer_type, "work");
+    const scheduledDuration = activeTimer.ft_timer_end - startedAt;
+    assert.ok(
+      scheduledDuration >= expectedDuration * 60_000 - 1_000 &&
+        scheduledDuration <= expectedDuration * 60_000 + 5_000,
+      `Start Timer uses ${expectedDuration} minutes: ${scheduledDuration}ms`,
+    );
 
-  await timerButton.click();
-  await page.waitForFunction(
-    () => !document.querySelector("#timerBtn")?.classList.contains("active"),
-    null,
-    { timeout: 5000 },
-  );
-  assert.equal(await timerButton.innerText(), "Start Timer");
-  const stoppedTimer = await getStorage(page, ["ft_timer_end", "ft_timer_type"]);
-  assert.equal(stoppedTimer.ft_timer_end, undefined);
+    await timerButton.click();
+    await page.waitForFunction(
+      () => !document.querySelector("#timerBtn")?.classList.contains("active"),
+      null,
+      { timeout: 5000 },
+    );
+    assert.equal(await timerButton.innerText(), "Start Timer");
+    const stoppedTimer = await getStorage(page, ["ft_timer_end", "ft_timer_type"]);
+    assert.equal(stoppedTimer.ft_timer_end, undefined);
+  }
+  await setStorage(page, { ft_timer_duration: 25 });
 
   await page.close();
-  pass("timer UI can start and stop");
+  pass("timer UI starts every supported focus duration and defaults empty storage to 25 minutes");
 }
 
 function youtubeFixtureHtml(title = "Most relevant") {

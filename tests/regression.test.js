@@ -547,6 +547,26 @@ const checks = [
     },
   ],
   [
+    "timer duration UI synchronizes silently and the removed active-timer pill does not affect mode locking",
+    () => {
+      const options = read("options.js");
+      const optionsHtml = read("options.html");
+      const storageSyncBlock = options.slice(
+        options.indexOf('chrome.storage.onChanged.addListener((changes, area) => {'),
+        options.indexOf("initPlatformGrid();"),
+      );
+
+      assert.match(options, /function syncSelect\(select, value, expectedRevision\)/);
+      assert.match(options, /function hydrateSelect\(select, value, expectedRevision\)/);
+      assert.match(storageSyncBlock, /changes\.ft_timer_duration[\s\S]*syncSelect\(/);
+      assert.match(storageSyncBlock, /changes\.breakDuration[\s\S]*syncSelect\(/);
+      assert.doesNotMatch(storageSyncBlock, /dispatchEvent\(/);
+      assert.match(options, /disableModeButtons\(timerActive \|\| !isEnabled\)/);
+      assert.doesNotMatch(optionsHtml, /id="timerActivePill"/);
+      assert.doesNotMatch(options, /updateTimerActivePill/);
+    },
+  ],
+  [
     "popup updates the visible break prompt wrapper consistently",
     () => {
       const popup = read("popup.js");
@@ -740,6 +760,8 @@ const checks = [
         /raw\.ft_timer_end === null[\s\S]*delete sanitized\.ft_timer_end[\s\S]*delete sanitized\.ft_timer_type/,
       );
       assert.match(importBlock, /key !== "ft_timer_end" \|\| value > 0/);
+      assert.match(importBlock, /allowedDurationValues/);
+      assert.match(importBlock, /allowedDurations\.has\(value\)/);
       assert.match(importBlock, /value === "work" \|\| value === "break"/);
       assert.doesNotMatch(importBlock, /value === null\)[\s\S]*sanitized\[key\] = null/);
       assert.match(

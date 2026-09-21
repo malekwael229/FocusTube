@@ -1012,16 +1012,13 @@ function detectBrowser() {
 function initReviewPrompt() {
   const reviewNow = document.getElementById("reviewNow");
   const reviewLater = document.getElementById("reviewLater");
+  const reviewNoThanks = document.getElementById("reviewNoThanks");
   if (reviewNow) {
     reviewNow.addEventListener("click", () => {
       chrome.tabs.create({
         url: STORE_URLS[detectBrowser()] || STORE_URLS.chrome,
       });
-      chrome.storage.local.set({
-        reviewDismissed: true,
-        reviewNextBlock: null,
-      });
-      hideReviewPrompt();
+      dismissReviewPrompt();
     });
   }
   if (reviewLater) {
@@ -1035,20 +1032,35 @@ function initReviewPrompt() {
       });
     });
   }
+  if (reviewNoThanks) {
+    reviewNoThanks.addEventListener("click", dismissReviewPrompt);
+  }
+}
+function dismissReviewPrompt() {
+  chrome.storage.local.set({
+    reviewDismissed: true,
+    reviewNextBlock: null,
+  });
+  hideReviewPrompt();
 }
 function checkReviewPrompt(blockedCount) {
   chrome.storage.local.get(["reviewDismissed", "reviewNextBlock"], (res) => {
     if (res.reviewDismissed) return;
     const threshold =
       typeof res.reviewNextBlock === "number" ? res.reviewNextBlock : 5;
-    if (blockedCount >= threshold) showReviewPrompt();
+    if (blockedCount >= threshold) showReviewPrompt(blockedCount);
   });
 }
-function showReviewPrompt() {
+function showReviewPrompt(blockedCount) {
   const prompt = document.getElementById("review-prompt");
+  const blockedCountText = document.getElementById("reviewBlockedCount");
+  const currentBlockedCount = Math.max(0, parseInt(blockedCount, 10) || 0);
   if (reviewHideTimeout !== null) {
     clearTimeout(reviewHideTimeout);
     reviewHideTimeout = null;
+  }
+  if (blockedCountText) {
+    blockedCountText.textContent = msg("reviewPrompt", [String(currentBlockedCount)]);
   }
   if (prompt) {
     prompt.classList.remove("fade-out");

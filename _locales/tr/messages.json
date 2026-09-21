@@ -171,7 +171,21 @@
     "message": "Ana görünüme dön"
   },
   "reviewPrompt": {
-    "message": "FocusTube'u beğendiniz mi? Kısa bir değerlendirme başkalarının onu keşfetmesine yardımcı olur!"
+    "message": "FocusTube senin için $COUNT$ dikkat dağıtıcı öğeyi engelledi.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "reviewFavor": {
+    "message": "Kısa bir değerlendirmeyle karşılığını vermek ister misin? 🤝"
+  },
+  "reviewDeal": {
+    "message": "Anlaştık 🤝"
+  },
+  "reviewNoThanks": {
+    "message": "Hayır, teşekkürler"
   },
   "later": {
     "message": "Daha Sonra"
