@@ -529,6 +529,16 @@ async function verifyRatingPrompt(context, extensionId) {
   assert.deepEqual(repeatedLayouts.at(-1).inlineDocumentHeight, "", "review prompt does not set document height");
   assert.deepEqual(repeatedLayouts.at(-1).inlineBodyHeight, "", "review prompt does not set body height");
 
+  await setStorage(page, { ft_stats_blocked: 0 });
+  await page.locator("#review-prompt").waitFor({ state: "hidden" });
+  assert.equal(await page.locator("body").evaluate((body) => body.classList.contains("review-visible")), false,
+    "resetting the blocked count hides an ineligible review prompt");
+  await setStorage(page, { ft_stats_blocked: 13 });
+  await page.locator("#review-prompt").waitFor({ state: "visible" });
+  assert.equal(await page.locator("#reviewBlockedCount").innerText(),
+    await page.evaluate(() => globalThis.FT_I18N?.message("reviewPrompt", ["13"])),
+    "review prompt uses the new count after a reset");
+
   for (const darkMode of [false, true]) {
     await setStorage(page, { darkMode, ft_stats_blocked: 13 });
     await page.waitForTimeout(350);
@@ -767,6 +777,18 @@ async function verifyOptions(context, extensionId) {
   await page.reload();
   await page.waitForLoadState("domcontentloaded");
   await assertCustomSelectState(page, "#focusDuration", 45, "reopened 45-minute focus duration");
+
+  await page.evaluate(() => {
+    const wrapper = document.querySelector("#focusDuration + .custom-select-wrapper");
+    for (const value of [15, 60, 25, 30]) {
+      wrapper.querySelector(`.custom-option[data-value="${value}"]`).click();
+    }
+  });
+  await waitForStorageValue(storagePage, "ft_timer_duration", 30);
+  await assertCustomSelectState(page, "#focusDuration", 30, "rapid user selections finish at 30");
+  await page.reload();
+  await page.waitForLoadState("domcontentloaded");
+  await assertCustomSelectState(page, "#focusDuration", 30, "rapid selection persists after reopening Settings");
 
   await storagePage.evaluate(
     () => new Promise((resolve) => chrome.storage.local.remove("ft_timer_duration", resolve)),

@@ -1045,10 +1045,14 @@ function dismissReviewPrompt() {
 }
 function checkReviewPrompt(blockedCount) {
   chrome.storage.local.get(["reviewDismissed", "reviewNextBlock"], (res) => {
-    if (res.reviewDismissed) return;
+    if (res.reviewDismissed) {
+      hideReviewPrompt();
+      return;
+    }
     const threshold =
       typeof res.reviewNextBlock === "number" ? res.reviewNextBlock : 5;
     if (blockedCount >= threshold) showReviewPrompt(blockedCount);
+    else hideReviewPrompt();
   });
 }
 function showReviewPrompt(blockedCount) {
