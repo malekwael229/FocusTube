@@ -25,10 +25,13 @@ document.addEventListener("DOMContentLoaded", function () {
     hide_yt_shorts_shelves: true,
     hide_yt_most_relevant_shelf: true,
     hide_ig_reels_nav: true,
+    hide_ig_suggested: false,
     hide_fb_reels_nav: true,
     hide_fb_people_you_might_know: true,
     hide_li_feed: true,
     hide_li_addfeed: true,
+    hide_li_suggested: false,
+    hide_li_activity: false,
     showBreakButton: true,
     accentColor: "#4facfe",
   };
@@ -48,6 +51,10 @@ document.addEventListener("DOMContentLoaded", function () {
     "ft_timer_end",
     "reviewLaterTime",
   ]);
+  const allowedDurationValues = {
+    ft_timer_duration: new Set([15, 25, 30, 45, 60]),
+    breakDuration: new Set([5, 10, 15]),
+  };
   const importNullableNumberKeys = new Set(["ft_timer_end", "reviewLaterTime"]);
   const importStringKeys = new Set([
     ...Object.keys(defaultSettings).filter(
@@ -81,10 +88,12 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
       const value = Number(raw[key]);
+      const allowedDurations = allowedDurationValues[key];
       if (
         Number.isFinite(value) &&
         value >= 0 &&
-        (key !== "ft_timer_end" || value > 0)
+        (key !== "ft_timer_end" || value > 0) &&
+        (!allowedDurations || allowedDurations.has(value))
       ) {
         sanitized[key] = key === "ft_stats_blocked" ? Math.floor(value) : value;
       } else {
@@ -155,13 +164,76 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     return { sanitized };
   }
+  const customSelectParts = new WeakMap();
+  const selectRevisions = new WeakMap();
+  function getSelectRevision(select) {
+    return selectRevisions.get(select) || 0;
+  }
+  function advanceSelectRevision(select) {
+    const revision = getSelectRevision(select) + 1;
+    selectRevisions.set(select, revision);
+    return revision;
+  }
+  function updateCustomSelectDisabledState(select) {
+    const parts = customSelectParts.get(select);
+    if (!parts) return;
+    const disabled = select.disabled;
+    parts.trigger.setAttribute("aria-disabled", String(disabled));
+    parts.trigger.classList.toggle("disabled-look", disabled);
+  }
+  function syncSelect(select, value, expectedRevision) {
+    if (
+      expectedRevision !== undefined &&
+      getSelectRevision(select) !== expectedRevision
+    ) {
+      return false;
+    }
+    if (value !== undefined && value !== null) select.value = String(value);
+    const parts = customSelectParts.get(select);
+    if (!parts) return false;
+    const selectedOption = select.options[select.selectedIndex];
+    if (selectedOption) {
+      parts.trigger.querySelector("span").textContent = selectedOption.text;
+      parts.optionsList
+        .querySelectorAll(".custom-option")
+        .forEach((el) => el.classList.remove("selected"));
+      const matchingOption = Array.from(
+        parts.optionsList.querySelectorAll(".custom-option"),
+      ).find((option) => option.dataset.value === selectedOption.value);
+      if (matchingOption) matchingOption.classList.add("selected");
+    }
+    updateCustomSelectDisabledState(select);
+    if (expectedRevision === undefined) {
+      customSelectParts.get(select).wrapper.hidden = false;
+    }
+    return true;
+  }
+  function hydrateSelect(select, value, expectedRevision) {
+    if (!syncSelect(select, value, expectedRevision)) return false;
+    const parts = customSelectParts.get(select);
+    parts.wrapper.hidden = false;
+    return true;
+  }
   function loadSettings() {
+    const focusSelect = document.getElementById("focusDuration");
+    const breakSelect = document.getElementById("breakDuration");
+    const focusRevision = focusSelect ? getSelectRevision(focusSelect) : 0;
+    const breakRevision = breakSelect ? getSelectRevision(breakSelect) : 0;
     chrome.storage.local.get(defaultSettings, function (items) {
-      if (document.getElementById("focusDuration"))
-        document.getElementById("focusDuration").value =
-          items.ft_timer_duration;
-      if (document.getElementById("breakDuration"))
-        document.getElementById("breakDuration").value = items.breakDuration;
+      if (focusSelect) {
+        hydrateSelect(
+          focusSelect,
+          items.ft_timer_duration ?? defaultSettings.ft_timer_duration,
+          focusRevision,
+        );
+      }
+      if (breakSelect) {
+        hydrateSelect(
+          breakSelect,
+          items.breakDuration ?? defaultSettings.breakDuration,
+          breakRevision,
+        );
+      }
       if (document.getElementById("theme")) {
         document.getElementById("theme").value = items.darkMode
           ? "dark"
@@ -281,6 +353,7 @@ document.addEventListener("DOMContentLoaded", function () {
     wrapper.className = "custom-select-wrapper";
     const trigger = document.createElement("div");
     trigger.className = "custom-select-trigger";
+    trigger.setAttribute("role", "button");
     const selectedOption = select.options[select.selectedIndex];
     const selectedText = document.createElement("span");
     selectedText.textContent = selectedOption
@@ -310,19 +383,16 @@ document.addEventListener("DOMContentLoaded", function () {
       optDiv.textContent = option.text;
       optDiv.addEventListener("click", (e) => {
         e.stopPropagation();
+        if (select.disabled) return;
         select.value = option.value;
         select.dispatchEvent(new Event("change"));
-        trigger.querySelector("span").textContent = option.text;
-        optionsList
-          .querySelectorAll(".custom-option")
-          .forEach((el) => el.classList.remove("selected"));
-        optDiv.classList.add("selected");
         wrapper.classList.remove("open");
       });
       optionsList.appendChild(optDiv);
     });
     trigger.addEventListener("click", (e) => {
       e.stopPropagation();
+      if (select.disabled) return;
       document.querySelectorAll(".custom-select-wrapper").forEach((w) => {
         if (w !== wrapper) w.classList.remove("open");
       });
@@ -330,19 +400,12 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     wrapper.appendChild(trigger);
     wrapper.appendChild(optionsList);
+    wrapper.hidden = true;
+    customSelectParts.set(select, { wrapper, trigger, optionsList });
     select.parentNode.insertBefore(wrapper, select.nextSibling);
     select.addEventListener("change", () => {
-      const newOpt = select.options[select.selectedIndex];
-      if (newOpt) {
-        trigger.querySelector("span").textContent = newOpt.text;
-        optionsList
-          .querySelectorAll(".custom-option")
-          .forEach((el) => el.classList.remove("selected"));
-        const matchingOpt = optionsList.querySelector(
-          `[data-value="${newOpt.value}"]`,
-        );
-        if (matchingOpt) matchingOpt.classList.add("selected");
-      }
+      advanceSelectRevision(select);
+      syncSelect(select, select.value);
     });
   }
   document.addEventListener("click", () => {
@@ -551,6 +614,9 @@ document.addEventListener("DOMContentLoaded", function () {
           if (disabled) el.parentElement.classList.add("disabled-look");
           else el.parentElement.classList.remove("disabled-look");
         }
+        if (el.matches("select.custom-select")) {
+          updateCustomSelectDisabledState(el);
+        }
       });
   }
   function disableModeButtons(disabled) {
@@ -564,7 +630,6 @@ document.addEventListener("DOMContentLoaded", function () {
     chrome.storage.local.get(
       ["ft_timer_end", "ft_timer_type", "ft_enabled", "lockSettings"],
       (res) => {
-        const wasTimerActive = timerActive;
         timerActive = Boolean(
           res.ft_timer_end && res.ft_timer_end > Date.now(),
         );
@@ -576,30 +641,8 @@ document.addEventListener("DOMContentLoaded", function () {
         disableModeButtons(timerActive || !isEnabled);
         disableToggles(settingsLocked || !isEnabled);
         document.body.classList.toggle("timer-active-locked", timerActive);
-        updateTimerActivePill(timerActive, wasTimerActive);
       },
     );
-  }
-  function updateTimerActivePill(isActive, wasActive) {
-    const pill = document.getElementById("timerActivePill");
-    if (!pill) return;
-    if (isActive && !wasActive) {
-      pill.classList.remove("fade-out");
-      pill.classList.add("visible");
-    } else if (!isActive && wasActive) {
-      pill.classList.add("fade-out");
-      pill.addEventListener(
-        "animationend",
-        function handler() {
-          pill.classList.remove("visible", "fade-out");
-          pill.removeEventListener("animationend", handler);
-        },
-        { once: true },
-      );
-    } else if (isActive) {
-      pill.classList.add("visible");
-      pill.classList.remove("fade-out");
-    }
   }
   updateDisabledState();
   setInterval(updateDisabledState, 1000);
@@ -639,15 +682,21 @@ document.addEventListener("DOMContentLoaded", function () {
     if (changes.ft_timer_duration) {
       const el = document.getElementById("focusDuration");
       if (el) {
-        el.value = changes.ft_timer_duration.newValue;
-        el.dispatchEvent(new Event("change"));
+        advanceSelectRevision(el);
+        syncSelect(
+          el,
+          changes.ft_timer_duration.newValue ?? defaultSettings.ft_timer_duration,
+        );
       }
     }
     if (changes.breakDuration) {
       const el = document.getElementById("breakDuration");
       if (el) {
-        el.value = changes.breakDuration.newValue;
-        el.dispatchEvent(new Event("change"));
+        advanceSelectRevision(el);
+        syncSelect(
+          el,
+          changes.breakDuration.newValue ?? defaultSettings.breakDuration,
+        );
       }
     }
   });
@@ -706,6 +755,12 @@ const platforms = {
         label: msg("hideReelsButton"),
         desc: msg("hideInstagramReelsDescription"),
       },
+      {
+        id: "hide_ig_suggested",
+        defaultValue: false,
+        label: msg("hideSuggestedPosts"),
+        desc: msg("hideSuggestedPostsDescription"),
+      },
     ],
   },
   tt: { name: msg("platformTiktok"), settings: [] },
@@ -741,6 +796,18 @@ const platforms = {
         id: "hide_li_addfeed",
         label: msg("hideAddToFeed"),
         desc: msg("hideAddToFeedDescription"),
+      },
+      {
+        id: "hide_li_suggested",
+        defaultValue: false,
+        label: msg("hideSuggestedPosts"),
+        desc: msg("hideSuggestedPostsDescription"),
+      },
+      {
+        id: "hide_li_activity",
+        defaultValue: false,
+        label: msg("hideNetworkActivity"),
+        desc: msg("hideNetworkActivityDescription"),
       },
     ],
   },
@@ -959,7 +1026,9 @@ function showPlatformDetail(id) {
     chrome.storage.local.get(settingKeys, (res) => {
       settingsContainer.replaceChildren(
         ...platform.settings.map((setting) => {
-          const isOn = res[setting.id] !== false;
+          const isOn = setting.defaultValue === false
+            ? res[setting.id] === true
+            : res[setting.id] !== false;
           const row = document.createElement("div");
           row.className = "setting-row";
 

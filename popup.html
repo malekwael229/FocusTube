@@ -26,10 +26,20 @@
     </div>
 
     <div id="review-prompt" class="review-prompt hidden">
-      <p data-i18n="reviewPrompt">Enjoying FocusTube? A quick review helps others discover it!</p>
+      <div class="review-copy">
+        <p id="reviewBlockedCount" data-i18n="reviewPrompt" data-i18n-args='["0"]'>
+          FocusTube has blocked 0 distractions for you.
+        </p>
+        <p class="review-favor" data-i18n="reviewFavor">
+          Mind returning the favor with a quick review? 🤝
+        </p>
+      </div>
       <div class="review-buttons">
+        <button id="reviewNow" class="review-btn-now" data-i18n="reviewDeal">Deal 🤝</button>
         <button id="reviewLater" class="review-btn-later" data-i18n="later">Later</button>
-        <button id="reviewNow" class="review-btn-now" data-i18n="rateUsStar">⭐ Rate Us</button>
+        <button id="reviewNoThanks" class="review-btn-no-thanks" data-i18n="reviewNoThanks">
+          No thanks
+        </button>
       </div>
     </div>
 

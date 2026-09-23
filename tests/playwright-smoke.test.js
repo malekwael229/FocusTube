@@ -101,9 +101,9 @@ function verifyManifests() {
   ];
 
   assert.equal(chromeManifest.manifest_version, 3);
-  assert.equal(chromeManifest.version, "2.3.2");
-  assert.equal(buildManifest.version, "2.3.2");
-  assert.equal(firefoxManifest.version, "2.3.2");
+  assert.equal(chromeManifest.version, "2.4.0");
+  assert.equal(buildManifest.version, "2.4.0");
+  assert.equal(firefoxManifest.version, "2.4.0");
   assert.equal(buildManifest.manifest_version, 3);
   assert.equal(firefoxManifest.manifest_version, 2);
   assert.deepEqual(chromeManifest.content_security_policy, {
@@ -202,6 +202,44 @@ async function setCheckboxValue(page, selector, checked) {
     },
     { inputSelector: selector, nextChecked: checked },
   );
+}
+
+async function readCustomSelectState(page, selector) {
+  return page.evaluate((selectSelector) => {
+    const select = document.querySelector(selectSelector);
+    const wrapper = select?.nextElementSibling;
+    const selectedCustomOption = wrapper?.querySelector(".custom-option.selected");
+    return {
+      value: select?.value,
+      visibleText: wrapper?.querySelector(".custom-select-trigger span")?.textContent?.trim(),
+      selectedValue: selectedCustomOption?.dataset?.value,
+      hidden: wrapper?.hidden,
+      ariaDisabled: wrapper?.querySelector(".custom-select-trigger")?.getAttribute("aria-disabled"),
+    };
+  }, selector);
+}
+
+async function assertCustomSelectState(page, selector, expectedValue, label) {
+  await page.waitForFunction(
+    ({ selectSelector, value }) => {
+      const select = document.querySelector(selectSelector);
+      const wrapper = select?.nextElementSibling;
+      return (
+        select?.value === value &&
+        wrapper?.hidden === false &&
+        wrapper?.querySelector(".custom-option.selected")?.dataset?.value === value &&
+        wrapper?.querySelector(".custom-select-trigger span")?.textContent?.includes(value)
+      );
+    },
+    { selectSelector: selector, value: String(expectedValue) },
+    { timeout: 5000 },
+  );
+  const state = await readCustomSelectState(page, selector);
+  assert.equal(state.value, String(expectedValue), `${label} native select value`);
+  assert.equal(state.selectedValue, String(expectedValue), `${label} highlighted custom option`);
+  assert.match(state.visibleText || "", new RegExp(`\\b${expectedValue}\\b`), `${label} visible custom text`);
+  assert.equal(state.hidden, false, `${label} custom select is visible after hydration`);
+  return state;
 }
 
 async function seedStorage(context, extensionId) {
@@ -345,6 +383,12 @@ async function verifyPopup(context, extensionId) {
   assert.match(popupText, /Instagram/);
   assert.match(popupText, /Hide Stories/);
   assert.match(popupText, /Hide Reels Button/);
+  const suggestedToggle = page.locator('input[data-key="hide_ig_suggested"]');
+  assert.equal(await suggestedToggle.isChecked(), false, "new granular filters are off on upgrade");
+  await suggestedToggle.locator("..").click();
+  await waitForStorageValue(page, "hide_ig_suggested", true);
+  await suggestedToggle.locator("..").click();
+  await waitForStorageValue(page, "hide_ig_suggested", false);
   assertNoText(popupText, /Hide Reels in Feed/, "Popup still shows removed Instagram feed setting");
 
   await page.locator("#backBtn").click();
@@ -372,16 +416,240 @@ async function verifyPopup(context, extensionId) {
   assert.match(facebookPopupText, /Hide People You Might Know/);
   assertNoText(facebookPopupText, /Hide Reels Shelves/);
 
+  await page.locator("#backBtn").click();
+  await page.locator('button[data-platform="li"]').click();
+  for (const key of ["hide_li_suggested", "hide_li_activity"]) {
+    const input = page.locator(`input[data-key="${key}"]`);
+    await input.waitFor({ state: "attached" });
+    assert.equal(await input.isChecked(), false, `${key} defaults off`);
+  }
+
   await page.close();
   pass("popup loads and platform settings match expected controls");
 }
 
+async function verifyRatingPrompt(context, extensionId) {
+  const page = await openExtensionPage(context, extensionId, "popup.html");
+  await page.setViewportSize({ width: 300, height: 600 });
+  await setStorage(page, {
+    reviewDismissed: false,
+    ft_stats_blocked: 4,
+    ft_work_session_ended: true,
+    autoStartBreaks: false,
+    showBreakButton: true,
+    darkMode: true,
+  });
+  await page.evaluate(() => chrome.storage.local.remove("reviewNextBlock"));
+  await page.reload();
+  await page.waitForFunction(() => document.querySelector("#breakBtn")?.classList.contains("hidden") === false);
+  assert.equal(await page.locator("#review-prompt").isVisible(), false, "default threshold is five blocked items");
+
+  await setStorage(page, { ft_stats_blocked: 5 });
+  await page.locator("#review-prompt").waitFor({ state: "visible" });
+  await page.waitForTimeout(350);
+  const localizedReviewCopy = await page.evaluate(() => ({
+    prompt: document.querySelector("#reviewBlockedCount")?.textContent?.trim(),
+    expectedPrompt: globalThis.FT_I18N?.message("reviewPrompt", ["5"]),
+    favor: document.querySelector(".review-favor")?.textContent?.trim(),
+    expectedFavor: globalThis.FT_I18N?.message("reviewFavor"),
+    deal: document.querySelector("#reviewNow")?.textContent?.trim(),
+    expectedDeal: globalThis.FT_I18N?.message("reviewDeal"),
+    later: document.querySelector("#reviewLater")?.textContent?.trim(),
+    expectedLater: globalThis.FT_I18N?.message("later"),
+    noThanks: document.querySelector("#reviewNoThanks")?.textContent?.trim(),
+    expectedNoThanks: globalThis.FT_I18N?.message("reviewNoThanks"),
+    promptCount: document.querySelectorAll("#review-prompt").length,
+  }));
+  assert.equal(localizedReviewCopy.prompt, localizedReviewCopy.expectedPrompt);
+  assert.equal(localizedReviewCopy.favor, localizedReviewCopy.expectedFavor);
+  assert.equal(localizedReviewCopy.deal, localizedReviewCopy.expectedDeal);
+  assert.equal(localizedReviewCopy.later, localizedReviewCopy.expectedLater);
+  assert.equal(localizedReviewCopy.noThanks, localizedReviewCopy.expectedNoThanks);
+  assert.equal(localizedReviewCopy.promptCount, 1, "review prompt is not duplicated");
+  const firstLayout = await page.evaluate(() => {
+    const prompt = document.querySelector("#review-prompt").getBoundingClientRect();
+    const controls = document.querySelector("#popupControls").getBoundingClientRect();
+    const visibleControls = [...document.querySelectorAll("button, input, select")]
+      .filter((element) => getComputedStyle(element).display !== "none" && element.getBoundingClientRect().width > 0)
+      .map((element) => {
+        const rect = element.getBoundingClientRect();
+        return { id: element.id, label: element.getAttribute("aria-label") || element.textContent.trim(), left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom };
+      });
+    return {
+      prompt: { left: prompt.left, top: prompt.top, right: prompt.right, bottom: prompt.bottom },
+      controls: { left: controls.left, top: controls.top, right: controls.right, bottom: controls.bottom },
+      visibleControls,
+      viewport: { width: innerWidth, height: innerHeight },
+      overflow: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight },
+    };
+  });
+  assert.ok(firstLayout.prompt.left >= 0 && firstLayout.prompt.right <= 300, "review prompt fits popup width");
+  assert.ok(firstLayout.prompt.bottom <= firstLayout.controls.top, "review prompt stays in normal flow ahead of controls");
+  assert.ok(firstLayout.controls.bottom <= 600,
+    `main controls including the break action fit popup height: ${JSON.stringify(firstLayout)}`);
+  assert.ok(firstLayout.overflow.width <= 300 && firstLayout.overflow.height <= 600,
+    `popup has no scroll overflow: ${JSON.stringify(firstLayout)}`);
+  assert.ok(firstLayout.visibleControls.some((item) => item.id === "breakBtn"), "break action remains visible");
+  for (const control of firstLayout.visibleControls) {
+    assert.ok(control.left >= 0 && control.right <= 300 && control.top >= 0 && control.bottom <= 600,
+      `control ${control.id || control.label} stays inside popup`);
+  }
+
+  const readPromptLayout = () => page.evaluate(() => {
+    const body = document.body.getBoundingClientRect();
+    const controls = document.querySelector("#popupControls").getBoundingClientRect();
+    return {
+      bodyHeight: body.height,
+      controlsHeight: controls.height,
+      documentHeight: document.documentElement.scrollHeight,
+      bodyScrollHeight: document.body.scrollHeight,
+      inlineDocumentHeight: document.documentElement.style.height,
+      inlineBodyHeight: document.body.style.height,
+    };
+  });
+  const repeatedLayouts = [];
+  for (const blockedCount of [6, 7, 8, 9, 10, 11, 12]) {
+    await setStorage(page, { ft_stats_blocked: blockedCount });
+    await page.waitForTimeout(120);
+    repeatedLayouts.push(await readPromptLayout());
+    assert.equal(
+      await page.locator("#reviewBlockedCount").innerText(),
+      await page.evaluate(
+        (count) => globalThis.FT_I18N?.message("reviewPrompt", [String(count)]),
+        blockedCount,
+      ),
+      "review copy tracks the real current blocked count",
+    );
+  }
+  for (const key of ["bodyHeight", "controlsHeight", "documentHeight", "bodyScrollHeight"]) {
+    const values = repeatedLayouts.map((layout) => layout[key]);
+    assert.ok(Math.max(...values) - Math.min(...values) <= 1,
+      `repeated eligible updates keep ${key} stable`);
+  }
+  assert.deepEqual(repeatedLayouts.at(-1).inlineDocumentHeight, "", "review prompt does not set document height");
+  assert.deepEqual(repeatedLayouts.at(-1).inlineBodyHeight, "", "review prompt does not set body height");
+
+  await setStorage(page, { ft_stats_blocked: 0 });
+  await page.locator("#review-prompt").waitFor({ state: "hidden" });
+  assert.equal(await page.locator("body").evaluate((body) => body.classList.contains("review-visible")), false,
+    "resetting the blocked count hides an ineligible review prompt");
+  await setStorage(page, { ft_stats_blocked: 13 });
+  await page.locator("#review-prompt").waitFor({ state: "visible" });
+  assert.equal(await page.locator("#reviewBlockedCount").innerText(),
+    await page.evaluate(() => globalThis.FT_I18N?.message("reviewPrompt", ["13"])),
+    "review prompt uses the new count after a reset");
+
+  for (const darkMode of [false, true]) {
+    await setStorage(page, { darkMode, ft_stats_blocked: 13 });
+    await page.waitForTimeout(350);
+    const layout = await page.evaluate(() => ({
+      height: document.documentElement.getBoundingClientRect().height,
+      promptVisible: !document.querySelector("#review-prompt").classList.contains("hidden"),
+      theme: document.body.classList.contains("dark-mode"),
+    }));
+    assert.equal(layout.promptVisible, true);
+    assert.equal(layout.theme, darkMode);
+    assert.ok(layout.height <= 600, "review prompt stays within the popup viewport");
+  }
+
+  for (const timerType of ["work", "break"]) {
+    await setStorage(page, {
+      ft_stats_blocked: 14,
+      ft_timer_end: Date.now() + 10 * 60_000,
+      ft_timer_type: timerType,
+      ft_work_session_ended: false,
+    });
+    await page.reload();
+    await page.locator("#review-prompt").waitFor({ state: "visible" });
+    await page.waitForFunction(() => document.querySelector("#timerBtn")?.classList.contains("active"));
+    const timerLayout = await page.evaluate(() => {
+      const controls = document.querySelector("#popupControls").getBoundingClientRect();
+      return {
+        controlsBottom: controls.bottom,
+        width: document.documentElement.scrollWidth,
+        height: document.documentElement.scrollHeight,
+        promptCount: document.querySelectorAll("#review-prompt").length,
+      };
+    });
+    assert.ok(
+      timerLayout.controlsBottom <= 600,
+      `${timerType} timer controls stay inside the 300x600 popup: ${JSON.stringify(timerLayout)}`,
+    );
+    assert.ok(
+      timerLayout.width <= 300 && timerLayout.height <= 600,
+      `${timerType} timer + review prompt has no popup scrollbar: ${JSON.stringify(timerLayout)}`,
+    );
+    assert.equal(timerLayout.promptCount, 1, `${timerType} timer does not duplicate the review prompt`);
+  }
+  await page.evaluate(
+    () =>
+      new Promise((resolve) =>
+        chrome.storage.local.remove(
+          ["ft_timer_end", "ft_timer_type", "ft_work_session_ended"],
+          resolve,
+        ),
+      ),
+  );
+
+  await setStorage(page, { reviewDismissed: false, ft_stats_blocked: 5 });
+  await page.evaluate(() => chrome.storage.local.remove("reviewNextBlock"));
+  await page.reload();
+  await page.locator("#review-prompt").waitFor({ state: "visible" });
+  await page.locator("#reviewNoThanks").click();
+  await waitForStorageValue(page, "reviewDismissed", true);
+  const noThanksDismissed = await getStorage(page, ["reviewDismissed", "reviewNextBlock"]);
+  assert.equal(noThanksDismissed.reviewDismissed, true, "No thanks permanently dismisses the prompt");
+  assert.equal(noThanksDismissed.reviewNextBlock, null, "No thanks clears the temporary snooze threshold");
+  await setStorage(page, { ft_stats_blocked: 100 });
+  await page.reload();
+  await page.waitForTimeout(350);
+  assert.equal(
+    await page.locator("#review-prompt").isVisible(),
+    false,
+    "No thanks dismissal survives reopening and later blocked-count updates",
+  );
+
+  await setStorage(page, { reviewDismissed: false, ft_stats_blocked: 17 });
+  await page.evaluate(() => chrome.storage.local.remove("reviewNextBlock"));
+  await page.reload();
+  await page.locator("#review-prompt").waitFor({ state: "visible" });
+  await page.locator("#reviewLater").click();
+  await waitForStorageValue(page, "reviewNextBlock", 37);
+  await page.reload();
+  assert.equal(await page.locator("#review-prompt").isVisible(), false, "Later defers by twenty blocked items");
+  await setStorage(page, { ft_stats_blocked: 37 });
+  await page.locator("#review-prompt").waitFor({ state: "visible" });
+
+  const rateUrl = await page.evaluate(() => {
+    window.__openedStoreUrl = null;
+    chrome.tabs.create = ({ url }) => { window.__openedStoreUrl = url; };
+    return new Promise((resolve) => {
+      document.querySelector("#reviewNow").addEventListener("click", () => {
+        setTimeout(() => resolve(window.__openedStoreUrl), 0);
+      }, { once: true });
+      document.querySelector("#reviewNow").click();
+    });
+  });
+  assert.equal(rateUrl, "https://chromewebstore.google.com/detail/focustube-distraction-blo/ppdjgkniggbikifojmkindmbhppmoell");
+  const dismissed = await getStorage(page, ["reviewDismissed", "reviewNextBlock"]);
+  assert.equal(dismissed.reviewDismissed, true, "Deal permanently dismisses the prompt");
+  assert.equal(dismissed.reviewNextBlock, null, "Deal clears the temporary snooze threshold");
+  await setStorage(page, { ft_stats_blocked: 100 });
+  await page.reload();
+  await page.waitForTimeout(350);
+  assert.equal(await page.locator("#review-prompt").isVisible(), false,
+    "permanent dismissal survives later blocked-count updates");
+  await page.close();
+  pass("review prompt copy, thresholds, deferral, dismissal, timer states, RTL, and 300x600 layout pass");
+}
+
 async function verifyOptions(context, extensionId) {
   const page = await openExtensionPage(context, extensionId, "options.html");
+  const storagePage = await openExtensionPage(context, extensionId, "popup.html");
   await assertControlsUsePageFont(page, "Options page");
   const bodyText = await page.locator("body").innerText();
 
-  assert.match(bodyText, /Version 2\.3\.2/);
+  assert.match(bodyText, /Version 2\.4\.0/);
   assertNoText(bodyText, /1 minute \(testing only\)/, "Options still show temporary one-minute test option");
   assertNoText(bodyText, /play\s*sound/i, "Options still show sound option text");
   assert.equal(await page.locator("#playSound").count(), 0);
@@ -440,26 +708,105 @@ async function verifyOptions(context, extensionId) {
   await setCheckboxValue(page, "#showNotifications", true);
   await waitForStorageValue(page, "showNotifications", true);
 
-  await page.evaluate(() => {
-    const select = document.querySelector("#focusDuration");
-    select.value = "45";
-    select.dispatchEvent(new Event("change", { bubbles: true }));
-  });
-  await waitForStorageValue(page, "ft_timer_duration", 45);
+  await setStorage(storagePage, { ft_timer_duration: 15 });
   await page.reload();
   await page.waitForLoadState("domcontentloaded");
-  const duration = await page.locator("#focusDuration").evaluate((select) => select.value);
-  assert.equal(duration, "45");
+  await assertCustomSelectState(page, "#focusDuration", 15, "stored 15-minute focus duration");
+
+  for (const duration of [25, 30, 45, 60, 15]) {
+    await setStorage(storagePage, { ft_timer_duration: duration });
+    await assertCustomSelectState(
+      page,
+      "#focusDuration",
+      duration,
+      `external ${duration}-minute focus duration`,
+    );
+  }
+
+  await setStorage(storagePage, { breakDuration: 10 });
+  await assertCustomSelectState(page, "#breakDuration", 10, "external 10-minute break duration");
+
+  await storagePage.evaluate(
+    () =>
+      new Promise((resolve) => {
+        chrome.storage.local.set({ ft_timer_duration: 15 }, () => {
+          chrome.storage.local.set({ ft_timer_duration: 60 }, () => {
+            chrome.storage.local.set({ ft_timer_duration: 25 }, () => {
+              chrome.storage.local.set({ ft_timer_duration: 30 }, resolve);
+            });
+          });
+        });
+      }),
+  );
+  await assertCustomSelectState(page, "#focusDuration", 30, "rapid duration updates settle on 30");
+  assert.equal(
+    (await getStorage(storagePage, ["ft_timer_duration"])).ft_timer_duration,
+    30,
+    "rapid duration updates settle storage on 30",
+  );
+
+  const patchedStorageSet = await page.evaluate(() => {
+    const originalSet = chrome.storage.local.set.bind(chrome.storage.local);
+    window.__ftOriginalStorageSet = originalSet;
+    window.__ftDurationWriteCount = 0;
+    try {
+      chrome.storage.local.set = (items, callback) => {
+        if (Object.prototype.hasOwnProperty.call(items, "ft_timer_duration")) {
+          window.__ftDurationWriteCount += 1;
+        }
+        return originalSet(items, callback);
+      };
+      return chrome.storage.local.set !== originalSet;
+    } catch (_error) {
+      return false;
+    }
+  });
+  assert.equal(patchedStorageSet, true, "storage.set can be instrumented for one-write assertion");
+  await page.locator("#focusDuration + .custom-select-wrapper .custom-select-trigger").click();
+  await page.locator('#focusDuration + .custom-select-wrapper .custom-option[data-value="45"]').click();
+  await waitForStorageValue(storagePage, "ft_timer_duration", 45);
+  await assertCustomSelectState(page, "#focusDuration", 45, "user-selected 45-minute focus duration");
+  const durationWriteCount = await page.evaluate(() => {
+    const count = window.__ftDurationWriteCount;
+    chrome.storage.local.set = window.__ftOriginalStorageSet;
+    delete window.__ftOriginalStorageSet;
+    return count;
+  });
+  assert.equal(durationWriteCount, 1, "one user duration change performs one settings write");
+
+  await page.reload();
+  await page.waitForLoadState("domcontentloaded");
+  await assertCustomSelectState(page, "#focusDuration", 45, "reopened 45-minute focus duration");
 
   await page.evaluate(() => {
-    const select = document.querySelector("#focusDuration");
-    select.value = "25";
-    select.dispatchEvent(new Event("change", { bubbles: true }));
+    const wrapper = document.querySelector("#focusDuration + .custom-select-wrapper");
+    for (const value of [15, 60, 25, 30]) {
+      wrapper.querySelector(`.custom-option[data-value="${value}"]`).click();
+    }
   });
-  await waitForStorageValue(page, "ft_timer_duration", 25);
+  await waitForStorageValue(storagePage, "ft_timer_duration", 30);
+  await assertCustomSelectState(page, "#focusDuration", 30, "rapid user selections finish at 30");
+  await page.reload();
+  await page.waitForLoadState("domcontentloaded");
+  await assertCustomSelectState(page, "#focusDuration", 30, "rapid selection persists after reopening Settings");
 
+  await storagePage.evaluate(
+    () => new Promise((resolve) => chrome.storage.local.remove("ft_timer_duration", resolve)),
+  );
+  await assertCustomSelectState(page, "#focusDuration", 25, "empty storage focus default");
+  assert.equal(
+    (await getStorage(storagePage, ["ft_timer_duration"])).ft_timer_duration,
+    undefined,
+    "empty storage remains empty while Settings displays the 25-minute default",
+  );
+
+  await setStorage(storagePage, { ft_timer_duration: 25, breakDuration: 5 });
+  await assertCustomSelectState(page, "#focusDuration", 25, "restored 25-minute focus duration");
+  await assertCustomSelectState(page, "#breakDuration", 5, "restored 5-minute break duration");
+
+  await storagePage.close();
   await page.close();
-  pass("options page loads, removed options stay removed, and settings persist after reload");
+  pass("options page timer selects stay synchronized with storage and persist after reload");
 }
 
 async function verifyTimer(context, extensionId) {
@@ -482,28 +829,45 @@ async function verifyTimer(context, extensionId) {
   assert.equal(breakColors.displayColor, breakColors.textColor);
   assert.equal(breakColors.labelColor, breakColors.textColor);
 
-  await timerButton.click();
-  await page.waitForFunction(
-    () => document.querySelector("#timerBtn")?.classList.contains("active"),
-    null,
-    { timeout: 5000 },
-  );
-  const activeTimer = await getStorage(page, ["ft_timer_end", "ft_timer_type"]);
-  assert.equal(activeTimer.ft_timer_type, "work");
-  assert.ok(activeTimer.ft_timer_end > Date.now());
+  for (const duration of [undefined, 15, 25, 30, 45, 60]) {
+    if (duration === undefined) {
+      await page.evaluate(
+        () => new Promise((resolve) => chrome.storage.local.remove("ft_timer_duration", resolve)),
+      );
+    } else {
+      await setStorage(page, { ft_timer_duration: duration });
+    }
+    const expectedDuration = duration ?? 25;
+    const startedAt = Date.now();
+    await timerButton.click();
+    await page.waitForFunction(
+      () => document.querySelector("#timerBtn")?.classList.contains("active"),
+      null,
+      { timeout: 5000 },
+    );
+    const activeTimer = await getStorage(page, ["ft_timer_end", "ft_timer_type"]);
+    assert.equal(activeTimer.ft_timer_type, "work");
+    const scheduledDuration = activeTimer.ft_timer_end - startedAt;
+    assert.ok(
+      scheduledDuration >= expectedDuration * 60_000 - 1_000 &&
+        scheduledDuration <= expectedDuration * 60_000 + 5_000,
+      `Start Timer uses ${expectedDuration} minutes: ${scheduledDuration}ms`,
+    );
 
-  await timerButton.click();
-  await page.waitForFunction(
-    () => !document.querySelector("#timerBtn")?.classList.contains("active"),
-    null,
-    { timeout: 5000 },
-  );
-  assert.equal(await timerButton.innerText(), "Start Timer");
-  const stoppedTimer = await getStorage(page, ["ft_timer_end", "ft_timer_type"]);
-  assert.equal(stoppedTimer.ft_timer_end, undefined);
+    await timerButton.click();
+    await page.waitForFunction(
+      () => !document.querySelector("#timerBtn")?.classList.contains("active"),
+      null,
+      { timeout: 5000 },
+    );
+    assert.equal(await timerButton.innerText(), "Start Timer");
+    const stoppedTimer = await getStorage(page, ["ft_timer_end", "ft_timer_type"]);
+    assert.equal(stoppedTimer.ft_timer_end, undefined);
+  }
+  await setStorage(page, { ft_timer_duration: 25 });
 
   await page.close();
-  pass("timer UI can start and stop");
+  pass("timer UI starts every supported focus duration and defaults empty storage to 25 minutes");
 }
 
 function youtubeFixtureHtml(title = "Most relevant") {
@@ -1349,6 +1713,7 @@ async function runBrowserSmoke() {
 
     await seedStorage(context, extensionId);
     await verifyPopup(context, extensionId);
+    await verifyRatingPrompt(context, extensionId);
     await verifyOptions(context, extensionId);
     await verifyTimer(context, extensionId);
     await verifyFacebookRuntime(context, extensionId);
@@ -1389,6 +1754,7 @@ async function runBrowserSmoke() {
   try {
     const extensionId = await getExtensionId(arabicContext);
     await verifyArabicLocalization(arabicContext, extensionId);
+    await verifyRatingPrompt(arabicContext, extensionId);
   } finally {
     await arabicContext.close();
     fs.rmSync(arabicUserDataDir, { recursive: true, force: true });

@@ -171,7 +171,21 @@
     "message": "Kembali ke tampilan utama"
   },
   "reviewPrompt": {
-    "message": "Menikmati FocusTube? Ulasan singkat membantu orang lain menemukannya!"
+    "message": "FocusTube telah memblokir $COUNT$ gangguan untukmu.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "reviewFavor": {
+    "message": "Mau membalasnya dengan ulasan singkat? 🤝"
+  },
+  "reviewDeal": {
+    "message": "Sepakat 🤝"
+  },
+  "reviewNoThanks": {
+    "message": "Tidak, terima kasih"
   },
   "later": {
     "message": "Nanti"
@@ -453,6 +467,10 @@
   "hidePeopleYouMightKnowDescription": {
     "message": "Sembunyikan saran orang di beranda"
   },
+  "hideSuggestedPosts": { "message": "Sembunyikan postingan yang disarankan" },
+  "hideSuggestedPostsDescription": { "message": "Sembunyikan postingan yang disarankan dan bersponsor saat terdeteksi" },
+  "hideNetworkActivity": { "message": "Sembunyikan aktivitas jaringan" },
+  "hideNetworkActivityDescription": { "message": "Sembunyikan postingan yang ditampilkan dari reaksi jaringan Anda" },
   "hideFeed": {
     "message": "Sembunyikan Beranda"
   },

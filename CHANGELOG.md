@@ -4,11 +4,24 @@ All notable project-facing changes are documented here.
 
 ## [Unreleased]
 
+### Pending 2.4.0
+
 - Added packaged browser-native localization for English, Arabic, Spanish, Brazilian Portuguese, French, German, Turkish, and Indonesian, with English as the default fallback.
 - Localized extension pages and extension-owned overlays automatically while keeping storage keys, runtime messages, alarm names, and other protocol identities stable. Language and direction metadata now follow the resolved catalog, so Arabic right-to-left handling stays scoped to Arabic extension-owned UI and unsupported locales receive English metadata with the English fallback catalog.
-- Added deterministic catalog and localization contract checks, native Chromium Arabic and unsupported-locale fallback text/metadata coverage, and package checks for all eight 160-key catalogs. Manual, live-site, native-speaker, and native Firefox localization checks remain pending.
+- Added deterministic catalog and localization contract checks, native Chromium Arabic and unsupported-locale fallback text/metadata coverage, and package checks for all eight 164-key catalogs. Manual, live-site, native-speaker, and native Firefox localization checks remain pending.
 - Added non-resetting pending mutation scheduling for LinkedIn, narrowed its feed and sidebar matching, changed the broad YouTube body observer to schedule animation-frame inline hiding without mutation-tree filtering or route checks, and added guards for null, undefined, primitive, and array background request shapes without changing valid command handling.
 - Removed stale Facebook Stories overlays when SPA navigation reaches Reels.
+
+- Added optional Instagram suggested-post and sponsored-post filtering with sanitized structural fixtures and regression coverage.
+- Added optional LinkedIn outside-network, promoted-post, and network-activity filtering with late-render and recycled-node handling.
+- All three new per-post filters default off, including on upgrade. Ambiguous posts remain visible; site-language detection is independent of the extension's translated UI.
+- Paused media when filtered posts collapse and preserved local-first behavior without new permissions or network requests.
+- Collapsed filtered Instagram posts without a visible placeholder in Strict mode and during work timers; Warn and Passive retain a compact, localized row with View anyway.
+- Recheck Instagram blocking after SPA pathname changes that emit neither a history event nor a DOM mutation.
+- Detect DM-opened Instagram Reels on `/p/` routes in Strict mode and work timers using the visible modal post's matching Reel timestamp permalink; preserve ordinary photo/carousel posts and existing break/Passive behavior.
+- Show the first review prompt after five blocked items, preserve the twenty-item Later reminder, and keep the popup layout stable while the prompt is visible.
+- Updated the development-only `adm-zip` dependency to 0.6.1 to include upstream extraction safety fixes.
+- The static project website and platform guides were merged separately in #38 and are inherited by this candidate.
 
 ## [2.3.2] - 2026-09-01
 

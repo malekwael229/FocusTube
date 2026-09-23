@@ -171,7 +171,21 @@
     "message": "العودة إلى العرض الرئيسي"
   },
   "reviewPrompt": {
-    "message": "هل تستمتع باستخدام FocusTube؟ تساعد مراجعة سريعة الآخرين في العثور عليه!"
+    "message": "حجب FocusTube ‏$COUNT$ عنصرًا مشتتًا من أجلك.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "reviewFavor": {
+    "message": "هل تردّ الجميل بمراجعة سريعة؟ 🤝"
+  },
+  "reviewDeal": {
+    "message": "اتفقنا 🤝"
+  },
+  "reviewNoThanks": {
+    "message": "لا شكرًا"
   },
   "later": {
     "message": "لاحقًا"
@@ -453,6 +467,10 @@
   "hidePeopleYouMightKnowDescription": {
     "message": "إخفاء اقتراحات الأشخاص في الموجز"
   },
+  "hideSuggestedPosts": { "message": "إخفاء المنشورات المقترحة" },
+  "hideSuggestedPostsDescription": { "message": "إخفاء المنشورات المقترحة والمموّلة عند اكتشافها" },
+  "hideNetworkActivity": { "message": "إخفاء نشاط شبكتك" },
+  "hideNetworkActivityDescription": { "message": "إخفاء المنشورات التي تظهر بسبب تفاعلات شبكتك" },
   "hideFeed": {
     "message": "إخفاء الموجز"
   },

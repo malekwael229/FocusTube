@@ -171,7 +171,21 @@
     "message": "Voltar à tela principal"
   },
   "reviewPrompt": {
-    "message": "Está gostando do FocusTube? Uma avaliação rápida ajuda outras pessoas a encontrá-lo!"
+    "message": "O FocusTube bloqueou $COUNT$ distrações para você.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "reviewFavor": {
+    "message": "Que tal retribuir com uma avaliação rápida? 🤝"
+  },
+  "reviewDeal": {
+    "message": "Fechado 🤝"
+  },
+  "reviewNoThanks": {
+    "message": "Não, obrigado"
   },
   "later": {
     "message": "Mais tarde"
@@ -453,6 +467,10 @@
   "hidePeopleYouMightKnowDescription": {
     "message": "Ocultar sugestões de pessoas no feed"
   },
+  "hideSuggestedPosts": { "message": "Ocultar publicações sugeridas" },
+  "hideSuggestedPostsDescription": { "message": "Ocultar publicações sugeridas e patrocinadas quando detectadas" },
+  "hideNetworkActivity": { "message": "Ocultar atividades da sua rede" },
+  "hideNetworkActivityDescription": { "message": "Ocultar publicações exibidas pelas reações da sua rede" },
   "hideFeed": {
     "message": "Ocultar feed"
   },

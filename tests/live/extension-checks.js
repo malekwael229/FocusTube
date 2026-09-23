@@ -6,10 +6,10 @@ const PLATFORMS = ["yt", "ig", "tt", "fb", "li"];
 const MODES = ["strict", "warn", "allow"];
 const VISUAL_KEYS = {
   yt: ["hide_yt_shorts_nav", "hide_yt_shorts_shelves", "hide_yt_most_relevant_shelf"],
-  ig: ["hide_ig_stories", "hide_ig_reels_nav"],
+  ig: ["hide_ig_stories", "hide_ig_reels_nav", "hide_ig_suggested"],
   tt: [],
   fb: ["hide_fb_stories", "hide_fb_reels_nav", "hide_fb_people_you_might_know"],
-  li: ["hide_li_feed", "hide_li_addfeed"],
+  li: ["hide_li_feed", "hide_li_addfeed", "hide_li_suggested", "hide_li_activity"],
 };
 const DEFAULT_SETTINGS = {
   ft_enabled: true, ft_timer_duration: 25, breakDuration: 5, autoStartBreaks: true,
@@ -540,9 +540,11 @@ async function runExtensionChecks(session, report, { workDir, quick = false } = 
     const validFixture = path.join(workDir, "focustube-live-valid.json");
     const invalidFixture = path.join(workDir, "focustube-live-invalid.json");
     const incompleteFixture = path.join(workDir, "focustube-live-incomplete.json");
+    const invalidDurationFixture = path.join(workDir, "focustube-live-invalid-duration.json");
     fs.writeFileSync(validFixture, JSON.stringify({ ft_timer_duration: 15, platformSettings: { yt: "allow" }, showNotifications: false }));
     fs.writeFileSync(invalidFixture, "{not-json");
     fs.writeFileSync(incompleteFixture, JSON.stringify({ ft_timer_end: Date.now() + 60000 }));
+    fs.writeFileSync(invalidDurationFixture, JSON.stringify({ ft_timer_duration: 17, breakDuration: 7 }));
 
     options = await open(session, "options.html");
 
@@ -621,7 +623,7 @@ async function runExtensionChecks(session, report, { workDir, quick = false } = 
       id: "extension-data-invalid-incomplete",
       route: "options.html",
       mode: "data-validation",
-      settings: { fixtures: ["invalid JSON", "timer fields incomplete"] },
+      settings: { fixtures: ["invalid JSON", "timer fields incomplete", "unsupported durations"] },
       expected: "invalid imports alert and do not replace durable settings",
     }, options, async () => {
       if (session.name === "Firefox") {
@@ -630,7 +632,7 @@ async function runExtensionChecks(session, report, { workDir, quick = false } = 
         throw error;
       }
       const before = await storage(options, "get", ["ft_timer_duration", "platformSettings"]);
-      for (const fixture of [invalidFixture, incompleteFixture]) {
+      for (const fixture of [invalidFixture, incompleteFixture, invalidDurationFixture]) {
         await installDialogInstrumentation(options, { confirm: true });
         await options.setInputFiles("#importFile", fixture);
         const dialogs = await waitForDialog(options, (event) => event.type === "alert" && /Error importing data/.test(event.message));
@@ -688,7 +690,13 @@ async function runExtensionChecks(session, report, { workDir, quick = false } = 
         assert.equal(actual.ft_timer_duration, 30);
         assert.equal(actual.ft_timer_type, "work");
         assert.ok(actual.ft_timer_end > Date.now());
-        assert.notEqual(await readDom(options, "#timerActivePill", "display"), "none");
+        const lockUi = await options.evaluate(() => ({
+          timerActivePillPresent: Boolean(document.getElementById("timerActivePill")),
+          modeButtons: [...document.querySelectorAll(".mode-btn, .platform-btn")].map((button) => button.disabled),
+        }));
+        assert.equal(lockUi.timerActivePillPresent, false);
+        assert.ok(lockUi.modeButtons.length > 0);
+        assert.ok(lockUi.modeButtons.every(Boolean), "active work timer still locks every mode button");
         return actual;
       });
     } else {

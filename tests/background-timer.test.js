@@ -1438,7 +1438,7 @@ function loadPlatform(platform) {
   vm.runInNewContext(`${read(source)}\nthis.target = ${target};`, context, {
     filename: source,
   });
-  return { target: context.target, observers, timers, cleared, document };
+  return { target: context.target, observers, timers, cleared, document, window: context.window };
 }
 
 for (const platform of ["instagram", "tiktok", "facebook", "linkedin"]) {
@@ -1476,7 +1476,16 @@ for (const platform of ["instagram", "tiktok", "facebook", "linkedin"]) {
     assert.equal(fake.observers[0].disconnected, true);
     fake.target.enable();
     fake.observers.at(-1).callback();
-    assert.equal(fake.timers.length, 2);
+    assert.equal(fake.timers.length, platform === "instagram" ? 3 : 2);
+    if (platform === "instagram") {
+      const firstRouteTimer = fake.target.routeCheckTimer;
+      assert.ok(firstRouteTimer);
+      fake.target.disable();
+      assert.equal(fake.target.routeCheckTimer, null);
+      assert.equal(fake.timers.find((timer) => timer.id === firstRouteTimer).canceled, true);
+      fake.target.enable();
+      assert.notEqual(fake.target.routeCheckTimer, firstRouteTimer);
+    }
   });
 }
 
@@ -1498,6 +1507,31 @@ test("linkedin sustained mutations cannot starve its pending check", () => {
 
   fake.observers[0].callback();
   assert.equal(fake.timers.length, 2);
+});
+
+test("Instagram route watcher checks SPA path changes and keeps one pending poll", () => {
+  const fake = loadPlatform("instagram");
+  let checks = 0;
+  fake.target.lastPath = "/";
+  fake.target.runChecks = () => { checks += 1; };
+
+  fake.target.startRouteWatcher();
+  fake.target.startRouteWatcher();
+  assert.equal(fake.timers.length, 1);
+  assert.equal(fake.target.routeCheckTimer, fake.timers[0].id);
+
+  fake.window.location.search = "?sort=recent";
+  fake.window.location.hash = "#top";
+  fake.timers[0].callback();
+  assert.equal(checks, 0, "query and hash changes do not count as a pathname change");
+  assert.equal(fake.target.lastPath, "/");
+
+  fake.window.location.pathname = "/reels/from-push-state";
+  fake.timers[1].callback();
+  assert.equal(checks, 1);
+  assert.equal(fake.target.lastPath, "/reels/from-push-state");
+  assert.equal(fake.timers.length, 3);
+  assert.equal(fake.timers[2].canceled, undefined);
 });
 
 test("ensureBody tracks and disconnects the pre-body observer", () => {

@@ -63,6 +63,14 @@ Resolved-catalog direction and language metadata apply to extension pages and ex
 
 Automatic localization is limited to the extension UI. Site adapters still recognize site routes and DOM supplied by each platform. The YouTube Subscriptions detector for the "Most relevant" shelf intentionally matches the English label only; a translated shelf label is outside that detector's current contract.
 
+## Optional Per-Post Filters
+
+`hide_ig_suggested`, `hide_li_suggested`, and `hide_li_activity` default to false, including when a stored key is missing. They do not infer a user's follow graph. Instagram filtering is limited to the home route and exact detected English suggested/sponsored labels before the post's action section. Divider position, link redirects and generic buttons are not sufficient evidence. LinkedIn filtering is limited to the home and feed routes and uses scoped author controls, identity and promotion labels; first-degree/following signals and ambiguous cards fail open. Site UI language is independent of the extension locale. Translated or changed site markup may remain visible.
+
+LinkedIn suggestion/promotion and network-activity settings are independent; granular processing is suspended while the whole-feed overlay is active. With Focus Mode active, Strict offers no reveal button; Warn and Passive permit a page-local reveal. A work timer forces Strict, and breaks or disabling the setting/extension restore filtered posts. New post identity or classification invalidates earlier decisions on recycled nodes.
+
+The filters coalesce mutation bursts within the detected feed root, restore detached/replaced nodes, and bound stub repair attempts. Instagram uses a compact collapsed placeholder while LinkedIn preserves the post's measured height; Instagram strict/work modes keep the owned sentinel hidden, while warn/passive modes retain the compact "View anyway" row. The filters do not scroll or request posts. Hidden media is paused, including subsequent play events; restoration does not start playback. Extension-owned notices use the existing localization helpers and scoped direction metadata. No feed content is stored or sent elsewhere.
+
 ## DOM and SPA Behavior
 
 Content scripts inspect and modify the site's DOM. They add classes, inject or remove extension overlays and styles, cache inline styles before hiding elements, and track media that must be paused while a warning is visible. The shared `ensureBody()` helper waits for `document.body` when scripts start before the body exists and tracks its temporary observer so disabling can disconnect it.
@@ -70,6 +78,10 @@ Content scripts inspect and modify the site's DOM. They add classes, inject or r
 MutationObservers handle late-loaded page content. YouTube observes the full body subtree and schedules an animation-frame pass for inline hiding on mutations without filtering individual mutation trees or running route checks. Route enforcement runs through navigation, settings-change, and lifecycle paths. Instagram, TikTok, Facebook, and LinkedIn schedule one pending mutation check per burst without resetting the delay, so sustained mutations cannot postpone a check indefinitely. LinkedIn feed and sidebar hiding stays within recognized containers. Platform observers and pending timers are cleaned up when a platform or the extension is disabled.
 
 SPA navigation is handled through `popstate`, site-specific navigation events where available, route checks, and settings-change events. Mutation-triggered scans handle relevant late-loaded visual surfaces. This lets the extension respond when the document remains loaded while the URL or page content changes.
+
+Instagram also compares the pathname every 250ms while enabled, because `pushState` and `replaceState` do not emit `popstate` and may not change the DOM. On unchanged eligible `/p/<shortcode>/` views during Strict/work blocking, the poll checks for a matching Reel identity that may arrive after navigation and runs the full blocking checks only after a match. Other unchanged paths do not trigger scans. The single pending route timer is canceled on disable and restarted on enable.
+
+For DM-opened Reels using `/p/<shortcode>/`, Strict/work blocking requires exactly one visible modal and one article belonging to it, with one visible linked timestamp outside comment lists. That timestamp must point to `/reel/<same-shortcode>/` or `/<author>/reel/<same-shortcode>/` on the same origin. Nested articles, comment-list timestamps, unrelated links, hidden content, and ambiguous identities are excluded. A video element alone is not evidence of a Reel. Matching article media is paused before the existing redirect; ordinary photo/carousel permalinks remain allowed. This detection is limited to the observed modal structure, without a standalone-post fallback or a new Warn-mode behavior.
 
 ## Storage, Alarms, and Messaging
 

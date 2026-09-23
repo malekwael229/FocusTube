@@ -972,27 +972,6 @@
         animation: slideOut 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       }
 
-      .timer-active-pill {
-        display: none;
-        align-items: center;
-        width: fit-content;
-        gap: 0.375rem;
-        padding: 0.25rem 0.625rem;
-        margin: 0.75rem auto 0;
-        border-radius: 9999px;
-        background: linear-gradient(
-          135deg,
-          hsl(204 100% 65% / 0.12),
-          hsl(183 100% 50% / 0.08)
-        );
-        border: 1px solid hsl(204 100% 65% / 0.25);
-        animation: pillSlideIn 0.35s var(--ease-spring);
-      }
-
-      .timer-active-pill.visible {
-        display: flex;
-      }
-
       .disabled-look {
         opacity: 0.5;
         pointer-events: none;
@@ -1003,60 +982,6 @@
         background: var(--secondary) !important;
       }
 
-      .timer-active-pill.fade-out {
-        animation: pillFadeOut 0.25s ease-out forwards;
-      }
-
-      .timer-active-pill-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: var(--primary);
-        box-shadow: 0 0 8px hsl(204 100% 65% / 0.6);
-        animation: dotPulse 1.5s ease-in-out infinite;
-      }
-
-      .timer-active-pill-label {
-        font-size: 0.625rem;
-        font-weight: 700;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-        color: var(--primary);
-      }
-
-      @keyframes pillSlideIn {
-        from {
-          opacity: 0;
-          transform: translateY(-10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      @keyframes pillFadeOut {
-        from {
-          opacity: 1;
-          transform: translateY(0);
-        }
-        to {
-          opacity: 0;
-          transform: translateY(-10px);
-        }
-      }
-
-      @keyframes dotPulse {
-        0%,
-        100% {
-          opacity: 1;
-          transform: scale(1);
-        }
-        50% {
-          opacity: 0.6;
-          transform: scale(1.2);
-        }
-      }
       html[dir="rtl"] body {
         direction: rtl;
       }
@@ -1225,12 +1150,6 @@
           <p class="platform-hint" data-i18n="platformConfigurationHint">
             Click a platform to configure blocking mode
           </p>
-          <div class="timer-active-pill" id="timerActivePill">
-            <span class="timer-active-pill-dot"></span>
-            <span class="timer-active-pill-label" data-i18n="timerActiveModesLocked"
-              >Timer Active: Modes Locked</span
-            >
-          </div>
         </div>
 
         <div class="card platform-detail" id="platformDetail">
@@ -1612,7 +1531,7 @@
 
         <section class="card about-section">
           <h2 class="about-title" data-i18n="appName">FocusTube</h2>
-          <p class="about-version" data-i18n="aboutVersion" data-i18n-args='["2.3.2"]'>Version 2.3.2</p>
+          <p class="about-version" data-i18n="aboutVersion" data-i18n-args='["2.4.0"]'>Version 2.4.0</p>
           <div class="about-btns">
             <button class="action-btn" id="starRepo">
               <svg

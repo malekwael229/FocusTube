@@ -32,6 +32,7 @@ const PLATFORM_NAMES = {
   fb: msg("platformFacebook"),
   li: msg("platformLinkedin"),
 };
+let reviewHideTimeout = null;
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => document.body.classList.remove("preload"), 100);
   initReviewPrompt();
@@ -295,6 +296,7 @@ const PLATFORM_SETTINGS = {
   ig: [
     { key: "hide_ig_stories", labelKey: "hideStories" },
     { key: "hide_ig_reels_nav", labelKey: "hideReelsButton" },
+    { key: "hide_ig_suggested", labelKey: "hideSuggestedPosts", defaultValue: false },
   ],
   fb: [
     { key: "hide_fb_stories", labelKey: "hideStories" },
@@ -307,6 +309,8 @@ const PLATFORM_SETTINGS = {
   li: [
     { key: "hide_li_feed", labelKey: "hideFeed" },
     { key: "hide_li_addfeed", labelKey: "hideAddToFeedShort" },
+    { key: "hide_li_suggested", labelKey: "hideSuggestedPosts", defaultValue: false },
+    { key: "hide_li_activity", labelKey: "hideNetworkActivity", defaultValue: false },
   ],
   tt: [],
 };
@@ -382,7 +386,10 @@ function showPlatformDetail(platform) {
       platformToggles.map((t) => t.key),
       (result) => {
         platformToggles.forEach((toggle) => {
-          const isChecked = result[toggle.key] !== false;
+          const defaultValue = toggle.defaultValue !== false;
+          const isChecked = result[toggle.key] === undefined
+            ? defaultValue
+            : result[toggle.key] === true;
           const row = document.createElement("div");
           row.className = "platform-setting-row";
           const label = document.createElement("span");
@@ -483,7 +490,11 @@ function setupEventListeners() {
         `.mini-switch input[data-key="${key}"]`,
       );
       if (toggle) {
-        toggle.checked = newValue !== false;
+        const descriptor = Object.values(PLATFORM_SETTINGS)
+          .flat()
+          .find((setting) => setting.key === key);
+        const defaultValue = descriptor ? descriptor.defaultValue !== false : true;
+        toggle.checked = newValue === undefined ? defaultValue : newValue === true;
       }
     }
   });
@@ -1001,16 +1012,13 @@ function detectBrowser() {
 function initReviewPrompt() {
   const reviewNow = document.getElementById("reviewNow");
   const reviewLater = document.getElementById("reviewLater");
+  const reviewNoThanks = document.getElementById("reviewNoThanks");
   if (reviewNow) {
     reviewNow.addEventListener("click", () => {
       chrome.tabs.create({
         url: STORE_URLS[detectBrowser()] || STORE_URLS.chrome,
       });
-      chrome.storage.local.set({
-        reviewDismissed: true,
-        reviewNextBlock: null,
-      });
-      hideReviewPrompt();
+      dismissReviewPrompt();
     });
   }
   if (reviewLater) {
@@ -1024,55 +1032,60 @@ function initReviewPrompt() {
       });
     });
   }
+  if (reviewNoThanks) {
+    reviewNoThanks.addEventListener("click", dismissReviewPrompt);
+  }
+}
+function dismissReviewPrompt() {
+  chrome.storage.local.set({
+    reviewDismissed: true,
+    reviewNextBlock: null,
+  });
+  hideReviewPrompt();
 }
 function checkReviewPrompt(blockedCount) {
   chrome.storage.local.get(["reviewDismissed", "reviewNextBlock"], (res) => {
-    if (res.reviewDismissed) return;
+    if (res.reviewDismissed) {
+      hideReviewPrompt();
+      return;
+    }
     const threshold =
-      typeof res.reviewNextBlock === "number" ? res.reviewNextBlock : 20;
-    if (blockedCount >= threshold) showReviewPrompt();
+      typeof res.reviewNextBlock === "number" ? res.reviewNextBlock : 5;
+    if (blockedCount >= threshold) showReviewPrompt(blockedCount);
+    else hideReviewPrompt();
   });
 }
-function showReviewPrompt() {
+function showReviewPrompt(blockedCount) {
   const prompt = document.getElementById("review-prompt");
+  const blockedCountText = document.getElementById("reviewBlockedCount");
+  const currentBlockedCount = Math.max(0, parseInt(blockedCount, 10) || 0);
+  if (reviewHideTimeout !== null) {
+    clearTimeout(reviewHideTimeout);
+    reviewHideTimeout = null;
+  }
+  if (blockedCountText) {
+    blockedCountText.textContent = msg("reviewPrompt", [String(currentBlockedCount)]);
+  }
   if (prompt) {
+    prompt.classList.remove("fade-out");
     prompt.classList.remove("hidden");
     prompt.classList.add("show");
   }
   document.body.classList.add("review-visible");
   document.documentElement.classList.add("review-visible");
-  adjustPopupHeight();
 }
 function hideReviewPrompt() {
   const prompt = document.getElementById("review-prompt");
-  if (prompt) {
+  if (prompt && !prompt.classList.contains("hidden")) {
+    if (reviewHideTimeout !== null) clearTimeout(reviewHideTimeout);
     prompt.classList.add("fade-out");
     prompt.classList.remove("show");
-    setTimeout(() => {
+    reviewHideTimeout = setTimeout(() => {
       prompt.classList.add("hidden");
       prompt.classList.remove("fade-out");
+      reviewHideTimeout = null;
     }, 300);
   }
   document.body.classList.remove("review-visible");
   document.documentElement.classList.remove("review-visible");
-  adjustPopupHeight(true);
-}
-function adjustPopupHeight(reset = false) {
-  const root = document.documentElement;
-  const body = document.body;
-  if (reset) {
-    root.style.height = "";
-    body.style.height = "";
-    return;
-  }
-  const content = document.getElementById("popupControls");
-  if (!content) return;
-  const desired =
-    Math.max(
-      content.scrollHeight,
-      document.body.scrollHeight,
-      document.documentElement.scrollHeight,
-    ) + 12;
-  root.style.height = desired + "px";
-  body.style.height = desired + "px";
 }
