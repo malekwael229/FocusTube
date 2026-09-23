@@ -4,6 +4,14 @@ All notable project-facing changes are documented here.
 
 ## [Unreleased]
 
+## [2.4.1] - Pending
+
+- Updated the extension name and store-facing description to better reflect FocusTube's Shorts, Reels, and feed-blocking features.
+- Updated localized package metadata across all supported languages.
+- Refreshed release and contributor documentation for accuracy.
+- Strengthened regression coverage for package metadata and release-state checks.
+- No runtime behavior, permission, host-access, or CSP changes are included in this maintenance candidate.
+
 ## [2.4.0] - 2026-09-23
 
 - Added packaged browser-native localization for English, Arabic, Spanish, Brazilian Portuguese, French, German, Turkish, and Indonesian, with English as the default fallback.
