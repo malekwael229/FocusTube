@@ -9,6 +9,9 @@ const root = path.resolve(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const catalog = JSON.parse(read("_locales/en/messages.json"));
 const arabicCatalog = JSON.parse(read("_locales/ar/messages.json"));
+const expectedEnglishName = "FocusTube - Shorts, Reels & Feed Blocker";
+const expectedEnglishDescription =
+  "Block YouTube Shorts, Instagram Reels, TikTok, Facebook Reels and LinkedIn feeds without blocking the sites.";
 
 function renderCatalogMessage(sourceCatalog, key, substitutions) {
   const entry = sourceCatalog[key];
@@ -143,6 +146,8 @@ function namedTokens(message) {
 }
 
 function run() {
+  assert.equal(catalog.extensionName.message, expectedEnglishName);
+  assert.equal(catalog.extensionDescription.message, expectedEnglishDescription);
   for (const [key, entry] of Object.entries(catalog)) {
     assert.equal(typeof entry.message, "string", `${key} has a message`);
     for (const [name, placeholder] of Object.entries(entry.placeholders || {})) {
@@ -346,6 +351,7 @@ function run() {
       );
     }
     assert.ok(localizedCatalog.extensionName.message.length <= 75, `${locale} manifest name length`);
+    assert.match(localizedCatalog.extensionName.message, /^FocusTube\s-\s/, `${locale} keeps the FocusTube brand`);
     assert.ok(
       localizedCatalog.extensionDescription.message.length <= 132,
       `${locale} manifest description length`,

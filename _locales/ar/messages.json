@@ -1,9 +1,9 @@
 {
   "extensionName": {
-    "message": "FocusTube: مانع المشتتات"
+    "message": "FocusTube - مانع المقاطع القصيرة والريلز وموجز المنشورات"
   },
   "extensionDescription": {
-    "message": "قلّل مشتتات YouTube Shorts وInstagram Reels وTikTok وFacebook Reels وLinkedIn."
+    "message": "احجب YouTube Shorts وInstagram Reels وTikTok وFacebook Reels وموجز LinkedIn دون حجب المواقع."
   },
   "appName": {
     "message": "FocusTube"

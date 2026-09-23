@@ -19,7 +19,7 @@ By participating, you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 Chrome, Edge, Brave, and other Chromium browsers use `chrome-manifest.json`.
 
-1. Copy or rename `chrome-manifest.json` to `manifest.json`.
+1. Copy `chrome-manifest.json` to `manifest.json`, keeping the original file for builds and tests.
 2. Open `chrome://extensions` or `edge://extensions`.
 3. Enable **Developer mode**.
 4. Click **Load unpacked**.
@@ -29,10 +29,10 @@ Chrome, Edge, Brave, and other Chromium browsers use `chrome-manifest.json`.
 
 Firefox uses `firefox-manifest.json`.
 
-1. Copy or rename `firefox-manifest.json` to `manifest.json`.
+1. Copy `firefox-manifest.json` to `manifest.json`, keeping the original file for builds and tests.
 2. Open `about:debugging#/runtime/this-firefox`.
 3. Click **Load Temporary Add-on...**.
-4. Select the copied/renamed `manifest.json` file.
+4. Select the copied `manifest.json` file.
 
 ## Contribution Process
 
@@ -59,7 +59,7 @@ Run the focused checks for the change, then run `npm.cmd run test:all` on Window
 
 Major new functionality must add or update automated tests for the new behavior. Bug fixes should add a regression test when the failure can be reproduced reliably in the automated harness.
 
-Keep changes focused. Do not add analytics, tracking, remote servers, or new permissions unless there is a clear product need and it is documented.
+Keep changes focused. Do not add analytics, tracking, telemetry, remote configuration, or a project-controlled backend. Any proposed permission change needs a clear product need, documentation, and focused review.
 
 ## Bug Report Format
 

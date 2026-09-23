@@ -1,7 +1,7 @@
 <div align="center">
   <img width="1920" height="1080" alt="focustube-01-hero-v18" src="https://github.com/user-attachments/assets/e204789b-5ac0-467f-8e62-a7c5933ceda0" />
 
-  <h1>FocusTube: Distraction Blocker</h1>
+  <h1>FocusTube - Shorts, Reels &amp; Feed Blocker</h1>
 
   <p><strong>A privacy-first browser extension for reducing distracting social video and feed surfaces.</strong></p>
 
@@ -28,7 +28,7 @@
     <a href="https://www.bestpractices.dev/projects/14395"><img alt="OpenSSF Best Practices Passing" src="https://www.bestpractices.dev/projects/14395/badge" /></a>
     <a href="https://www.bestpractices.dev/projects/14395"><img alt="OpenSSF Best Practices Baseline Level 1" src="https://www.bestpractices.dev/projects/14395/baseline" /></a>
     <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" />
-    <img alt="Version: 2.4.0" src="https://img.shields.io/badge/version-2.4.0-green.svg" />
+    <img alt="GitHub release version: 2.4.0" src="https://img.shields.io/badge/version-2.4.0-green.svg" />
     <img alt="Firefox compatible" src="https://img.shields.io/badge/firefox-compatible-orange.svg" />
   </p>
 </div>
@@ -68,6 +68,8 @@ The project supports Chromium browsers with a Manifest V3 build and Firefox with
 
 The [FocusTube project website](https://malekwael229.github.io/FocusTube/) includes platform-specific guides and the same official store links used by the extension.
 
+The GitHub source release is 2.4.0. Browser-store updates are separate; check the version shown on each listing before assuming it includes the 2.4.0 filters and localization.
+
 ### Official Stores
 
 - **Chrome Web Store:** [FocusTube](https://chromewebstore.google.com/detail/focustube-distraction-blo/ppdjgkniggbikifojmkindmbhppmoell)
@@ -82,20 +84,20 @@ Clone or download this repository, then choose the manifest for your browser.
 
 The Chromium build uses **Manifest V3**.
 
-1. Copy or rename `chrome-manifest.json` to `manifest.json`.
+1. Copy `chrome-manifest.json` to `manifest.json`, keeping the original file for builds and tests.
 2. Open `chrome://extensions` or `edge://extensions`.
 3. Enable **Developer mode**.
 4. Click **Load unpacked**.
-5. Select the repository folder containing the renamed `manifest.json`.
+5. Select the repository folder containing the copied `manifest.json`.
 
 #### Firefox
 
 The Firefox build currently uses **Manifest V2** for compatibility.
 
-1. Copy or rename `firefox-manifest.json` to `manifest.json`.
+1. Copy `firefox-manifest.json` to `manifest.json`, keeping the original file for builds and tests.
 2. Open `about:debugging#/runtime/this-firefox`.
 3. Click **Load Temporary Add-on...**.
-4. Select the copied/renamed `manifest.json` file.
+4. Select the copied `manifest.json` file.
 
 Firefox temporary add-ons are removed when the browser restarts. Reload the manifest from `about:debugging` when testing changes.
 

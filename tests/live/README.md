@@ -11,11 +11,15 @@ npm.cmd ci
 npx.cmd playwright install chromium
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/live/setup-firefox.ps1
 npm.cmd run test:live:harness
+npm.cmd run test:all
+node scripts/prepare-test-builds.js dist-release-builds --zip --retain
 ```
 
 The Firefox setup downloads pinned geckodriver 0.37.1 from Mozilla's official GitHub release and checks its SHA-256. No Selenium dependency is needed. The harness uses Playwright for Chromium browsers and the WebDriver protocol for Firefox.
 
-The extracted release folders and ZIPs must already exist under `dist-release-builds`, with names `FocusTube-release-chromium-v2.4.0` and `FocusTube-release-firefox-v2.4.0`. Runtime files must match the current source exactly. The harness refuses stale packages and checks that package bytes remain unchanged afterwards.
+Run `test:all` before preparing or staging the retained local candidate: its package test rebuilds generated folders and ZIPs in `dist-release-builds`. The final command above creates both browser folders and matching ZIPs there. This is a local candidate build, not proof that the files are identical to the already published GitHub release. Keep any published artifacts outside this disposable build directory. Do not rerun `test:all` after staging the candidate; it can replace the files you intended to test.
+
+The harness expects `FocusTube-release-chromium-v2.4.0` and `FocusTube-release-firefox-v2.4.0` folders and ZIPs under `dist-release-builds`. Runtime files must match the current source exactly. The harness refuses stale packages and checks that candidate bytes remain unchanged during its run.
 
 ## One-Time Browser and Login Steps
 
@@ -43,7 +47,6 @@ Profiles live in ignored `.tmp/live-validation/profiles`. They contain sensitive
 ## Run
 
 ```powershell
-npm.cmd run test:all
 npm.cmd run test:live
 ```
 
@@ -93,8 +96,9 @@ If a real product defect is confirmed, stop and report it before editing product
 
 1. One-time unpacked installation and any required logins above, then rerun automation.
 2. Resolve only remaining live BLOCKED cases in the report. Do not repeat automated cases that already passed on that browser.
-3. Observe one timer-completion OS notification with notifications enabled, and confirm disabling notifications suppresses it. Notification API evidence cannot prove that Windows displayed a toast.
-4. Complete genuine Firefox persistence testing using an eligible environment before claiming restart validation.
+3. Use [the manual live-site checklist](../manual-live-site-notes.md) for the 2.4.0 Instagram/LinkedIn filters and DM-opened Reel controls that this harness does not exercise.
+4. Observe one timer-completion OS notification with notifications enabled, and confirm disabling notifications suppresses it. Notification API evidence cannot prove that Windows displayed a toast.
+5. Complete genuine Firefox persistence testing using an eligible environment before claiming restart validation.
 
 ## References
 

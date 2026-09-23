@@ -92,7 +92,7 @@ for (const page of pages) {
   assert.equal((html.match(/<h1\b/gi) || []).length, 1, `${page.file} must have one h1`);
   for (const [index, store] of stores.entries()) {
     const browser = ["chrome", "firefox", "edge"][index];
-    const label = ["Add to Chrome", "Add to Firefox", "Get for Edge"][index];
+    const label = ["Add to Chrome", "Add to Firefox", "Add to Edge"][index];
     const buttons = [...html.matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/gi)]
       .map((match) => match[0]).filter((anchor) => anchor.includes(`href="${store}"`) && /class="button(?:\s|")/.test(anchor));
     assert.ok(buttons.length > 0, `${page.file} missing store link: ${store}`);

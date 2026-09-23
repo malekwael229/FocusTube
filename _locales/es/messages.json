@@ -1,9 +1,9 @@
 {
   "extensionName": {
-    "message": "FocusTube: Bloqueador de distracciones"
+    "message": "FocusTube - Bloqueador de Shorts, Reels y feeds"
   },
   "extensionDescription": {
-    "message": "Reduce las distracciones de YouTube Shorts, Instagram Reels, TikTok, Facebook Reels y LinkedIn."
+    "message": "Bloquea YouTube Shorts, Instagram Reels, TikTok, Facebook Reels y los feeds de LinkedIn sin bloquear los sitios web."
   },
   "appName": {
     "message": "FocusTube"

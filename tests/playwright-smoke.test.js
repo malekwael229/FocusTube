@@ -35,7 +35,7 @@ function requirePlaywright() {
       [
         "Playwright is not installed.",
         "Run:",
-        "  npm install",
+        "  npm ci",
         "  npm run test:smoke",
       ].join("\n"),
     );
