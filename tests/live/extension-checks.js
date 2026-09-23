@@ -6,10 +6,10 @@ const PLATFORMS = ["yt", "ig", "tt", "fb", "li"];
 const MODES = ["strict", "warn", "allow"];
 const VISUAL_KEYS = {
   yt: ["hide_yt_shorts_nav", "hide_yt_shorts_shelves", "hide_yt_most_relevant_shelf"],
-  ig: ["hide_ig_stories", "hide_ig_reels_nav"],
+  ig: ["hide_ig_stories", "hide_ig_reels_nav", "hide_ig_suggested"],
   tt: [],
   fb: ["hide_fb_stories", "hide_fb_reels_nav", "hide_fb_people_you_might_know"],
-  li: ["hide_li_feed", "hide_li_addfeed"],
+  li: ["hide_li_feed", "hide_li_addfeed", "hide_li_suggested", "hide_li_activity"],
 };
 const DEFAULT_SETTINGS = {
   ft_enabled: true, ft_timer_duration: 25, breakDuration: 5, autoStartBreaks: true,

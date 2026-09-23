@@ -480,9 +480,13 @@ async function main() {
     await page.evaluate(() => history.replaceState({}, '', '/'));
 
     await change({ ft_enabled: true, ft_timer_end: Date.now() + 60000, ft_timer_type: 'work' });
+    await page.evaluate(() => {
+      sessionStorage.setItem('ft_kicked', 'true');
+      sessionStorage.setItem('ft_kicked_time', String(Date.now()));
+    });
     await page.evaluate(() => history.replaceState({}, '', '/reels/work-without-popstate'));
     await page.waitForURL(url => url.pathname === '/', { timeout: 3000 });
-    assert.equal(await page.evaluate(() => location.pathname), '/', 'IG redirects a naturally reached reels route during work');
+    assert.equal(await page.evaluate(() => location.pathname), '/', 'IG redirects a naturally reached reels route during work even after a recent kick');
     checks += 4;
    }
    await settle(); await close();

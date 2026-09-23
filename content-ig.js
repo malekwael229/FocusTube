@@ -305,12 +305,6 @@ const Instagram = {
   },
   rapidKick: function (path) {
     if (this.isRedirecting) return;
-    if (
-      sessionStorage.getItem("ft_kicked") &&
-      Date.now() - parseInt(sessionStorage.getItem("ft_kicked_time") || "0") <
-        5000
-    )
-      return;
     if (path === "/") return;
     this.isRedirecting = true;
     Utils.logStat();
