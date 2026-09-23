@@ -13,24 +13,24 @@ Last reviewed: September 23, 2026.
 - Release packages are built from an allowlist and checked for reproducibility.
 - Extension pages use a self-only CSP and do not load remote code.
 - Runtime permissions are limited to storage, alarms, notifications, and supported sites.
-- The Unreleased localization work packages eight browser-native catalogs with English as the default. It adds no permissions, CSP allowances, network endpoints, or runtime dependencies, and it leaves storage keys and runtime message identities unchanged.
+- The 2.4.0 localization work packages eight browser-native catalogs with English as the default. It adds no permissions, CSP allowances, network endpoints, or runtime dependencies, and it leaves storage keys and runtime message identities unchanged.
 - As rechecked on September 23, 2026, the production-only and full development dependency audits report zero vulnerabilities. The `web-ext` and `addons-linter` chain now uses the fixed `image-size` 2.0.4 release; the tooling is not packaged with the extension.
 
-## Unreleased Localization Evidence
+## 2.4.0 Localization Evidence
 
 - Deterministic localization tests cover catalog keys, placeholders, references, package inclusion, fallback behavior, scoped direction handling, resolved-catalog metadata for supported Arabic and unsupported Japanese/right-to-left browser locales, and stable internal identities using mocked browser i18n responses.
 - Native Chromium extension tests exercise Arabic localization and right-to-left layout in the popup, options page, and an extension-owned overlay. They also verify English text with English language/direction metadata on extension pages and an owned overlay for an unsupported Japanese locale profile, while recording the actual browser UI locale separately.
 - A screenshot review of the native Arabic Chromium run found the tested surfaces readable with no obvious clipping.
 - Supported-site browser smoke tests use local fixtures. Firefox lint validates the staged package but is not a native Firefox runtime test.
-- A serial Windows `test:all` gate passed on September 9, 2026 at commit `fa3d7ad`, including package reproducibility, native Chromium Arabic bounded rendering, the unsupported Japanese locale profile's default-English fallback, and Firefox lint with zero errors, notices, or warnings. A pinned ESLint 9.39.5 check also passed at that commit. This supersedes the September 6 earlier-tree gate for the integrated catalog-metadata repair. Native-speaker review, the manual browser matrix, live-site locale checks, and native Firefox localization validation remain pending. This evidence does not establish complete live-site or cross-browser locale compatibility.
+- A serial Windows `test:all` gate passed on September 9, 2026 at commit `fa3d7ad`, including package reproducibility, native Chromium Arabic bounded rendering, the unsupported Japanese locale profile's default-English fallback, and Firefox lint with zero errors, notices, or warnings. A pinned ESLint 9.39.5 check also passed at that commit. This supersedes the September 6 earlier-tree gate for the integrated catalog-metadata repair. That evidence does not establish complete native-speaker, live-site, or cross-browser locale compatibility.
 
 ## OpenSSF
 
 ### OSPS Baseline Level 1
 
-Known gaps or settings to verify before claiming Level 1:
+Settings to keep verified before claiming or renewing Level 1:
 
-- Protect `main` against direct commits, force pushes, and deletion.
+- Keep the active `Protect main` ruleset in place: pull requests, up-to-date CI/CodeQL/release checks, and blocks on deletion and force pushes.
 - Confirm secret scanning and push protection, or document the equivalent preventive control.
 - Re-check workflow permissions whenever CI changes.
 
@@ -38,10 +38,9 @@ Repository evidence already covers licensing, public history, contribution guida
 
 ### Best Practices Passing
 
-Before submitting the questionnaire:
+When updating the questionnaire:
 
-- Decide whether to add a minimal JavaScript linter or document another valid warning mechanism.
-- Confirm CodeQL is running successfully on the default branch.
+- Confirm the existing JavaScript lint step and CodeQL still pass on the default branch.
 - Answer human-attestation items, such as secure-design knowledge, personally and accurately.
 - Keep the `web-ext` / `addons-linter` audit evidence documented in `TESTING.md`; these are development-only dependencies and are not extension runtime dependencies.
 - Do not claim fuzzing or measured branch/statement coverage unless they are actually implemented.
@@ -50,7 +49,7 @@ Before submitting the questionnaire:
 
 The repository runs the official OpenSSF Scorecard workflow. Review the actual findings rather than optimizing only for the numeric score.
 
-Current expected weak spots are branch protection, limited human code-review history on a single-maintainer project, and any unresolved dependency or repository-security findings.
+The September 23, 2026 scan on `main` marked the development-tooling Vulnerabilities finding fixed after the `web-ext` update. The remaining open findings are Code-Review (no independent human approvals in the recent history), Branch-Protection (no required approver, code-owner review, stale-review dismissal, or last-push approval), and Fuzzing (no recognized fuzzing integration). The project has one active maintainer; no approvals or fuzzing coverage should be claimed unless they actually occur.
 
 ## Mozilla Recommended
 
@@ -79,10 +78,10 @@ This verifies repository build reproducibility. A browser-store package must sti
 
 ## Next Steps
 
-1. Protect `main` and verify repository security settings.
-2. Review the first OpenSSF Scorecard results.
+1. Keep the existing `main` ruleset and repository security settings under review without creating a single-maintainer approval deadlock.
+2. Recheck the three remaining OpenSSF Scorecard findings when the review process or test coverage changes.
 3. Complete the OpenSSF Best Practices Passing questionnaire with repository evidence.
-4. Confirm the current stable release is live in browser stores.
+4. Confirm the current stable 2.4.0 listing is live in browser stores.
 5. Submit the Edge feature request.
 6. Submit the Mozilla Recommended nomination.
 7. Save dated evidence of store recognition, ratings, user counts, GitHub traction, and independent mentions.
