@@ -12,9 +12,9 @@ npm.cmd ci
 npx.cmd playwright install chromium
 ```
 
-The repository requires Node.js 20 or newer. The test dependencies are pinned in `package-lock.json`, including Playwright and `web-ext` 10.6.0.
+The repository requires Node.js 20 or newer. The test dependencies are pinned in `package-lock.json`, including Playwright and `web-ext` 10.7.0.
 
-As rechecked on September 6, 2026, `npm audit --omit=dev` reports zero vulnerabilities. The full dev-inclusive audit still reports three high-severity vulnerability entries in the `web-ext`/`addons-linter` validation chain, driven by two underlying image-size advisories plus an aggregate dependency entry. These findings are dev-only and not packaged in the extension; there is no safe non-breaking current upgrade, so monitor the findings. Audit output is intentionally not suppressed.
+As rechecked on September 23, 2026, `npm audit --omit=dev` and the full dev-inclusive audit report zero vulnerabilities. The development-only `web-ext`/`addons-linter` chain now uses the fixed `image-size` 2.0.4 release, so the two upstream denial-of-service advisories are resolved without changing the shipped extension. Audit output is intentionally not suppressed.
 
 ## Automated Commands
 
