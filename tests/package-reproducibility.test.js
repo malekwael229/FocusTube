@@ -11,7 +11,7 @@ const AdmZip = require("adm-zip");
 const root = path.resolve(__dirname, "..");
 const prepareBuilds = path.join(root, "scripts", "prepare-test-builds.js");
 const { runtimeFiles, supportedLocales, requireLocaleFiles } = require(prepareBuilds);
-const expectedVersion = "2.4.0";
+const expectedVersion = "2.4.1";
 const browsers = ["chromium", "firefox"];
 const tempPrefix = "focustube-package-repro-";
 const distOutputs = [
@@ -28,7 +28,8 @@ function expectedArchiveName(browser) {
 }
 
 function assertArchiveContents(archivePath, browser) {
-  const entries = new AdmZip(archivePath).getEntries();
+  const archive = new AdmZip(archivePath);
+  const entries = archive.getEntries();
   const entryNames = entries.map((entry) => entry.entryName);
   const expectedDirectories = new Set(["icons/"]);
   runtimeFiles.forEach((relativePath) => {
@@ -50,14 +51,21 @@ function assertArchiveContents(archivePath, browser) {
     assert.ok(!entryName.startsWith("/"), `${browser} entry is not absolute: ${entryName}`);
   }
 
-  const manifest = JSON.parse(new AdmZip(archivePath).readAsText("manifest.json"));
+  const manifest = JSON.parse(archive.readAsText("manifest.json"));
   assert.equal(manifest.version, expectedVersion, `${browser} manifest version`);
+  assert.equal(manifest.name, "__MSG_extensionName__", `${browser} localized manifest name`);
+  assert.equal(manifest.description, "__MSG_extensionDescription__", `${browser} localized manifest description`);
   assert.ok(entryNames.includes("i18n.js"), `${browser} ZIP includes localization helper`);
   for (const locale of supportedLocales) {
+    const catalogPath = `_locales/${locale}/messages.json`;
     assert.ok(
-      entryNames.includes(`_locales/${locale}/messages.json`),
+      entryNames.includes(catalogPath),
       `${browser} ZIP includes ${locale} catalog`,
     );
+    const packaged = JSON.parse(archive.readAsText(catalogPath));
+    const source = JSON.parse(fs.readFileSync(path.join(root, catalogPath), "utf8"));
+    assert.equal(packaged.extensionName.message, source.extensionName.message, `${browser} ${locale} packaged name`);
+    assert.equal(packaged.extensionDescription.message, source.extensionDescription.message, `${browser} ${locale} packaged description`);
   }
 }
 

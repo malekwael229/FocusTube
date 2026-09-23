@@ -6,10 +6,12 @@ are recorded in each HTML fixture where known; the divider has no dated capture
 metadata. They are offline examples, not evidence of current authenticated-site
 behavior or universal language/markup support.
 
-`tests/feed-filters.test.js` loads all nine HTML fixtures in real Chromium with the
-production i18n, shared content runtime, adapters, CSS, and MutationObserver. Only
-Chrome extension APIs and network requests are isolated. The test also makes
-explicit derivatives of captured markup to cover labels, first-degree/following
+`tests/feed-filters.test.js` loads the checked-in HTML fixtures in real Chromium with the
+production i18n, shared content runtime, adapters, CSS, and MutationObserver.
+Browser-extension APIs and network requests are isolated; individual permalink
+cases also spy on navigation and media methods to verify decisions without leaving
+the fixture page. The test makes explicit derivatives of captured markup to cover
+labels, first-degree/following
 state, unknown labels, caption/control/link-shim false positives, nested content,
 and ambiguous controls. These derivatives are authored test cases, not additional
 live captures.

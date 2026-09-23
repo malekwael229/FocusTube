@@ -20,6 +20,8 @@ Instagram:
 - Confirm the Reels navigation button can be hidden.
 - Confirm Stories hiding works.
 - Confirm there is no "Hide Reels in Feed" setting.
+- With an active work timer or Strict mode, open a real Reel from DMs that uses a `/p/<shortcode>/` URL. Confirm it is blocked, then verify ordinary photo, carousel, and non-Reel video `/p/` posts remain available.
+- On the home feed, enable optional suggested/sponsored filtering. Check a detected post collapses without a visible row in Strict/work mode and has a compact View anyway row in Warn/Passive. Toggle the setting off and confirm restoration and media-pausing behavior; check ordinary or ambiguous posts remain visible.
 
 TikTok:
 - Log in manually if needed.
@@ -40,5 +42,6 @@ LinkedIn:
 - Log in manually.
 - Confirm the main feed can be hidden.
 - Confirm the "Add to your feed" sidebar card can be hidden.
+- Enable the optional suggested/outside-network/promoted and network-activity filters separately. Check detected feed posts, View anyway where offered, setting-off restoration, and ordinary/ambiguous first-degree or followed posts that should remain visible.
 
 For any issue, record the browser, website, FocusTube mode, timer state, enabled setting, expected result, actual result, and a screenshot or short recording.
