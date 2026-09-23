@@ -1,6 +1,6 @@
 # Live Browser Validation
 
-This optional harness tests the retained 2.4.0 release candidate, not a rebuilt or patched extension. It never publishes anything. Use the existing deterministic suite first; live-site results complement it, not replace it.
+This optional harness tests a retained 2.4.0 build, not a rebuilt or patched extension. It never publishes anything. Use the existing deterministic suite first; live-site results complement it, not replace it.
 
 ## Setup on Windows
 
@@ -15,7 +15,7 @@ npm.cmd run test:live:harness
 
 The Firefox setup downloads pinned geckodriver 0.37.1 from Mozilla's official GitHub release and checks its SHA-256. No Selenium dependency is needed. The harness uses Playwright for Chromium browsers and the WebDriver protocol for Firefox.
 
-The extracted release folders and ZIPs must already exist under `dist-release-builds`, with names `FocusTube-release-chromium-v2.4.0` and `FocusTube-release-firefox-v2.4.0`. Runtime files must match the working candidate exactly. The harness refuses stale packages and checks that candidate bytes remain unchanged afterwards.
+The extracted release folders and ZIPs must already exist under `dist-release-builds`, with names `FocusTube-release-chromium-v2.4.0` and `FocusTube-release-firefox-v2.4.0`. Runtime files must match the current source exactly. The harness refuses stale packages and checks that package bytes remain unchanged afterwards.
 
 ## One-Time Browser and Login Steps
 
@@ -63,14 +63,14 @@ Optional binary overrides: `FOCUSTUBE_CHROME`, `FOCUSTUBE_EDGE`, `FOCUSTUBE_FIRE
 
 Chrome/Edge restart checks close and relaunch the same isolated profile without installing the extension again. They only run after persistent installation is established. Bundled Chromium's CLI sideload does not qualify as a persistent-install restart.
 
-Release Firefox can run the unsigned candidate as a temporary add-on. A temporary add-on does not survive restart, so that restart case stays BLOCKED. For a genuine unsigned restart test, install Firefox Developer Edition or Nightly and explicitly run:
+Firefox can run the retained unsigned build as a temporary add-on. A temporary add-on does not survive restart, so that restart case stays BLOCKED. For a genuine unsigned restart test, install Firefox Developer Edition or Nightly and explicitly run:
 
 ```powershell
 $env:FOCUSTUBE_FIREFOX = 'C:\Program Files\Firefox Developer Edition\firefox.exe'
 npm.cmd run test:live -- --browsers firefox --firefox-persistent
 ```
 
-Only this explicit test uses signature preferences in the isolated non-release profile. Do not use a normal Firefox profile. A signed candidate is another route to persistent testing, but this harness does not obtain or publish signatures.
+Only this explicit test uses signature preferences in the isolated test profile. Do not use a normal Firefox profile. A signed build is another route to persistent testing, but this harness does not obtain or publish signatures.
 
 Real UI timer starts, close/reopen and stop checks are separate from accelerated completion checks. Short completion deadlines are seeded through the extension's settings transaction and labelled instrumented, not presented as a full 25-minute session. Existing deterministic background tests cover stale callbacks, cold-start state and injected failures; they do not by themselves prove browser or OS delivery.
 

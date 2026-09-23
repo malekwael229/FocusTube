@@ -1031,6 +1031,8 @@ const checks = [
         changelog,
         /^##[ \t]+\[Unreleased\][ \t]*\r?$/m,
       );
+      assert.match(changelog, /^##\s*\[2\.4\.0\]\s*-\s*2026-09-23$/m);
+      assert.doesNotMatch(changelog, /###\s+Pending\s+2\.4\.0/);
       assert.match(changelog, /^##\s*\[2\.3\.2\]\s*-\s*2026-09-01$/m);
     },
   ],

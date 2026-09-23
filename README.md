@@ -28,7 +28,7 @@
     <a href="https://www.bestpractices.dev/projects/14395"><img alt="OpenSSF Best Practices Passing" src="https://www.bestpractices.dev/projects/14395/badge" /></a>
     <a href="https://www.bestpractices.dev/projects/14395"><img alt="OpenSSF Best Practices Baseline Level 1" src="https://www.bestpractices.dev/projects/14395/baseline" /></a>
     <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" />
-    <img alt="Version: 2.3.2" src="https://img.shields.io/badge/version-2.3.2-green.svg" />
+    <img alt="Version: 2.4.0" src="https://img.shields.io/badge/version-2.4.0-green.svg" />
     <img alt="Firefox compatible" src="https://img.shields.io/badge/firefox-compatible-orange.svg" />
   </p>
 </div>
@@ -50,10 +50,10 @@ The project supports Chromium browsers with a Manifest V3 build and Firefox with
 ### Supported Surfaces
 
 - **YouTube:** Blocks Shorts URLs and can hide Shorts navigation/shelves plus the English "Most relevant" shelf on the Subscriptions page.
-- **Instagram:** Blocks Reels/Explore paths and can hide Reels navigation and Stories.
+- **Instagram:** Blocks Reels/Explore paths; can hide Reels navigation and Stories; and optionally filters suggested or sponsored posts when detected.
 - **TikTok:** Blocks common feed/video surfaces while allowing safer areas such as messages and settings.
 - **Facebook:** Blocks Reels paths and can hide Reels navigation, Stories, and People You Might Know suggestions.
-- **LinkedIn:** Can hide the main feed and "Add to your feed" sidebar card.
+- **LinkedIn:** Can hide the main feed and "Add to your feed" sidebar card, with optional filtering for suggested, outside-network, promoted, and network-activity posts when detected.
 
 ### Productivity Tools
 
