@@ -2,7 +2,7 @@
 
 This file tracks evidence and remaining work for external validation. It is not a certification claim.
 
-Last reviewed: September 9, 2026.
+Last reviewed: September 23, 2026.
 
 ## Repository Evidence
 
@@ -14,7 +14,7 @@ Last reviewed: September 9, 2026.
 - Extension pages use a self-only CSP and do not load remote code.
 - Runtime permissions are limited to storage, alarms, notifications, and supported sites.
 - The Unreleased localization work packages eight browser-native catalogs with English as the default. It adds no permissions, CSP allowances, network endpoints, or runtime dependencies, and it leaves storage keys and runtime message identities unchanged.
-- As rechecked on September 6, 2026, the production-only dependency audit reports zero vulnerabilities. The existing dev-tooling findings in the `web-ext` and `addons-linter` chain are unchanged and are not packaged with the extension.
+- As rechecked on September 23, 2026, the production-only and full development dependency audits report zero vulnerabilities. The `web-ext` and `addons-linter` chain now uses the fixed `image-size` 2.0.4 release; the tooling is not packaged with the extension.
 
 ## Unreleased Localization Evidence
 
@@ -43,7 +43,7 @@ Before submitting the questionnaire:
 - Decide whether to add a minimal JavaScript linter or document another valid warning mechanism.
 - Confirm CodeQL is running successfully on the default branch.
 - Answer human-attestation items, such as secure-design knowledge, personally and accurately.
-- Explain the dev-only `web-ext` / `addons-linter` advisories documented in `TESTING.md`; they are not extension runtime dependencies.
+- Keep the `web-ext` / `addons-linter` audit evidence documented in `TESTING.md`; these are development-only dependencies and are not extension runtime dependencies.
 - Do not claim fuzzing or measured branch/statement coverage unless they are actually implemented.
 
 ### Scorecard
