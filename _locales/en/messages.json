@@ -125,6 +125,8 @@
   "hideMostRelevantShelf": { "message": "Hide \"Most Relevant\" Shelf" },
   "hideMostRelevantShelfShort": { "message": "Hide \"Most Relevant\"" },
   "hideMostRelevantShelfDescription": { "message": "Hide the \"Most relevant\" shelf on Subscriptions" },
+  "hidePlayables": { "message": "Hide Playables" },
+  "hidePlayablesDescription": { "message": "Hide the Playables shelf and navigation link on YouTube" },
   "hideStories": { "message": "Hide Stories" },
   "hideInstagramStoriesDescription": { "message": "Hide the Stories tray at the top" },
   "hideFacebookStoriesDescription": { "message": "Hide the Stories section" },

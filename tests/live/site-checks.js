@@ -140,6 +140,7 @@ function baseSettings(code, mode) {
     platformSettings: { yt: "allow", ig: "allow", tt: "allow", fb: "allow", li: "allow", [code]: mode },
     ["popup_visible_" + code]: true, restrictHiddenPlatforms: false, visualHideHiddenPlatforms: false,
     hide_yt_shorts_nav: false, hide_yt_shorts_shelves: false, hide_yt_most_relevant_shelf: false,
+    hide_yt_playables: false,
     hide_ig_stories: false, hide_ig_reels_nav: false, hide_fb_stories: false,
     hide_fb_reels_nav: false, hide_fb_people_you_might_know: false,
     hide_li_feed: true, hide_li_addfeed: false };

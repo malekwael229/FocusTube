@@ -443,6 +443,12 @@
   "hideMostRelevantShelfDescription": {
     "message": "Abonelikler'deki \"En alakalı\" rafını gizle"
   },
+  "hidePlayables": {
+    "message": "Playables’ı gizle"
+  },
+  "hidePlayablesDescription": {
+    "message": "YouTube'daki Playables bölümünü ve gezinme bağlantısını gizle"
+  },
   "hideStories": {
     "message": "Hikâyeleri Gizle"
   },

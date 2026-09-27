@@ -443,6 +443,12 @@
   "hideMostRelevantShelfDescription": {
     "message": "Ocultar a seção \"Mais relevantes\" em Inscrições"
   },
+  "hidePlayables": {
+    "message": "Ocultar Playables"
+  },
+  "hidePlayablesDescription": {
+    "message": "Ocultar a seção Playables e o link de navegação no YouTube"
+  },
   "hideStories": {
     "message": "Ocultar Stories"
   },

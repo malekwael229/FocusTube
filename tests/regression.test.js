@@ -510,13 +510,15 @@ const checks = [
       assert.match(youtube, /scheduleInlineHiding: function/);
       assert.match(
         youtube,
-        /new MutationObserver\(\(\) => \{\s*this\.scheduleInlineHiding\(\);\s*\}\)/,
+        /new MutationObserver\(\(mutations\) => \{/,
       );
       const observerBlock = youtube.slice(
         youtube.indexOf("ensureObservers: function"),
         youtube.indexOf("disable: function"),
       );
       assert.doesNotMatch(observerBlock, /this\.runChecks\(\)/);
+      assert.match(observerBlock, /characterData: true/);
+      assert.match(observerBlock, /this\.scheduleInlineHiding\(\)/);
       assert.match(youtube, /requestAnimationFrame\(run\)/);
       assert.match(youtube, /this\.applyMostRelevantShelfHiding\(\)/);
       assert.match(youtube, /this\.restoreHidden\(this\.hiddenNavElements\)/);

@@ -292,6 +292,7 @@ const PLATFORM_SETTINGS = {
     { key: "hide_yt_shorts_nav", labelKey: "hideShortsButton" },
     { key: "hide_yt_shorts_shelves", labelKey: "hideShortsShelves" },
     { key: "hide_yt_most_relevant_shelf", labelKey: "hideMostRelevantShelfShort" },
+    { key: "hide_yt_playables", labelKey: "hidePlayables" },
   ],
   ig: [
     { key: "hide_ig_stories", labelKey: "hideStories" },

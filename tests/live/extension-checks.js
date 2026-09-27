@@ -5,7 +5,7 @@ const path = require("node:path");
 const PLATFORMS = ["yt", "ig", "tt", "fb", "li"];
 const MODES = ["strict", "warn", "allow"];
 const VISUAL_KEYS = {
-  yt: ["hide_yt_shorts_nav", "hide_yt_shorts_shelves", "hide_yt_most_relevant_shelf"],
+  yt: ["hide_yt_shorts_nav", "hide_yt_shorts_shelves", "hide_yt_most_relevant_shelf", "hide_yt_playables"],
   ig: ["hide_ig_stories", "hide_ig_reels_nav", "hide_ig_suggested"],
   tt: [],
   fb: ["hide_fb_stories", "hide_fb_reels_nav", "hide_fb_people_you_might_know"],
@@ -18,7 +18,7 @@ const DEFAULT_SETTINGS = {
   popup_visible_tt: true, popup_visible_fb: true, popup_visible_li: true,
   restrictHiddenPlatforms: true, visualHideHiddenPlatforms: true,
   hide_ig_stories: true, hide_fb_stories: true, hide_yt_shorts_nav: true,
-  hide_yt_shorts_shelves: true, hide_yt_most_relevant_shelf: true,
+  hide_yt_shorts_shelves: true, hide_yt_most_relevant_shelf: true, hide_yt_playables: true,
   hide_ig_reels_nav: true, hide_fb_reels_nav: true,
   hide_fb_people_you_might_know: true, hide_li_feed: true, hide_li_addfeed: true,
   showBreakButton: true, accentColor: "#4facfe", tutorialCompleted: true,

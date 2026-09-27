@@ -443,6 +443,12 @@
   "hideMostRelevantShelfDescription": {
     "message": "Bereich \"Relevanteste\" unter Abonnements ausblenden"
   },
+  "hidePlayables": {
+    "message": "Playables ausblenden"
+  },
+  "hidePlayablesDescription": {
+    "message": "Playables-Bereich und Navigationslink auf YouTube ausblenden"
+  },
   "hideStories": {
     "message": "Storys ausblenden"
   },
