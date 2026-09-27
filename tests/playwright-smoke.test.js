@@ -911,12 +911,16 @@ function youtubePlayablesFixtureHtml() {
     <ytd-guide-entry-renderer id="shorts-nav"><a href="/shorts/" title="Shorts">Shorts</a></ytd-guide-entry-renderer>
     <ytd-rich-section-renderer id="playables-shelf"><ytd-rich-shelf-renderer><a href="/playables" title="YouTube Playables">YouTube Playables</a></ytd-rich-shelf-renderer></ytd-rich-section-renderer>
     <ytd-rich-section-renderer id="playables-modern-shelf"><a href="/playables" title="YouTube Playables">YouTube Playables</a></ytd-rich-section-renderer>
+    <ytd-rich-section-renderer id="localized-modern-playables-shelf"><div id="header"><a href="/playables" title="Jugables">Jugables</a></div></ytd-rich-section-renderer>
     <ytd-rich-section-renderer id="playables-text-recycle"><ytd-rich-shelf-renderer><h2 id="playables-recycled-heading">Playables</h2></ytd-rich-shelf-renderer></ytd-rich-section-renderer>
     <ytd-rich-section-renderer id="playables-header-shelf"><ytd-rich-shelf-renderer><div id="rich-shelf-header"><span id="title">Playables</span></div></ytd-rich-shelf-renderer></ytd-rich-section-renderer>
     <ytd-rich-section-renderer id="localized-playables-shelf"><ytd-rich-shelf-renderer><h2>Jugables</h2><ytd-rich-item-renderer is-mini-game-card-shelf>Game</ytd-rich-item-renderer></ytd-rich-shelf-renderer></ytd-rich-section-renderer>
     <ytd-rich-section-renderer id="shorts-shelf"><ytd-rich-shelf-renderer is-shorts><h2>Shorts</h2></ytd-rich-shelf-renderer></ytd-rich-section-renderer>
     <ytd-rich-section-renderer id="regular-shelf"><h2>Recently uploaded</h2><a href="/watch?v=video">How Playables work</a></ytd-rich-section-renderer>
     <ytd-rich-section-renderer id="game-link-shelf"><h2>Watch later</h2><a href="/playables/example-game">Saved game</a></ytd-rich-section-renderer>
+    <ytd-rich-section-renderer id="body-link-shelf"><h2>Recently uploaded</h2><div id="content"><a href="/playables">Playables mentioned in a video</a></div></ytd-rich-section-renderer>
+    <ytd-rich-section-renderer id="direct-body-link-shelf"><h2>Recently uploaded</h2><a href="/playables">Playables mentioned in a video</a></ytd-rich-section-renderer>
+    <ytd-rich-section-renderer id="rich-body-link-shelf"><ytd-rich-shelf-renderer><h2>Recently uploaded</h2><div id="content"><a href="/playables">Playables mentioned in a video</a></div></ytd-rich-shelf-renderer></ytd-rich-section-renderer>
     <ytd-rich-section-renderer id="review-shelf"><ytd-rich-shelf-renderer><h2>Playables review</h2><a href="/watch?v=review" title="YouTube Playables">Review video</a></ytd-rich-shelf-renderer></ytd-rich-section-renderer>
     <ytd-rich-section-renderer id="nested-title-shelf"><ytd-rich-shelf-renderer><h2>Recently uploaded</h2><div id="content"><ytd-rich-item-renderer><span id="title">Playables</span></ytd-rich-item-renderer></div></ytd-rich-shelf-renderer></ytd-rich-section-renderer>
   </body>
@@ -930,6 +934,7 @@ async function verifyYouTubePlayablesRuntime(context, extensionId) {
     focusMode: true,
     platformSettings: { yt: "strict" },
     hide_yt_playables: true,
+    hide_yt_most_relevant_shelf: true,
   });
   await context.route("https://www.youtube.com/", (route) =>
     route.fulfill({ status: 200, contentType: "text/html", body: youtubePlayablesFixtureHtml() }),
@@ -938,11 +943,11 @@ async function verifyYouTubePlayablesRuntime(context, extensionId) {
   const page = await context.newPage();
   await page.goto("https://www.youtube.com/", { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() =>
-    ["playables-nav", "playables-mini", "playables-shelf", "playables-modern-shelf", "playables-text-recycle", "playables-header-shelf", "localized-playables-shelf"].every((id) =>
+    ["playables-nav", "playables-mini", "playables-shelf", "playables-modern-shelf", "localized-modern-playables-shelf", "playables-text-recycle", "playables-header-shelf", "localized-playables-shelf"].every((id) =>
       getComputedStyle(document.getElementById(id)).display === "none",
     ),
   );
-  for (const id of ["regular-shelf", "game-link-shelf", "review-shelf", "nested-title-shelf"]) {
+  for (const id of ["regular-shelf", "game-link-shelf", "body-link-shelf", "direct-body-link-shelf", "rich-body-link-shelf", "review-shelf", "nested-title-shelf"]) {
     assert.notEqual(await page.locator(`#${id}`).evaluate((el) => getComputedStyle(el).display), "none");
   }
 
@@ -982,7 +987,7 @@ async function verifyYouTubePlayablesRuntime(context, extensionId) {
 
   await setStorage(settingsPage, { hide_yt_playables: false });
   await page.waitForFunction(() =>
-    ["playables-nav", "playables-mini", "playables-shelf", "playables-modern-shelf", "playables-header-shelf", "localized-playables-shelf", "late-playables-shelf"].every((id) =>
+    ["playables-nav", "playables-mini", "playables-shelf", "playables-modern-shelf", "localized-modern-playables-shelf", "playables-header-shelf", "localized-playables-shelf", "late-playables-shelf"].every((id) =>
       getComputedStyle(document.getElementById(id)).display !== "none",
     ),
   );
@@ -1013,6 +1018,44 @@ async function verifyYouTubePlayablesRuntime(context, extensionId) {
     await setStorage(settingsPage, { hide_yt_playables: true });
     await page.waitForFunction(() => getComputedStyle(document.getElementById("playables-shelf")).display === "none");
   }
+  await page.evaluate(() => {
+    history.pushState({}, "", "/feed/subscriptions");
+    document.dispatchEvent(new Event("yt-navigate-finish"));
+    document.querySelector("#playables-header-shelf #title").textContent = "Most relevant";
+  });
+  await page.evaluate(() => new Promise((resolve) =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  assert.equal(
+    await page.locator("#playables-header-shelf").evaluate((el) => getComputedStyle(el).display),
+    "none",
+    "recycled Playables shelf stays hidden as Most relevant",
+  );
+  await setStorage(settingsPage, { hide_yt_playables: false });
+  await page.evaluate(() => new Promise((resolve) =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  assert.equal(
+    await page.locator("#playables-header-shelf").evaluate((el) => getComputedStyle(el).display),
+    "none",
+    "turning off Playables does not restore a Most relevant shelf",
+  );
+  await setStorage(settingsPage, { hide_yt_most_relevant_shelf: false });
+  await page.waitForFunction(() =>
+    getComputedStyle(document.getElementById("playables-header-shelf")).display !== "none");
+  await setStorage(settingsPage, { hide_yt_playables: true, hide_yt_most_relevant_shelf: true });
+  await page.evaluate(() => {
+    document.querySelector("#playables-header-shelf #title").textContent = "Playables";
+  });
+  await page.waitForFunction(() =>
+    getComputedStyle(document.getElementById("playables-header-shelf")).display === "none");
+  await setStorage(settingsPage, { hide_yt_most_relevant_shelf: false });
+  await page.evaluate(() => new Promise((resolve) =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  assert.equal(
+    await page.locator("#playables-header-shelf").evaluate((el) => getComputedStyle(el).display),
+    "none",
+    "turning off Most relevant does not restore a recycled Playables shelf",
+  );
+  await setStorage(settingsPage, { hide_yt_most_relevant_shelf: true });
   await page.evaluate(() => {
     history.pushState({}, "", "/playables");
     document.dispatchEvent(new Event("yt-navigate-finish"));
