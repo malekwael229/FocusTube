@@ -6,20 +6,18 @@ const Site = {
   isTT: () => Site.matchesHostname(location.hostname, "tiktok.com"),
   isFB: () => Site.matchesHostname(location.hostname, "facebook.com"),
   isLI: () => Site.matchesHostname(location.hostname, "linkedin.com"),
+  isRD: () => location.hostname === "reddit.com" || location.hostname === "www.reddit.com",
 };
 const ftMessage = (key, substitutions) =>
   globalThis.FT_I18N?.message(key, substitutions) || "";
 const localizeOwnedRoot = (element) => globalThis.FT_I18N?.applyDirection(element);
+const DEFAULT_PLATFORM_SETTINGS = {
+  yt: "strict", ig: "strict", tt: "strict", fb: "strict", li: "strict", rd: "strict",
+};
 const CONFIG = {
   extensionEnabled: true,
   isFocusMode: true,
-  platformSettings: {
-    yt: "strict",
-    ig: "strict",
-    tt: "strict",
-    fb: "strict",
-    li: "strict",
-  },
+  platformSettings: { ...DEFAULT_PLATFORM_SETTINGS },
   isDarkMode: true,
   timer: { end: null, type: "work" },
   session: {
@@ -27,7 +25,7 @@ const CONFIG = {
     platform: null,
     scope: null,
   },
-  popupVisibility: { yt: true, ig: true, tt: true, fb: true, li: true },
+  popupVisibility: { yt: true, ig: true, tt: true, fb: true, li: true, rd: true },
   visualHideHidden: true,
   restrictHidden: true,
   visualHiding: {
@@ -46,6 +44,7 @@ const CONFIG = {
     liAddFeed: true,
     liSuggested: false,
     liActivity: false,
+    rdFeed: true,
   },
 };
 const FocusState = {
@@ -985,6 +984,7 @@ const UI = {
       "popup_visible_tt",
       "popup_visible_fb",
       "popup_visible_li",
+      "popup_visible_rd",
       "restrictHiddenPlatforms",
       "visualHideHiddenPlatforms",
       "hide_ig_stories",
@@ -1001,6 +1001,7 @@ const UI = {
       "hide_li_addfeed",
       "hide_li_suggested",
       "hide_li_activity",
+      "hide_rd_feed",
       "ft_debug",
     ],
     (res) => {
@@ -1008,7 +1009,7 @@ const UI = {
       CONFIG.extensionEnabled = res.ft_enabled !== false;
       CONFIG.isFocusMode = res.focusMode !== false;
       if (res.platformSettings) {
-        CONFIG.platformSettings = res.platformSettings;
+        CONFIG.platformSettings = { ...DEFAULT_PLATFORM_SETTINGS, ...res.platformSettings };
         if (res.restrictHiddenPlatforms === false) {
           if (res.popup_visible_yt === false)
             CONFIG.platformSettings.yt = "allow";
@@ -1020,6 +1021,8 @@ const UI = {
             CONFIG.platformSettings.fb = "allow";
           if (res.popup_visible_li === false)
             CONFIG.platformSettings.li = "allow";
+          if (res.popup_visible_rd === false)
+            CONFIG.platformSettings.rd = "allow";
         }
       }
       CONFIG.isDarkMode = res.darkMode !== false;
@@ -1033,6 +1036,7 @@ const UI = {
         tt: res.popup_visible_tt !== false,
         fb: res.popup_visible_fb !== false,
         li: res.popup_visible_li !== false,
+        rd: res.popup_visible_rd !== false,
       };
       CONFIG.visualHiding = {
         igStories: res.hide_ig_stories !== false,
@@ -1049,6 +1053,7 @@ const UI = {
         liAddFeed: res.hide_li_addfeed !== false,
         liSuggested: res.hide_li_suggested === true,
         liActivity: res.hide_li_activity === true,
+        rdFeed: res.hide_rd_feed !== false,
       };
       Utils._debugEnabled = res.ft_debug === true;
       Utils.ensureBody(() => {
@@ -1076,7 +1081,10 @@ const UI = {
       Utils.applyVisualHidingClasses();
     }
     if (changes.platformSettings) {
-      CONFIG.platformSettings = changes.platformSettings.newValue;
+      CONFIG.platformSettings = {
+        ...DEFAULT_PLATFORM_SETTINGS,
+        ...changes.platformSettings.newValue,
+      };
       chrome.storage.local.get(
         [
           "popup_visible_yt",
@@ -1084,6 +1092,7 @@ const UI = {
           "popup_visible_tt",
           "popup_visible_fb",
           "popup_visible_li",
+          "popup_visible_rd",
           "restrictHiddenPlatforms",
         ],
         (res) => {
@@ -1098,6 +1107,8 @@ const UI = {
               CONFIG.platformSettings.fb = "allow";
             if (res.popup_visible_li === false)
               CONFIG.platformSettings.li = "allow";
+            if (res.popup_visible_rd === false)
+              CONFIG.platformSettings.rd = "allow";
           }
           if (Site.isYT() && CONFIG.platformSettings.yt === "strict") {
             CONFIG.session.allowUntil = 0;
@@ -1115,6 +1126,11 @@ const UI = {
             CONFIG.session.scope = null;
           }
           if (Site.isFB() && CONFIG.platformSettings.fb === "strict") {
+            CONFIG.session.allowUntil = 0;
+            CONFIG.session.platform = null;
+            CONFIG.session.scope = null;
+          }
+          if (Site.isRD() && CONFIG.platformSettings.rd === "strict") {
             CONFIG.session.allowUntil = 0;
             CONFIG.session.platform = null;
             CONFIG.session.scope = null;
@@ -1138,6 +1154,8 @@ const UI = {
       CONFIG.popupVisibility.fb = changes.popup_visible_fb.newValue !== false;
     if (changes.popup_visible_li)
       CONFIG.popupVisibility.li = changes.popup_visible_li.newValue !== false;
+    if (changes.popup_visible_rd)
+      CONFIG.popupVisibility.rd = changes.popup_visible_rd.newValue !== false;
     if (
       changes.restrictHiddenPlatforms ||
       changes.visualHideHiddenPlatforms ||
@@ -1146,6 +1164,7 @@ const UI = {
       changes.popup_visible_tt ||
       changes.popup_visible_fb ||
       changes.popup_visible_li
+      || changes.popup_visible_rd
     ) {
       if (CONFIG.restrictHidden === false) {
         if (CONFIG.popupVisibility.yt === false && CONFIG.platformSettings)
@@ -1158,6 +1177,8 @@ const UI = {
           CONFIG.platformSettings.fb = "allow";
         if (CONFIG.popupVisibility.li === false && CONFIG.platformSettings)
           CONFIG.platformSettings.li = "allow";
+        if (CONFIG.popupVisibility.rd === false && CONFIG.platformSettings)
+          CONFIG.platformSettings.rd = "allow";
       }
       chrome.storage.local.get(
         [
@@ -1167,12 +1188,13 @@ const UI = {
           "popup_visible_tt",
           "popup_visible_fb",
           "popup_visible_li",
+          "popup_visible_rd",
           "restrictHiddenPlatforms",
           "visualHideHiddenPlatforms",
         ],
         (res) => {
           if (res.platformSettings) {
-            CONFIG.platformSettings = res.platformSettings;
+            CONFIG.platformSettings = { ...DEFAULT_PLATFORM_SETTINGS, ...res.platformSettings };
             if (res.restrictHiddenPlatforms === false) {
               if (res.popup_visible_yt === false)
                 CONFIG.platformSettings.yt = "allow";
@@ -1184,6 +1206,8 @@ const UI = {
                 CONFIG.platformSettings.fb = "allow";
               if (res.popup_visible_li === false)
                 CONFIG.platformSettings.li = "allow";
+              if (res.popup_visible_rd === false)
+                CONFIG.platformSettings.rd = "allow";
             }
           }
         },
@@ -1257,6 +1281,10 @@ const UI = {
     if (changes.hide_li_addfeed) {
       CONFIG.visualHiding.liAddFeed =
         changes.hide_li_addfeed.newValue !== false;
+      Utils.applyVisualHidingClasses();
+    }
+    if (changes.hide_rd_feed) {
+      CONFIG.visualHiding.rdFeed = changes.hide_rd_feed.newValue !== false;
       Utils.applyVisualHidingClasses();
     }
     if (changes.darkMode) {

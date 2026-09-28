@@ -30,6 +30,7 @@ const runtimeFiles = [
   "content-fb.js",
   "content-ig.js",
   "content-li.js",
+  "content-rd.js",
   "content-tt.js",
   "content-yt.js",
   "content.css",

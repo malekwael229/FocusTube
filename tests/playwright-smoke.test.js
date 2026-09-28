@@ -59,6 +59,7 @@ function assertPerPlatformContentScripts(manifest, label) {
     ["*://*.tiktok.com/*", "content-tt.js"],
     ["*://*.facebook.com/*", "content-fb.js"],
     ["*://*.linkedin.com/*", "content-li.js"],
+    ["*://reddit.com/*", "content-rd.js"],
   ];
 
   assert.equal(
@@ -73,7 +74,7 @@ function assertPerPlatformContentScripts(manifest, label) {
     );
 
     assert.ok(entry, `${label} missing content script entry for ${match}`);
-    assert.deepEqual(entry.matches, [match], `${label} ${match} matches`);
+    assert.deepEqual(entry.matches, platformScript === "content-rd.js" ? ["*://reddit.com/*", "*://www.reddit.com/*"] : [match], `${label} ${match} matches`);
     assert.deepEqual(entry.css, ["content.css"], `${label} ${match} css`);
     assert.deepEqual(
       entry.js,
@@ -99,6 +100,8 @@ function verifyManifests() {
     "*://*.tiktok.com/*",
     "*://*.facebook.com/*",
     "*://*.linkedin.com/*",
+    "*://reddit.com/*",
+    "*://www.reddit.com/*",
   ];
 
   assert.equal(chromeManifest.manifest_version, 3);
@@ -368,6 +371,7 @@ async function verifyPopup(context, extensionId) {
     "TikTok settings",
     "Facebook settings",
     "LinkedIn settings",
+    "Reddit settings",
   ]) {
     await page.locator(`button[aria-label="${label}"]`).waitFor({
       state: "visible",
@@ -431,6 +435,17 @@ async function verifyPopup(context, extensionId) {
     await input.waitFor({ state: "attached" });
     assert.equal(await input.isChecked(), false, `${key} defaults off`);
   }
+
+  await page.locator("#backBtn").click();
+  await page.locator('button[data-platform="rd"]').click();
+  await page.waitForFunction(() => !document.querySelector("#platform-detail")?.classList.contains("hidden"));
+  assert.match(await page.locator("body").innerText(), /Hide Reddit feed/);
+  const redditToggle = page.locator('input[data-key="hide_rd_feed"]');
+  assert.equal(await redditToggle.isChecked(), true);
+  await redditToggle.locator("..").click();
+  await waitForStorageValue(page, "hide_rd_feed", false);
+  await redditToggle.locator("..").click();
+  await waitForStorageValue(page, "hide_rd_feed", true);
 
   await page.close();
   pass("popup loads and platform settings match expected controls");

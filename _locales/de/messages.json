@@ -569,5 +569,12 @@
     "message": "Fokus-Sitzung abgeschlossen."
   },
   "catalogLanguage": { "message": "de" },
+  "platformReddit": { "message": "Reddit" },
+  "hideRedditFeed": { "message": "Reddit-Feed ausblenden" },
+  "hideRedditFeedDescription": { "message": "Reddit-Start- und Community-Feeds ausblenden" },
+  "modeRedditStrictDescription": { "message": "Feeds ohne Anzeige ausblenden" },
+  "modeRedditWarnDescription": { "message": "Feeds mit Trotzdem anzeigen ausblenden" },
+  "modeRedditPassiveDescription": { "message": "Reddit-Feeds anzeigen" },
+  "redditFeedHidden": { "message": "Reddit-Feed ausgeblendet" },
   "catalogDirection": { "message": "ltr" }
 }

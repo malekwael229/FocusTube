@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
     popup_visible_tt: true,
     popup_visible_fb: true,
     popup_visible_li: true,
+    popup_visible_rd: true,
     restrictHiddenPlatforms: true,
     visualHideHiddenPlatforms: true,
     hide_ig_stories: true,
@@ -33,6 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
     hide_li_addfeed: true,
     hide_li_suggested: false,
     hide_li_activity: false,
+    hide_rd_feed: true,
     showBreakButton: true,
     accentColor: "#4facfe",
   };
@@ -63,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
     ),
     "ft_timer_type",
   ]);
-  const importPlatformKeys = ["yt", "ig", "tt", "fb", "li"];
+  const importPlatformKeys = ["yt", "ig", "tt", "fb", "li", "rd"];
   const importPlatformModes = new Set(["strict", "warn", "allow"]);
   const hasOwn = (object, key) =>
     Object.prototype.hasOwnProperty.call(object, key);
@@ -253,6 +255,7 @@ document.addEventListener("DOMContentLoaded", function () {
       setToggle("popup_visible_tt", items.popup_visible_tt);
       setToggle("popup_visible_fb", items.popup_visible_fb);
       setToggle("popup_visible_li", items.popup_visible_li);
+      setToggle("popup_visible_rd", items.popup_visible_rd);
       setToggle("restrictHiddenPlatforms", items.restrictHiddenPlatforms);
       setToggle("visualHideHiddenPlatforms", items.visualHideHiddenPlatforms);
       if (document.getElementById("totalBlocked"))
@@ -817,6 +820,10 @@ const platforms = {
       },
     ],
   },
+  rd: {
+    name: msg("platformReddit"),
+    settings: [{ id: "hide_rd_feed", label: msg("hideRedditFeed"), desc: msg("hideRedditFeedDescription") }],
+  },
 };
 const modes = [
   {
@@ -860,12 +867,18 @@ const modesByPlatform = {
       color: "#4facfe",
     },
   ],
+  rd: [
+    { id: "S", label: msg("modeStrict"), desc: msg("modeRedditStrictDescription"), color: "#ef4444" },
+    { id: "W", label: msg("modeWarn"), desc: msg("modeRedditWarnDescription"), color: "#f59e0b" },
+    { id: "P", label: msg("modePassive"), desc: msg("modeRedditPassiveDescription"), color: "#4facfe" },
+  ],
 };
 function getModesForPlatform(id) {
   if (id === "li") return modesByPlatform.li;
+  if (id === "rd") return modesByPlatform.rd;
   return modesByPlatform.default;
 }
-let platformModes = { yt: "S", ig: "S", tt: "S", fb: "S", li: "S" };
+let platformModes = { yt: "S", ig: "S", tt: "S", fb: "S", li: "S", rd: "S" };
 let currentPlatform = null;
 let timerActive = false;
 function loadPlatformModes() {
@@ -884,7 +897,7 @@ function loadPlatformModes() {
         result.ft_timer_end &&
         result.ft_timer_end > Date.now() &&
         result.ft_timer_type === "work";
-      ["yt", "ig", "tt", "fb", "li"].forEach((id) =>
+      ["yt", "ig", "tt", "fb", "li", "rd"].forEach((id) =>
         updateBadge(id, isWorkTimer),
       );
     },
@@ -935,7 +948,7 @@ function initPlatformGrid() {
         res.ft_timer_end &&
         res.ft_timer_end > Date.now() &&
         res.ft_timer_type === "work";
-      ["yt", "ig", "tt", "fb", "li"].forEach((id) =>
+      ["yt", "ig", "tt", "fb", "li", "rd"].forEach((id) =>
         updateBadge(id, isWorkTimer),
       );
     });

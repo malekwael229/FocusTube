@@ -2,7 +2,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const PLATFORMS = ["yt", "ig", "tt", "fb", "li"];
+const PLATFORMS = ["yt", "ig", "tt", "fb", "li", "rd"];
 const MODES = ["strict", "warn", "allow"];
 const VISUAL_KEYS = {
   yt: ["hide_yt_shorts_nav", "hide_yt_shorts_shelves", "hide_yt_most_relevant_shelf", "hide_yt_playables"],
@@ -10,17 +10,18 @@ const VISUAL_KEYS = {
   tt: [],
   fb: ["hide_fb_stories", "hide_fb_reels_nav", "hide_fb_people_you_might_know"],
   li: ["hide_li_feed", "hide_li_addfeed", "hide_li_suggested", "hide_li_activity"],
+  rd: ["hide_rd_feed"],
 };
 const DEFAULT_SETTINGS = {
   ft_enabled: true, ft_timer_duration: 25, breakDuration: 5, autoStartBreaks: true,
   focusMode: true, lockSettings: false, showNotifications: false, darkMode: true,
   ft_stats_blocked: 0, popup_visible_yt: true, popup_visible_ig: true,
-  popup_visible_tt: true, popup_visible_fb: true, popup_visible_li: true,
+  popup_visible_tt: true, popup_visible_fb: true, popup_visible_li: true, popup_visible_rd: true,
   restrictHiddenPlatforms: true, visualHideHiddenPlatforms: true,
   hide_ig_stories: true, hide_fb_stories: true, hide_yt_shorts_nav: true,
   hide_yt_shorts_shelves: true, hide_yt_most_relevant_shelf: true, hide_yt_playables: true,
   hide_ig_reels_nav: true, hide_fb_reels_nav: true,
-  hide_fb_people_you_might_know: true, hide_li_feed: true, hide_li_addfeed: true,
+  hide_fb_people_you_might_know: true, hide_li_feed: true, hide_li_addfeed: true, hide_rd_feed: true,
   showBreakButton: true, accentColor: "#4facfe", tutorialCompleted: true,
   ft_timer_end: null, ft_timer_type: null, ft_work_session_ended: false,
 };

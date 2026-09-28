@@ -5,7 +5,7 @@
 
   <p><strong>A privacy-first browser extension for reducing distracting social video and feed surfaces.</strong></p>
 
-  <p><strong>Supports YouTube Shorts, Instagram Reels, TikTok, Facebook Reels, and LinkedIn feed controls.</strong></p>
+  <p><strong>Supports YouTube Shorts, Instagram Reels, TikTok, Facebook Reels, LinkedIn feeds, and current Reddit feeds.</strong></p>
 
   <p>
     <strong>Install:</strong>
@@ -54,6 +54,7 @@ The project supports Chromium browsers with a Manifest V3 build and Firefox with
 - **TikTok:** Blocks common feed/video surfaces while allowing safer areas such as messages and settings.
 - **Facebook:** Blocks Reels paths and can hide Reels navigation, Stories, and People You Might Know suggestions.
 - **LinkedIn:** Can hide the main feed and "Add to your feed" sidebar card, with optional filtering for suggested, outside-network, promoted, and network-activity posts when detected.
+- **Reddit (repository source):** Hides current Reddit Home, Popular, All, and community feeds in Strict mode or during work timers. Warn mode offers a per-feed reveal; individual posts, comments, and search remain available. The legacy `old.reddit.com` interface is not covered.
 
 ### Productivity Tools
 
@@ -131,7 +132,7 @@ Snapshot refreshed September 13, 2026. Store analytics use different activity wi
 
 - Browser extension APIs for storage, alarms, notifications, popup UI, options UI, and content scripts.
 - Cross-browser manifests for Chromium and Firefox.
-- Site-specific content scripts for YouTube, Instagram, TikTok, Facebook, and LinkedIn.
+- Site-specific content scripts for YouTube, Instagram, TikTok, Facebook, LinkedIn, and the current Reddit interface.
 - Shared DOM utilities for overlays, visual hiding, timer state, and SPA updates.
 - `MutationObserver`, browser navigation events, and timer-driven messaging for dynamic single-page applications.
 - Local browser storage for preferences, timer state, stats, and import/export data.

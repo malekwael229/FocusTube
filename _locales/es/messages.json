@@ -569,5 +569,12 @@
     "message": "Sesión de concentración completada."
   },
   "catalogLanguage": { "message": "es" },
+  "platformReddit": { "message": "Reddit" },
+  "hideRedditFeed": { "message": "Ocultar feed de Reddit" },
+  "hideRedditFeedDescription": { "message": "Ocultar feeds de inicio y comunidades de Reddit" },
+  "modeRedditStrictDescription": { "message": "Ocultar feeds sin mostrar" },
+  "modeRedditWarnDescription": { "message": "Ocultar feeds con Ver de todos modos" },
+  "modeRedditPassiveDescription": { "message": "Mostrar feeds de Reddit" },
+  "redditFeedHidden": { "message": "Feed de Reddit oculto" },
   "catalogDirection": { "message": "ltr" }
 }

@@ -569,5 +569,12 @@
     "message": "Sessão de foco concluída."
   },
   "catalogLanguage": { "message": "pt-BR" },
+  "platformReddit": { "message": "Reddit" },
+  "hideRedditFeed": { "message": "Ocultar feed do Reddit" },
+  "hideRedditFeedDescription": { "message": "Ocultar feeds iniciais e de comunidades do Reddit" },
+  "modeRedditStrictDescription": { "message": "Ocultar feeds sem revelar" },
+  "modeRedditWarnDescription": { "message": "Ocultar feeds com Ver mesmo assim" },
+  "modeRedditPassiveDescription": { "message": "Mostrar feeds do Reddit" },
+  "redditFeedHidden": { "message": "Feed do Reddit oculto" },
   "catalogDirection": { "message": "ltr" }
 }

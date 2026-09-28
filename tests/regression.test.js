@@ -12,6 +12,7 @@ const expectedPlatformScripts = [
   ["*://*.tiktok.com/*", "content-tt.js"],
   ["*://*.facebook.com/*", "content-fb.js"],
   ["*://*.linkedin.com/*", "content-li.js"],
+  ["*://reddit.com/*", "content-rd.js"],
 ];
 
 function assertPerPlatformContentScripts(manifest) {
@@ -23,7 +24,7 @@ function assertPerPlatformContentScripts(manifest) {
     );
 
     assert.ok(entry, `Missing content script entry for ${match}`);
-    assert.deepEqual(entry.matches, [match]);
+    assert.deepEqual(entry.matches, platformScript === "content-rd.js" ? ["*://reddit.com/*", "*://www.reddit.com/*"] : [match]);
     assert.deepEqual(entry.css, ["content.css"]);
     assert.deepEqual(entry.js, ["i18n.js", "content-common.js", platformScript]);
     assert.equal(entry.run_at, "document_start");
@@ -54,6 +55,10 @@ const checks = [
         assert.equal(isSite(`${domain}.example.com`, method), false);
         assert.equal(isSite(`not${domain}`, method), false);
       });
+      assert.equal(isSite("reddit.com", "isRD"), true);
+      assert.equal(isSite("www.reddit.com", "isRD"), true);
+      assert.equal(isSite("old.reddit.com", "isRD"), false);
+      assert.equal(isSite("redd.it", "isRD"), false);
     },
   ],
   [
@@ -1071,6 +1076,10 @@ const checks = [
       }
       assertPerPlatformContentScripts(chromeManifest);
       assertPerPlatformContentScripts(firefoxManifest);
+      for (const manifest of [chromeManifest, firefoxManifest]) {
+        const reddit = manifest.content_scripts.find((script) => script.js.includes("content-rd.js"));
+        assert.deepEqual(reddit.matches, ["*://reddit.com/*", "*://www.reddit.com/*"]);
+      }
       assert.doesNotMatch(JSON.stringify(chromeManifest), /hide_ig_feed_reels/);
       assert.doesNotMatch(JSON.stringify(firefoxManifest), /hide_ig_feed_reels/);
     },

@@ -1575,10 +1575,10 @@ test("manifest and package allowlists remain narrow and internally consistent", 
   assert.deepEqual(chrome.permissions.sort(), ["alarms", "notifications", "storage"]);
   assert.deepEqual(firefox.permissions.sort(), [
     "*://*.facebook.com/*", "*://*.instagram.com/*", "*://*.linkedin.com/*",
-    "*://*.tiktok.com/*", "*://*.youtube.com/*", "alarms", "notifications", "storage",
+    "*://*.tiktok.com/*", "*://*.youtube.com/*", "*://reddit.com/*", "*://www.reddit.com/*", "alarms", "notifications", "storage",
   ]);
   assert.deepEqual(runtimeFiles, [
-    "background.js", "i18n.js", "content-common.js", "content-fb.js", "content-ig.js", "content-li.js",
+    "background.js", "i18n.js", "content-common.js", "content-fb.js", "content-ig.js", "content-li.js", "content-rd.js",
     "content-tt.js", "content-yt.js", "content.css", "styles.css", "popup.html", "popup.js",
     "options.html", "options.js",
     "_locales/en/messages.json", "_locales/ar/messages.json", "_locales/es/messages.json",

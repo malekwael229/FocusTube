@@ -569,5 +569,12 @@
     "message": "Sesi fokus selesai."
   },
   "catalogLanguage": { "message": "id" },
+  "platformReddit": { "message": "Reddit" },
+  "hideRedditFeed": { "message": "Sembunyikan feed Reddit" },
+  "hideRedditFeedDescription": { "message": "Sembunyikan feed beranda dan komunitas Reddit" },
+  "modeRedditStrictDescription": { "message": "Sembunyikan feed tanpa tampilkan" },
+  "modeRedditWarnDescription": { "message": "Sembunyikan feed dengan Lihat Saja" },
+  "modeRedditPassiveDescription": { "message": "Tampilkan feed Reddit" },
+  "redditFeedHidden": { "message": "Feed Reddit disembunyikan" },
   "catalogDirection": { "message": "ltr" }
 }

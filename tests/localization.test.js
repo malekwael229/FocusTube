@@ -116,6 +116,7 @@ function collectCatalogKeys() {
     "content-fb.js",
     "content-ig.js",
     "content-li.js",
+    "content-rd.js",
     "popup.js",
     "options.js",
   ]) {

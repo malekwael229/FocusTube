@@ -484,3 +484,16 @@ body.ft-hide-li-suggested.ft-platform-li .ft-li-collapsed {
 .ft-li-stub-btn:hover {
   opacity: 0.85;
 }
+/* Reddit feed notice is contained beside the inert feed so navigation remains usable. */
+.ft-reddit-feed-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 10px;
+  font: 500 14px/1.4 system-ui, sans-serif;
+}
+.ft-reddit-feed-notice button { cursor: pointer; padding: 6px 10px; border-radius: 6px; }
