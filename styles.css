@@ -191,7 +191,8 @@ body.preload .checkmark {
   overflow: hidden;
 }
 .focustube-popup-body.review-visible {
-  padding-block: 10px;
+  padding-block: 4px;
+  transition-property: background-color, color !important;
 }
 .focustube-popup-body.review-visible::before {
   content: "";

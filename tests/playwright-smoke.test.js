@@ -625,6 +625,11 @@ async function verifyRatingPrompt(context, extensionId) {
         width: document.documentElement.scrollWidth,
         height: document.documentElement.scrollHeight,
         promptCount: document.querySelectorAll("#review-prompt").length,
+        bodyHeight: document.body.getBoundingClientRect().height,
+        bodyScrollHeight: document.body.scrollHeight,
+        reviewTop: document.querySelector("#review-prompt").getBoundingClientRect().top,
+        reviewBottom: document.querySelector("#review-prompt").getBoundingClientRect().bottom,
+        bodyPadding: getComputedStyle(document.body).padding,
       };
     });
     assert.ok(
