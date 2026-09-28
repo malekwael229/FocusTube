@@ -239,7 +239,17 @@ async function runSiteChecks(session, report, { routes = {}, selectedSites = Obj
           return { ...state, redirectAttributed: true };
         }
         await healthy(page, site);
-        return poll(() => inspect(page, site), (s) => s.overlay === expectedBlock);
+        try {
+          return await poll(() => inspect(page, site), (s) => s.overlay === expectedBlock);
+        } catch (error) {
+          if (code === "tt" && route === site.allowed && !expectedBlock) {
+            const current = await inspect(page, site);
+            if (current.overlay && /^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?foryou(?:\/|$)/i.test(current.path)) {
+              throw blocked("TikTok redirected the logged-out safe route to a blockable feed", "C");
+            }
+          }
+          throw error;
+        }
       });
     }
     await modeTest("passive.blocked", "allow", site.blocked, false);

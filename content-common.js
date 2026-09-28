@@ -1008,22 +1008,20 @@ const UI = {
       if (chrome.runtime.lastError) return;
       CONFIG.extensionEnabled = res.ft_enabled !== false;
       CONFIG.isFocusMode = res.focusMode !== false;
-      if (res.platformSettings) {
-        CONFIG.platformSettings = { ...DEFAULT_PLATFORM_SETTINGS, ...res.platformSettings };
-        if (res.restrictHiddenPlatforms === false) {
-          if (res.popup_visible_yt === false)
-            CONFIG.platformSettings.yt = "allow";
-          if (res.popup_visible_ig === false)
-            CONFIG.platformSettings.ig = "allow";
-          if (res.popup_visible_tt === false)
-            CONFIG.platformSettings.tt = "allow";
-          if (res.popup_visible_fb === false)
-            CONFIG.platformSettings.fb = "allow";
-          if (res.popup_visible_li === false)
-            CONFIG.platformSettings.li = "allow";
-          if (res.popup_visible_rd === false)
-            CONFIG.platformSettings.rd = "allow";
-        }
+      CONFIG.platformSettings = { ...DEFAULT_PLATFORM_SETTINGS, ...res.platformSettings };
+      if (res.restrictHiddenPlatforms === false) {
+        if (res.popup_visible_yt === false)
+          CONFIG.platformSettings.yt = "allow";
+        if (res.popup_visible_ig === false)
+          CONFIG.platformSettings.ig = "allow";
+        if (res.popup_visible_tt === false)
+          CONFIG.platformSettings.tt = "allow";
+        if (res.popup_visible_fb === false)
+          CONFIG.platformSettings.fb = "allow";
+        if (res.popup_visible_li === false)
+          CONFIG.platformSettings.li = "allow";
+        if (res.popup_visible_rd === false)
+          CONFIG.platformSettings.rd = "allow";
       }
       CONFIG.isDarkMode = res.darkMode !== false;
       CONFIG.timer.end = res.ft_timer_end;
@@ -1193,22 +1191,20 @@ const UI = {
           "visualHideHiddenPlatforms",
         ],
         (res) => {
-          if (res.platformSettings) {
-            CONFIG.platformSettings = { ...DEFAULT_PLATFORM_SETTINGS, ...res.platformSettings };
-            if (res.restrictHiddenPlatforms === false) {
-              if (res.popup_visible_yt === false)
-                CONFIG.platformSettings.yt = "allow";
-              if (res.popup_visible_ig === false)
-                CONFIG.platformSettings.ig = "allow";
-              if (res.popup_visible_tt === false)
-                CONFIG.platformSettings.tt = "allow";
-              if (res.popup_visible_fb === false)
-                CONFIG.platformSettings.fb = "allow";
-              if (res.popup_visible_li === false)
-                CONFIG.platformSettings.li = "allow";
-              if (res.popup_visible_rd === false)
-                CONFIG.platformSettings.rd = "allow";
-            }
+          CONFIG.platformSettings = { ...DEFAULT_PLATFORM_SETTINGS, ...res.platformSettings };
+          if (res.restrictHiddenPlatforms === false) {
+            if (res.popup_visible_yt === false)
+              CONFIG.platformSettings.yt = "allow";
+            if (res.popup_visible_ig === false)
+              CONFIG.platformSettings.ig = "allow";
+            if (res.popup_visible_tt === false)
+              CONFIG.platformSettings.tt = "allow";
+            if (res.popup_visible_fb === false)
+              CONFIG.platformSettings.fb = "allow";
+            if (res.popup_visible_li === false)
+              CONFIG.platformSettings.li = "allow";
+            if (res.popup_visible_rd === false)
+              CONFIG.platformSettings.rd = "allow";
           }
         },
       );

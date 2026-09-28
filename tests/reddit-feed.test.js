@@ -17,18 +17,24 @@ async function main() {
     const page = await context.newPage();
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
-    await page.route("https://www.reddit.com/**", (route) => route.fulfill({
+    await context.route("https://www.reddit.com/**", (route) => route.fulfill({
       contentType: "text/html",
       body: '<!doctype html><nav><a href="/search/">Search</a></nav><main><shreddit-feed style="color:red" aria-hidden="false"><a id="post" href="/r/test/comments/abc/post/">Post</a><video id="media"></video></shreddit-feed></main>',
     }));
-    await page.addInitScript((messages) => {
-      const data = { platformSettings: { yt: "warn" } };
+    await context.addInitScript((messages) => {
+      const data = location.search.includes("fresh-hidden")
+        ? { restrictHiddenPlatforms: false, popup_visible_rd: false }
+        : { platformSettings: { yt: "warn" } };
       const listeners = [];
+      window.statMessages = [];
       window.chrome = {
         runtime: {
           id: "fixture-extension",
           getURL: (file) => `chrome-extension://fixture-extension/${file}`,
-          sendMessage: (_message, callback) => callback?.({}),
+          sendMessage: (message, callback) => {
+            if (message.action === "incrementStat") window.statMessages.push(message);
+            callback?.({});
+          },
           onMessage: { addListener() {} },
         },
         i18n: { getMessage: (key) => messages[key]?.message || "" },
@@ -112,6 +118,60 @@ async function main() {
     assert.equal(mediaResult.hidden, true, "feed stays hidden after media activity");
     checks += 3;
 
+    const shadowMediaResult = await page.evaluate(async () => {
+      const player = document.createElement("shreddit-player");
+      const shadow = player.attachShadow({ mode: "open" });
+      const video = document.createElement("video");
+      video.muted = true;
+      video.playsInline = true;
+      const canvas = document.createElement("canvas");
+      canvas.width = 16;
+      canvas.height = 16;
+      canvas.getContext("2d").fillRect(0, 0, 16, 16);
+      video.srcObject = canvas.captureStream(5);
+      shadow.appendChild(video);
+      document.querySelector("shreddit-feed").appendChild(player);
+      let playEvents = 0;
+      video.addEventListener("play", () => { playEvents++; });
+      void video.play().catch(() => {});
+      await new Promise((resolve) => setTimeout(resolve, 650));
+      const result = { playEvents, paused: video.paused };
+      video.srcObject.getTracks().forEach((track) => track.stop());
+      player.remove();
+      return result;
+    });
+    assert.ok(shadowMediaResult.playEvents > 0, "shadow-root player attempted playback");
+    assert.equal(shadowMediaResult.paused, true, "hidden shadow-root media is paused");
+    checks += 2;
+
+    const lateShadowResult = await page.evaluate(async () => {
+      const player = document.createElement("shreddit-player");
+      document.querySelector("shreddit-feed").appendChild(player);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      const shadow = player.attachShadow({ mode: "open" });
+      const video = document.createElement("video");
+      video.muted = true;
+      video.playsInline = true;
+      const canvas = document.createElement("canvas");
+      canvas.width = 16;
+      canvas.height = 16;
+      canvas.getContext("2d").fillRect(0, 0, 16, 16);
+      video.srcObject = canvas.captureStream(5);
+      shadow.appendChild(video);
+      let playEvents = 0;
+      video.addEventListener("play", () => { playEvents++; });
+      void video.play().catch(() => {});
+      await new Promise((resolve) => setTimeout(resolve, 650));
+      const result = { playEvents, paused: video.paused };
+      video.srcObject.getTracks().forEach((track) => track.stop());
+      player.remove();
+      return result;
+    });
+    assert.ok(lateShadowResult.playEvents > 0, "late shadow-root media attempted playback");
+    assert.equal(lateShadowResult.paused, true, "late shadow-root media is paused");
+    await page.waitForFunction(() => Reddit.shadowObservers.size === 0 && Reddit.shadowMedia.size === 0);
+    checks += 3;
+
     await page.evaluate(() => {
       const feed = document.querySelector("shreddit-feed");
       feed.style.display = "block";
@@ -139,6 +199,24 @@ async function main() {
     await page.evaluate(() => document.querySelectorAll("shreddit-feed")[1].remove());
     await wait(true);
     checks++;
+
+    await page.evaluate(() => {
+      const feed = document.querySelector("shreddit-feed");
+      window.delayedFeed = feed;
+      feed.remove();
+    });
+    await page.waitForFunction(() => document.querySelectorAll(".ft-reddit-feed-notice").length === 0);
+    await page.evaluate(() => {
+      const feed = document.createElement("shreddit-feed");
+      feed.style.color = "red";
+      feed.setAttribute("aria-hidden", "false");
+      feed.innerHTML = '<a href="/r/test/comments/abc/post/">Post</a>';
+      document.querySelector("main").appendChild(feed);
+    });
+    await wait(true);
+    assert.equal(await page.evaluate(() => window.delayedFeed.style.display), "", "removed feed is restored before replacement");
+    assert.equal((await state()).notice, 1, "late feed arrival gets one notice");
+    checks += 2;
 
     const routes = [
       ["/", "home"], ["/best/", "home"], ["/r/popular/", "r/popular"],
@@ -169,19 +247,31 @@ async function main() {
     await page.waitForFunction(() => Boolean(document.querySelector(".ft-reddit-feed-notice button")));
     checks += 2;
 
+    const priorStats = await page.evaluate(() => window.statMessages.length);
     await page.evaluate(() => history.pushState({}, "", "/r/other/"));
-    await wait(true);
+    await page.waitForFunction(() => Reddit.route?.path === "/r/other" && document.querySelector("shreddit-feed")?.style.display === "none");
     assert.equal((await state()).reveal, true, "another community requires separate reveal");
+    assert.equal(await page.evaluate(() => window.statMessages.length), priorStats + 1, "another blocked listing counts once");
     await page.evaluate(() => history.pushState({}, "", "/r/other/comments/abc/"));
     await wait(false);
     assert.equal((await state()).notice, 0, "post restores feed");
     await page.evaluate(() => history.pushState({}, "", "/r/other/"));
     await wait(true);
-    checks += 3;
+    await page.evaluate(() => history.replaceState({}, "", "/search/?q=focus"));
+    await wait(false);
+    await page.evaluate(() => history.back());
+    await page.waitForFunction(() => location.pathname === "/r/other/comments/abc/" && document.querySelector("shreddit-feed")?.style.display !== "none");
+    await page.evaluate(() => history.pushState({}, "", "/r/other/"));
+    await wait(true);
+    checks += 7;
 
-    await page.evaluate(() => window.changeSettings({ platformSettings: { rd: "allow" }, ft_timer_end: Date.now() + 60000, ft_timer_type: "work" }));
+    await page.evaluate(() => window.changeSettings({ platformSettings: { rd: "allow" }, ft_timer_end: Date.now() + 1200, ft_timer_type: "work" }));
     await wait(true);
     assert.equal((await state()).reveal, false, "work timer forces Strict from Passive");
+    await wait(false);
+    assert.equal((await state()).notice, 0, "work timer expiry restores the feed without a storage event");
+    await page.evaluate(() => window.changeSettings({ ft_timer_end: Date.now() + 60000, ft_timer_type: "work" }));
+    await wait(true);
     await page.evaluate(() => window.changeSettings({ ft_timer_type: "break" }));
     await wait(false);
     await page.evaluate(() => window.changeSettings({ ft_timer_end: null, ft_timer_type: null }));
@@ -193,10 +283,23 @@ async function main() {
     assert.equal(await page.locator("shreddit-feed").getAttribute("aria-hidden"), "false", "disable restores original attribute");
     assert.equal(await page.locator("shreddit-feed").evaluate((feed) => feed.style.color), "red", "disable preserves original styles");
     assert.equal(await page.locator("nav a").isVisible(), true, "search navigation stays usable");
-    checks += 8;
+    checks += 9;
 
     assert.deepEqual(errors, [], "no content-script errors");
     checks++;
+    const freshPage = await context.newPage();
+    const freshErrors = [];
+    freshPage.on("pageerror", (error) => freshErrors.push(error.message));
+    await freshPage.goto("https://www.reddit.com/r/test/?fresh-hidden=1", { waitUntil: "domcontentloaded" });
+    for (const file of ["i18n.js", "content-common.js", "content-rd.js"]) {
+      await freshPage.addScriptTag({ content: source(file) });
+    }
+    await freshPage.waitForFunction(() => window.__ftSettingsReady === true);
+    assert.equal(await freshPage.locator("shreddit-feed").evaluate((feed) => feed.style.display), "", "fresh hidden unrestricted Reddit remains visible");
+    assert.equal(await freshPage.locator(".ft-reddit-feed-notice").count(), 0);
+    assert.deepEqual(freshErrors, [], "fresh settings produce no content-script errors");
+    checks += 3;
+    await freshPage.close();
     await context.close();
   } finally {
     await browser.close();

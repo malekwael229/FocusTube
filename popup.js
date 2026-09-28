@@ -35,6 +35,7 @@ const PLATFORM_NAMES = {
   rd: msg("platformReddit"),
 };
 let reviewHideTimeout = null;
+let reviewRestoreFocus = null;
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => document.body.classList.remove("preload"), 100);
   initReviewPrompt();
@@ -1020,9 +1021,20 @@ function detectBrowser() {
   return "chrome";
 }
 function initReviewPrompt() {
+  const prompt = document.getElementById("review-prompt");
   const reviewNow = document.getElementById("reviewNow");
   const reviewLater = document.getElementById("reviewLater");
   const reviewNoThanks = document.getElementById("reviewNoThanks");
+  prompt?.addEventListener("keydown", (event) => {
+    if (event.key !== "Tab") return;
+    if (event.shiftKey && document.activeElement === reviewNow) {
+      event.preventDefault();
+      reviewNoThanks?.focus();
+    } else if (!event.shiftKey && document.activeElement === reviewNoThanks) {
+      event.preventDefault();
+      reviewNow?.focus();
+    }
+  });
   if (reviewNow) {
     reviewNow.addEventListener("click", () => {
       chrome.tabs.create({
@@ -1067,6 +1079,7 @@ function checkReviewPrompt(blockedCount) {
 }
 function showReviewPrompt(blockedCount) {
   const prompt = document.getElementById("review-prompt");
+  const controls = document.getElementById("popupControls");
   const blockedCountText = document.getElementById("reviewBlockedCount");
   const currentBlockedCount = Math.max(0, parseInt(blockedCount, 10) || 0);
   if (reviewHideTimeout !== null) {
@@ -1077,15 +1090,21 @@ function showReviewPrompt(blockedCount) {
     blockedCountText.textContent = msg("reviewPrompt", [String(currentBlockedCount)]);
   }
   if (prompt) {
+    const wasVisible = prompt.classList.contains("show");
+    if (!wasVisible) reviewRestoreFocus = document.activeElement;
     prompt.classList.remove("fade-out");
     prompt.classList.remove("hidden");
     prompt.classList.add("show");
+    if (controls) controls.inert = true;
+    if (!wasVisible) prompt.querySelector("button")?.focus();
   }
   document.body.classList.add("review-visible");
   document.documentElement.classList.add("review-visible");
 }
 function hideReviewPrompt() {
   const prompt = document.getElementById("review-prompt");
+  const controls = document.getElementById("popupControls");
+  const wasVisible = prompt?.classList.contains("show");
   if (prompt && !prompt.classList.contains("hidden")) {
     if (reviewHideTimeout !== null) clearTimeout(reviewHideTimeout);
     prompt.classList.add("fade-out");
@@ -1096,6 +1115,14 @@ function hideReviewPrompt() {
       reviewHideTimeout = null;
     }, 300);
   }
+  if (controls) controls.inert = false;
+  if (wasVisible) {
+    const restoreTarget = controls?.contains(reviewRestoreFocus)
+      ? reviewRestoreFocus
+      : enabledToggle;
+    restoreTarget?.focus();
+  }
+  reviewRestoreFocus = null;
   document.body.classList.remove("review-visible");
   document.documentElement.classList.remove("review-visible");
 }

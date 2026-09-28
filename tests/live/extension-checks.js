@@ -392,7 +392,7 @@ async function runExtensionChecks(session, report, { workDir, quick = false } = 
       settings: { platformSettings: Object.fromEntries(PLATFORMS.map((id) => [id, "strict"])) },
       expected: "each platform exposes strict, warn, passive and its supported visual toggles",
     }, popup, async () => {
-      assert.equal(await popup.evaluate(() => document.querySelectorAll("button[data-platform]").length), 5);
+      assert.equal(await popup.evaluate(() => document.querySelectorAll("button[data-platform]").length), PLATFORMS.length);
       const result = {};
       for (const platform of PLATFORMS) {
         await popup.click(`.platform-icon[data-platform="${platform}"]`);
@@ -661,7 +661,7 @@ async function runExtensionChecks(session, report, { workDir, quick = false } = 
       route: "options.html",
       mode: "clear-all",
       settings: { confirm: "instrumented false then true" },
-      expected: "cancel preserves data and confirmation clears settings to defaults",
+      expected: "cancel preserves data and confirmation resets settings, including the blocked count",
     }, options, async () => {
       if (session.name === "Firefox") {
         const error = categoryError("Firefox WebDriver loses the extension-page command context when Clear All reloads the page", "D");
@@ -673,16 +673,29 @@ async function runExtensionChecks(session, report, { workDir, quick = false } = 
       await options.click("#clearData");
       assert.equal((await storage(options, "get", ["ft_stats_blocked"])).ft_stats_blocked, 7);
       await installDialogInstrumentation(options, { confirm: true });
-      await options.evaluate(() => { window.__ftClearContext = true; });
-      await options.click("#clearData");
-      await sleep(1200);
-      await close(options);
-      options = await open(session, "options.html");
-      const actual = await waitForStorage(options, ["ft_stats_blocked", "ft_timer_duration", "ft_enabled"], (state) => state.ft_stats_blocked === 0 && Number(state.ft_timer_duration) === 25 && state.ft_enabled !== false);
-      assert.equal(actual.ft_stats_blocked, 0);
-      assert.equal(Number(actual.ft_timer_duration), 25);
-      assert.notEqual(actual.ft_enabled, false);
-      return actual;
+      const witness = await open(session, "options.html");
+      try {
+        await witness.evaluate(() => {
+          window.__ftClearStats = [];
+          chrome.storage.onChanged.addListener((changes, area) => {
+            if (area !== "local" || !changes.ft_stats_blocked) return;
+            window.__ftClearStats.push(changes.ft_stats_blocked.newValue);
+          });
+        });
+        await options.click("#clearData");
+        await sleep(1200);
+        await close(options);
+        options = await open(session, "options.html");
+        const actual = await waitForStorage(options, ["ft_stats_blocked", "ft_timer_duration", "ft_enabled"],
+          (state) => Number(state.ft_timer_duration) === 25 && state.ft_enabled !== false);
+        const statEvents = await witness.evaluate(() => window.__ftClearStats);
+        assert.ok(statEvents.includes(0), `Clear All never reset the blocked count: ${JSON.stringify(statEvents)}`);
+        assert.equal(Number(actual.ft_timer_duration), 25);
+        assert.notEqual(actual.ft_enabled, false);
+        return { ...actual, blockedCountResetObserved: true };
+      } finally {
+        await close(witness);
+      }
     });
 
     await seed(options, { ft_timer_duration: 30, ft_timer_end: Date.now() + 150000, ft_timer_type: "work", ft_work_session_ended: false });

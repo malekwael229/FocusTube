@@ -5,6 +5,8 @@ const Reddit = {
   feed: null,
   notice: null,
   savedAttributes: null,
+  shadowObservers: new Map(),
+  shadowMedia: new Set(),
   route: null,
   revealedScope: null,
   observer: null,
@@ -56,6 +58,10 @@ const Reddit = {
   },
 
   restore() {
+    for (const observer of this.shadowObservers.values()) observer.disconnect();
+    this.shadowObservers.clear();
+    for (const media of this.shadowMedia) media.removeEventListener("play", this.onFeedPlayBound, true);
+    this.shadowMedia.clear();
     if (this.feed) {
       this.feed.removeEventListener("play", this.onFeedPlayBound, true);
       Utils.restoreInlineStyle(this.feed, "display");
@@ -105,11 +111,41 @@ const Reddit = {
     }
     feed.parentElement.insertBefore(notice, feed);
     this.notice = notice;
-    Utils.logStat("reddit-feed");
+    Utils.logStat(`reddit-feed:${route.path}`);
   },
 
   pauseMedia(feed) {
-    feed.querySelectorAll("video, audio").forEach((media) => {
+    for (const [shadow, observer] of this.shadowObservers) {
+      if (feed.contains(shadow.host)) continue;
+      observer.disconnect();
+      this.shadowObservers.delete(shadow);
+    }
+    for (const media of this.shadowMedia) {
+      const host = media.getRootNode().host;
+      if (media.isConnected && host && feed.contains(host)) continue;
+      media.removeEventListener("play", this.onFeedPlayBound, true);
+      this.shadowMedia.delete(media);
+    }
+    const mediaElements = [...feed.querySelectorAll("video, audio")];
+    for (const player of feed.querySelectorAll("shreddit-player, shreddit-embed")) {
+      const shadow = player.shadowRoot;
+      if (!shadow) continue;
+      if (!this.shadowObservers.has(shadow)) {
+        const observer = new MutationObserver(() => {
+          if (this.feed === feed && this.notice?.isConnected) this.pauseMedia(feed);
+        });
+        observer.observe(shadow, { childList: true, subtree: true });
+        this.shadowObservers.set(shadow, observer);
+      }
+      for (const media of shadow.querySelectorAll("video, audio")) {
+        if (!this.shadowMedia.has(media)) {
+          media.addEventListener("play", this.onFeedPlayBound, true);
+          this.shadowMedia.add(media);
+        }
+        mediaElements.push(media);
+      }
+    }
+    mediaElements.forEach((media) => {
       if (media.paused) return;
       try { media.pause(); } catch (error) { Utils.reportError("pausing Reddit feed media", error); }
     });
@@ -188,6 +224,7 @@ const Reddit = {
           this.effectiveMode() !== this.currentMode ||
           this.shouldHide(route) !== this.lastShouldHide
         ) this.apply();
+        else if (this.feed) this.pauseMedia(this.feed);
       }, 250);
     }
   },

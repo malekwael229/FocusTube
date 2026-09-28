@@ -18,6 +18,8 @@ const chromiumBuild = path.resolve(
 );
 const runYouTube = process.argv.includes("--youtube");
 const playablesOnly = process.argv.includes("--playables-only");
+const redditOnly = process.argv.includes("--reddit-only");
+const ratingOnly = process.argv.includes("--rating-only");
 const keepOpen = process.argv.includes("--keep-open");
 
 function pass(message) {
@@ -466,10 +468,20 @@ async function verifyRatingPrompt(context, extensionId) {
   await page.reload();
   await page.waitForFunction(() => document.querySelector("#breakBtn")?.classList.contains("hidden") === false);
   assert.equal(await page.locator("#review-prompt").isVisible(), false, "default threshold is five blocked items");
+  await page.waitForTimeout(500);
+
+  const baselineGeometry = await page.evaluate(() => ({
+    bodyHeight: document.body.getBoundingClientRect().height,
+    controlsHeight: document.querySelector("#popupControls").getBoundingClientRect().height,
+    tileWidth: document.querySelector(".platform-icon").getBoundingClientRect().width,
+    tileHeight: document.querySelector(".platform-icon").getBoundingClientRect().height,
+    controlsWidth: document.querySelector("#popupControls").getBoundingClientRect().width,
+  }));
 
   await setStorage(page, { ft_stats_blocked: 5 });
   await page.locator("#review-prompt").waitFor({ state: "visible" });
   await page.waitForTimeout(350);
+  if (ratingOnly) await page.screenshot({ path: path.join(root, ".tmp", "review-dialog.png") });
   const localizedReviewCopy = await page.evaluate(() => ({
     prompt: document.querySelector("#reviewBlockedCount")?.textContent?.trim(),
     expectedPrompt: globalThis.FT_I18N?.message("reviewPrompt", ["5"]),
@@ -504,10 +516,29 @@ async function verifyRatingPrompt(context, extensionId) {
       visibleControls,
       viewport: { width: innerWidth, height: innerHeight },
       overflow: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight },
+      tileWidth: document.querySelector(".platform-icon").getBoundingClientRect().width,
+      tileHeight: document.querySelector(".platform-icon").getBoundingClientRect().height,
+      controlsWidth: controls.width,
+      controlsInert: document.querySelector("#popupControls").inert,
+      promptRole: document.querySelector("#review-prompt").getAttribute("role"),
     };
   });
+  assert.ok(Math.abs(firstLayout.tileWidth - baselineGeometry.tileWidth) <= 1,
+    "review prompt does not shrink platform tiles");
+  assert.ok(Math.abs(firstLayout.tileHeight - baselineGeometry.tileHeight) <= 1,
+    "review prompt does not shrink platform tile height");
+  assert.ok(Math.abs(firstLayout.controlsWidth - baselineGeometry.controlsWidth) <= 1,
+    "review prompt does not narrow main controls");
   assert.ok(firstLayout.prompt.left >= 0 && firstLayout.prompt.right <= 300, "review prompt fits popup width");
-  assert.ok(firstLayout.prompt.bottom <= firstLayout.controls.top, "review prompt stays in normal flow ahead of controls");
+  assert.ok(firstLayout.prompt.top >= 0 && firstLayout.prompt.bottom <= 600,
+    "review dialog fits inside the popup without resizing its controls");
+  assert.equal(firstLayout.controlsInert, true, "main controls are inactive behind the review dialog");
+  assert.equal(firstLayout.promptRole, "dialog");
+  assert.equal(await page.evaluate(() => document.activeElement?.id), "reviewNow");
+  await page.keyboard.press("Shift+Tab");
+  assert.equal(await page.evaluate(() => document.activeElement?.id), "reviewNoThanks", "reverse Tab stays in the dialog");
+  await page.keyboard.press("Tab");
+  assert.equal(await page.evaluate(() => document.activeElement?.id), "reviewNow", "forward Tab wraps within the dialog");
   assert.ok(firstLayout.controls.bottom <= 600,
     `main controls including the break action fit popup height: ${JSON.stringify(firstLayout)}`);
   assert.ok(firstLayout.overflow.width <= 300 && firstLayout.overflow.height <= 600,
@@ -556,6 +587,8 @@ async function verifyRatingPrompt(context, extensionId) {
   await page.locator("#review-prompt").waitFor({ state: "hidden" });
   assert.equal(await page.locator("body").evaluate((body) => body.classList.contains("review-visible")), false,
     "resetting the blocked count hides an ineligible review prompt");
+  assert.equal(await page.locator("#popupControls").evaluate((controls) => controls.inert), false,
+    "dismissing the review dialog restores the main controls");
   await setStorage(page, { ft_stats_blocked: 13 });
   await page.locator("#review-prompt").waitFor({ state: "visible" });
   assert.equal(await page.locator("#reviewBlockedCount").innerText(),
@@ -1971,6 +2004,73 @@ async function verifyLinkedInRuntime(context, extensionId) {
   pass("LinkedIn hiding stays inside recognized feed and sidebar containers");
 }
 
+async function verifyRedditRuntime(context, extensionId) {
+  const settingsPage = await openExtensionPage(context, extensionId, "popup.html");
+  const storageKeys = [
+    "ft_enabled", "focusMode", "platformSettings", "hide_rd_feed",
+    "restrictHiddenPlatforms", "ft_timer_end", "ft_timer_type",
+  ];
+  const priorStorage = await getStorage(settingsPage, storageKeys);
+  const routePattern = /^https:\/\/(?:www\.)?reddit\.com\/.*$/;
+  const routeHandler = (route) => route.fulfill({
+    status: 200,
+    contentType: "text/html",
+    body: '<!doctype html><html><body><nav><a href="/search/">Search</a></nav><main><shreddit-feed><a href="/r/test/comments/abc/post/">Post</a></shreddit-feed></main></body></html>',
+  });
+  await context.route(routePattern, routeHandler);
+  const page = await context.newPage();
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  try {
+    await setStorage(settingsPage, {
+      ft_enabled: true,
+      focusMode: true,
+      platformSettings: { rd: "strict" },
+      hide_rd_feed: true,
+      restrictHiddenPlatforms: true,
+      ft_timer_end: null,
+      ft_timer_type: null,
+    });
+    await page.goto("https://www.reddit.com/r/test/", { waitUntil: "domcontentloaded" });
+    await page.waitForFunction(() => document.querySelector("shreddit-feed")?.style.display === "none");
+    assert.equal(await page.locator(".ft-reddit-feed-notice button").count(), 0);
+    assert.equal(await page.locator("nav a").isVisible(), true);
+
+    await setStorage(settingsPage, { platformSettings: { rd: "warn" } });
+    await page.locator(".ft-reddit-feed-notice button").waitFor({ state: "visible" });
+    await page.locator(".ft-reddit-feed-notice button").click();
+    await page.waitForFunction(() => document.querySelector("shreddit-feed")?.style.display !== "none");
+    assert.equal(await page.locator(".ft-reddit-feed-notice").count(), 0);
+
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.locator(".ft-reddit-feed-notice button").waitFor({ state: "visible" });
+    assert.equal(await page.locator("shreddit-feed").evaluate((feed) => feed.style.display), "none", "Warn reveal resets on reload");
+
+    await setStorage(settingsPage, { platformSettings: { rd: "allow" } });
+    await page.waitForFunction(() => document.querySelector("shreddit-feed")?.style.display !== "none");
+    await setStorage(settingsPage, { ft_timer_end: Date.now() + 60000, ft_timer_type: "work" });
+    await page.waitForFunction(() => document.querySelector("shreddit-feed")?.style.display === "none");
+    assert.equal(await page.locator(".ft-reddit-feed-notice button").count(), 0, "work timer forces Strict");
+
+    await page.goto("https://reddit.com/r/test/", { waitUntil: "domcontentloaded" });
+    await page.waitForFunction(() => document.querySelector("shreddit-feed")?.style.display === "none");
+    await page.goto("https://www.reddit.com/r/test/comments/abc/post/", { waitUntil: "domcontentloaded" });
+    await page.waitForFunction(() => Boolean(document.querySelector("shreddit-feed")));
+    assert.equal(await page.locator("shreddit-feed").evaluate((feed) => feed.style.display), "", "direct post remains available during work timer");
+    assert.deepEqual(errors, [], "packaged Reddit content script has no page errors");
+  } finally {
+    await page.close();
+    await settingsPage.evaluate(async ({ previous, keys }) => {
+      const missing = keys.filter((key) => !Object.hasOwn(previous, key));
+      await new Promise((resolve) => chrome.storage.local.remove(missing, resolve));
+      await new Promise((resolve) => chrome.storage.local.set(previous, resolve));
+    }, { previous: priorStorage, keys: storageKeys });
+    await settingsPage.close();
+    await context.unroute(routePattern, routeHandler);
+  }
+  pass("packaged Reddit content script honors modes, timers, reload, and exact hosts");
+}
+
 async function verifyYouTubeShortsRedirectFixture(context, extensionId) {
   const settingsPage = await openExtensionPage(context, extensionId, "popup.html");
   await setStorage(settingsPage, {
@@ -2040,6 +2140,14 @@ async function runBrowserSmoke() {
     pass(`extension loaded with id ${extensionId}`);
 
     await seedStorage(context, extensionId);
+    if (redditOnly) {
+      await verifyRedditRuntime(context, extensionId);
+      return;
+    }
+    if (ratingOnly) {
+      await verifyRatingPrompt(context, extensionId);
+      return;
+    }
     if (playablesOnly) {
       await verifyYouTubePlayablesRuntime(context, extensionId);
       await verifyYouTubePlayablesRoutes(context, extensionId);
@@ -2054,6 +2162,7 @@ async function runBrowserSmoke() {
     await verifyInstagramRuntime(context, extensionId);
     await verifyLocalizedTikTokRuntime(context, extensionId);
     await verifyLinkedInRuntime(context, extensionId);
+    await verifyRedditRuntime(context, extensionId);
     await verifyYouTubeShortsRedirectFixture(context, extensionId);
     await verifyYouTubeMostRelevantRuntime(context, extensionId);
     await verifyYouTubePlayablesRuntime(context, extensionId);

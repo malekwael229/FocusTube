@@ -191,32 +191,14 @@ body.preload .checkmark {
   overflow: hidden;
 }
 .focustube-popup-body.review-visible {
-  padding: 6px 7px 0;
+  padding-block: 10px;
 }
-.focustube-popup-body.review-visible #popupControls {
-  padding: 8px;
-}
-.focustube-popup-body.review-visible .header-row {
-  margin-bottom: 6px;
-}
-.focustube-popup-body.review-visible .timer-section-compact {
-  padding: 2px 0;
-}
-.focustube-popup-body.review-visible .control-row {
-  padding: 6px 8px;
-  margin-bottom: 6px;
-}
-.focustube-popup-body.review-visible .platform-grid {
-  gap: 6px;
-  padding: 6px 0 2px;
-}
-.focustube-popup-body.review-visible .platform-icon {
-  width: 58px;
-  height: 58px;
-  border-radius: 16px;
-}
-.focustube-popup-body.review-visible .footer-compact {
-  padding-top: 6px;
+.focustube-popup-body.review-visible::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: rgba(12, 20, 34, 0.38);
 }
 .focustube-popup-body .header-row {
   display: flex;
@@ -1944,14 +1926,12 @@ body.dark-mode .platform-icon {
     height, max-height, margin, padding !important;
 }
 .review-prompt {
-  position: relative;
-  width: 100%;
-  margin: 0 0 6px;
-  background: linear-gradient(
-    135deg,
-    rgba(79, 172, 254, 0.16),
-    rgba(0, 242, 254, 0.12)
-  );
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  width: calc(100% - 32px);
+  margin: 0;
+  background: var(--panel);
   border: 1px solid var(--border);
   padding: 7px 9px;
   border-radius: 14px;
@@ -1964,6 +1944,7 @@ body.dark-mode .platform-icon {
   align-items: center;
   text-align: center;
   z-index: 20;
+  transform: translateY(-50%);
 }
 .review-copy {
   display: flex;
@@ -2030,7 +2011,7 @@ body.dark-mode .platform-icon {
 }
 .review-prompt.fade-out {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(calc(-50% - 10px));
   transition:
     opacity 0.3s,
     transform 0.3s;
