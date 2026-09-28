@@ -652,7 +652,7 @@ const checks = [
       assert.match(common, /consumeKick: function \(platform, callback\)/);
       assert.match(common, /n\.id = "ft-kick-notification"/);
       assert.match(youtube, /Utils\.markKick\("yt"/);
-      assert.match(youtube, /if \(window\.location\.href\.includes\("\/shorts\/"\)\) return;/);
+      assert.match(youtube, /if \(this\.isDistractingRoute\(window\.location\.pathname\)\) return;/);
       assert.match(youtube, /Utils\.consumeKick\("yt"/);
       assert.match(instagram, /Utils\.markKick\("ig"/);
       assert.match(instagram, /Utils\.consumeKick\("ig"/);

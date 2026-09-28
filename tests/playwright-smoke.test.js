@@ -1056,11 +1056,6 @@ async function verifyYouTubePlayablesRuntime(context, extensionId) {
     "turning off Most relevant does not restore a recycled Playables shelf",
   );
   await setStorage(settingsPage, { hide_yt_most_relevant_shelf: true });
-  await page.evaluate(() => {
-    history.pushState({}, "", "/playables");
-    document.dispatchEvent(new Event("yt-navigate-finish"));
-  });
-  assert.equal(new URL(page.url()).pathname, "/playables");
   await setStorage(settingsPage, { ft_enabled: false });
   await page.waitForFunction(() => getComputedStyle(document.getElementById("playables-shelf")).display !== "none");
   await setStorage(settingsPage, { ft_enabled: true });
@@ -1068,6 +1063,141 @@ async function verifyYouTubePlayablesRuntime(context, extensionId) {
   await page.close();
   await settingsPage.close();
   pass("YouTube Playables navigation and shelves hide narrowly and restore on toggles/disable");
+}
+
+async function verifyYouTubePlayablesRoutes(context, extensionId) {
+  const settingsPage = await openExtensionPage(context, extensionId, "popup.html");
+  const fixture = `<!doctype html><html><body><a id="home-link" href="/">Home</a><script>
+    document.getElementById("home-link").addEventListener("click", (event) => {
+      event.preventDefault();
+      history.replaceState({}, "", "/");
+      const link = document.getElementById("home-link");
+      link.dataset.clicks = String(Number(link.dataset.clicks || 0) + 1);
+      document.dispatchEvent(new Event("yt-navigate-finish"));
+    });
+  </script></body></html>`;
+  const routePattern = /^https:\/\/www\.youtube\.com\//;
+  const routeHandler = (route) => route.fulfill({
+    status: 200,
+    contentType: "text/html",
+    body: fixture,
+  });
+  await context.route(routePattern, routeHandler);
+
+  try {
+    await setStorage(settingsPage, {
+      ft_enabled: true,
+      focusMode: true,
+      platformSettings: { yt: "strict" },
+      hide_yt_playables: false,
+      ft_timer_end: 0,
+      ft_timer_type: null,
+    });
+    for (const path of [
+      "/playables",
+      "/playables/",
+      "/playables/game-id",
+      "/playables/game-id?next=/feed/history",
+    ]) {
+      const page = await context.newPage();
+      await page.goto(`https://www.youtube.com${path}`, { waitUntil: "domcontentloaded" });
+      await page.waitForFunction(() =>
+        location.pathname === "/" && document.getElementById("home-link")?.dataset.clicks === "1",
+      );
+      await page.close();
+    }
+
+    for (const path of ["/playables-extra", "/watch?v=/playables/game-id"]) {
+      const page = await context.newPage();
+      await page.goto(`https://www.youtube.com${path}`, { waitUntil: "domcontentloaded" });
+      await page.waitForFunction(() => document.body.classList.contains("ft-platform-yt"));
+      assert.equal(new URL(page.url()).pathname, new URL(`https://www.youtube.com${path}`).pathname);
+      assert.equal(await page.locator("#focus-tube-warning-overlay").count(), 0);
+      await page.close();
+    }
+
+    await setStorage(settingsPage, { platformSettings: { yt: "warn" } });
+    const warnPage = await context.newPage();
+    await warnPage.goto("https://www.youtube.com/playables/game-id", { waitUntil: "domcontentloaded" });
+    await warnPage.locator("#focus-tube-warning-overlay").waitFor({ state: "visible" });
+    assert.equal(new URL(warnPage.url()).pathname, "/playables/game-id");
+    assert.equal(await warnPage.locator("#focus-tube-warning-overlay").getAttribute("data-ft-scope"), "playables");
+    await warnPage.getByRole("button", { name: "Watch Anyway" }).click();
+    await warnPage.locator("#focus-tube-warning-overlay").waitFor({ state: "detached" });
+    await warnPage.evaluate(() => {
+      history.pushState({}, "", "/shorts/test");
+      document.dispatchEvent(new Event("yt-navigate-finish"));
+    });
+    await warnPage.locator("#focus-tube-warning-overlay").waitFor({ state: "visible" });
+    assert.equal(await warnPage.locator("#focus-tube-warning-overlay").getAttribute("data-ft-scope"), "shorts");
+    await warnPage.getByRole("button", { name: "Watch Anyway" }).click();
+    await warnPage.locator("#focus-tube-warning-overlay").waitFor({ state: "detached" });
+    await warnPage.evaluate(() => {
+      history.pushState({}, "", "/playables/game-id");
+      document.dispatchEvent(new Event("yt-navigate-finish"));
+    });
+    await warnPage.locator("#focus-tube-warning-overlay").waitFor({ state: "visible" });
+    assert.equal(await warnPage.locator("#focus-tube-warning-overlay").getAttribute("data-ft-scope"), "playables");
+    await warnPage.close();
+
+    await setStorage(settingsPage, { platformSettings: { yt: "W" } });
+    const warnAliasPage = await context.newPage();
+    await warnAliasPage.goto("https://www.youtube.com/playables/game-id", { waitUntil: "domcontentloaded" });
+    await warnAliasPage.locator("#focus-tube-warning-overlay").waitFor({ state: "visible" });
+    await warnAliasPage.close();
+
+    await setStorage(settingsPage, { platformSettings: { yt: "allow" } });
+    const passivePage = await context.newPage();
+    await passivePage.goto("https://www.youtube.com/playables/game-id", { waitUntil: "domcontentloaded" });
+    await passivePage.waitForFunction(() => document.body.classList.contains("ft-platform-yt"));
+    assert.equal(new URL(passivePage.url()).pathname, "/playables/game-id");
+    assert.equal(await passivePage.locator("#focus-tube-warning-overlay").count(), 0);
+    await passivePage.close();
+
+    await setStorage(settingsPage, {
+      focusMode: false,
+      ft_timer_end: Date.now() + 5 * 60_000,
+      ft_timer_type: "work",
+    });
+    const workPage = await context.newPage();
+    await workPage.goto("https://www.youtube.com/playables/game-id", { waitUntil: "domcontentloaded" });
+    await workPage.waitForFunction(() =>
+      location.pathname === "/" && document.getElementById("home-link")?.dataset.clicks === "1",
+    );
+    await workPage.close();
+
+    await setStorage(settingsPage, {
+      focusMode: true,
+      platformSettings: { yt: "strict" },
+      ft_timer_end: Date.now() + 5 * 60_000,
+      ft_timer_type: "break",
+    });
+    const breakPage = await context.newPage();
+    await breakPage.goto("https://www.youtube.com/playables/game-id", { waitUntil: "domcontentloaded" });
+    await breakPage.waitForFunction(() => document.body.classList.contains("ft-platform-yt"));
+    assert.equal(new URL(breakPage.url()).pathname, "/playables/game-id");
+    assert.equal(await breakPage.locator("#focus-tube-warning-overlay").count(), 0);
+    await breakPage.close();
+
+    await setStorage(settingsPage, { ft_timer_end: 0, ft_timer_type: null });
+    const spaPage = await context.newPage();
+    await spaPage.goto("https://www.youtube.com/", { waitUntil: "domcontentloaded" });
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      await spaPage.evaluate(() => {
+        history.pushState({}, "", "/playables/game-id");
+        document.dispatchEvent(new Event("yt-navigate-finish"));
+      });
+      await spaPage.waitForFunction((expected) =>
+        location.pathname === "/" && Number(document.getElementById("home-link")?.dataset.clicks) === expected,
+      attempt);
+    }
+    await spaPage.close();
+  } finally {
+    await context.unroute(routePattern, routeHandler);
+    await setStorage(settingsPage, { ft_timer_end: 0, ft_timer_type: null });
+    await settingsPage.close();
+  }
+  pass("YouTube Playables routes honor Strict, Warn, Passive, work, break, and repeated SPA navigation");
 }
 
 function facebookFixtureHtml({ reelsPath = false, warnMedia = false } = {}) {
@@ -1897,6 +2027,7 @@ async function runBrowserSmoke() {
     await seedStorage(context, extensionId);
     if (playablesOnly) {
       await verifyYouTubePlayablesRuntime(context, extensionId);
+      await verifyYouTubePlayablesRoutes(context, extensionId);
       return;
     }
     await verifyPopup(context, extensionId);
@@ -1911,6 +2042,7 @@ async function runBrowserSmoke() {
     await verifyYouTubeShortsRedirectFixture(context, extensionId);
     await verifyYouTubeMostRelevantRuntime(context, extensionId);
     await verifyYouTubePlayablesRuntime(context, extensionId);
+    await verifyYouTubePlayablesRoutes(context, extensionId);
 
     if (runYouTube) {
       await verifyYouTubeShorts(context);

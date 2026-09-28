@@ -49,7 +49,7 @@ The project supports Chromium browsers with a Manifest V3 build and Firefox with
 
 ### Supported Surfaces
 
-- **YouTube:** Blocks Shorts URLs and can hide Shorts navigation/shelves plus the English "Most relevant" shelf on the Subscriptions page.
+- **YouTube:** Redirects Shorts and Playables routes in Strict Mode or work sessions, warns in Warn Mode, and can hide their navigation and discovery shelves plus the English "Most relevant" shelf on the Subscriptions page.
 - **Instagram:** Blocks Reels/Explore paths; can hide Reels navigation and Stories; and optionally filters suggested or sponsored posts when detected.
 - **TikTok:** Blocks common feed/video surfaces while allowing safer areas such as messages and settings.
 - **Facebook:** Blocks Reels paths and can hide Reels navigation, Stories, and People You Might Know suggestions.
