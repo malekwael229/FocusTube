@@ -129,13 +129,13 @@ const YouTube = {
     const shouldBlock = FocusState.shouldBlock;
     if (
       currentUrl === this.lastUrl &&
-      !currentUrl.includes("/shorts/") &&
+      !this.isDistractingRoute(window.location.pathname) &&
       this.lastBlockState === shouldBlock
     )
       return;
     this.lastUrl = currentUrl;
     this.lastBlockState = shouldBlock;
-    if (currentUrl.includes("/feed/history")) {
+    if (window.location.pathname.replace(/\/+$/, "") === "/feed/history") {
       this.clearSession();
       this.removeVisualFocus();
       UI.remove();
@@ -146,6 +146,14 @@ const YouTube = {
     else this.removeVisualFocus();
     this.applyInlineHiding();
     this.updateLogoFix();
+  },
+  getDistractionScope: function (pathname) {
+    if (pathname.startsWith("/shorts/")) return "shorts";
+    if (/^\/playables(?:\/|$)/.test(pathname)) return "playables";
+    return null;
+  },
+  isDistractingRoute: function (pathname) {
+    return Boolean(this.getDistractionScope(pathname));
   },
   checkActiveBlocking: function (url) {
     if (!Utils.isExtensionEnabled()) {
@@ -161,7 +169,8 @@ const YouTube = {
     this.currentMode = CONFIG.platformSettings.yt;
     let action = "none";
     let reason = "";
-    if (url.includes("/shorts/")) {
+    const scope = this.getDistractionScope(new URL(url).pathname);
+    if (scope) {
       if (FocusState.isBreak) {
         action = "remove";
         reason = "break timer";
@@ -170,21 +179,21 @@ const YouTube = {
       } else if (FocusState.isWork) {
         action = "block";
         reason = "work timer";
-        this.handleShortsBlocking(url, true);
+        this.handleRouteBlocking(true, scope);
       } else if (
         CONFIG.platformSettings.yt === "S" ||
         CONFIG.platformSettings.yt === "strict"
       ) {
         action = "strict";
         reason = "strict mode";
-        this.handleShortsBlocking(url, true);
+        this.handleRouteBlocking(true, scope);
       } else if (
         CONFIG.platformSettings.yt === "W" ||
         CONFIG.platformSettings.yt === "warn"
       ) {
         action = "warn";
         reason = "warn mode";
-        this.handleShortsBlocking(url, false);
+        this.handleRouteBlocking(false, scope);
       } else {
         action = "allow";
         reason = "allow/passive mode";
@@ -203,14 +212,14 @@ const YouTube = {
       mode: this.currentMode,
       isWork: FocusState.isWork,
       isBreak: FocusState.isBreak,
-      sessionAllowed: this.isSessionAllowed(),
+      sessionAllowed: this.isSessionAllowed(scope),
       action,
       reason,
     });
   },
-  handleShortsBlocking: function (url, isForced) {
+  handleRouteBlocking: function (isForced, scope) {
     if (!Utils.isExtensionEnabled()) return;
-    if (!isForced && this.isSessionAllowed()) return;
+    if (!isForced && this.isSessionAllowed(scope)) return;
     const mode = isForced ? "strict" : CONFIG.platformSettings.yt;
     if (mode === "strict") {
       this.isRedirecting = true;
@@ -223,7 +232,7 @@ const YouTube = {
           this.runChecks();
         }, 1000);
       });
-    } else if (mode === "warn") {
+    } else if (mode === "warn" || mode === "W") {
       UI.create(
         "warn",
         "yt",
@@ -231,6 +240,7 @@ const YouTube = {
           this.runChecks();
         },
         () => this.navigateHome(),
+        { scope },
       );
       Utils.lockVideo();
     }
@@ -245,16 +255,18 @@ const YouTube = {
     }
     window.location.replace(new URL("/", window.location.origin).href);
   },
-  isSessionAllowed: function () {
+  isSessionAllowed: function (scope) {
     return (
       CONFIG.session.allowUntil &&
       CONFIG.session.allowUntil > Date.now() &&
-      CONFIG.session.platform === "yt"
+      CONFIG.session.platform === "yt" &&
+      CONFIG.session.scope === scope
     );
   },
   clearSession: function () {
     CONFIG.session.allowUntil = 0;
     CONFIG.session.platform = null;
+    CONFIG.session.scope = null;
   },
   applyFocusMode: function () {
     if (!Utils.shouldApplyVisualHiding("yt")) {
@@ -514,7 +526,7 @@ const YouTube = {
     this.setLogoFix(isHidden);
   },
   checkKick: function () {
-    if (window.location.href.includes("/shorts/")) return;
+    if (this.isDistractingRoute(window.location.pathname)) return;
     Utils.consumeKick("yt", () => UI.showKickNotification());
   },
 };
