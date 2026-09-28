@@ -443,6 +443,12 @@
   "hideMostRelevantShelfDescription": {
     "message": "Ocultar la sección «Más relevante» en Suscripciones"
   },
+  "hidePlayables": {
+    "message": "Ocultar Playables"
+  },
+  "hidePlayablesDescription": {
+    "message": "Ocultar la sección de Playables y su enlace de navegación en YouTube"
+  },
   "hideStories": {
     "message": "Ocultar Stories"
   },

@@ -36,6 +36,7 @@ const CONFIG = {
     ytShortsNav: true,
     ytShortsShelves: true,
     ytMostRelevantShelf: true,
+    ytPlayables: true,
     igReelsNav: true,
     // Granular filters are opt-in; upgrades must not hide additional posts.
     igSuggested: false,
@@ -991,6 +992,7 @@ const UI = {
       "hide_yt_shorts_nav",
       "hide_yt_shorts_shelves",
       "hide_yt_most_relevant_shelf",
+      "hide_yt_playables",
       "hide_ig_reels_nav",
       "hide_ig_suggested",
       "hide_fb_reels_nav",
@@ -1038,6 +1040,7 @@ const UI = {
         ytShortsNav: res.hide_yt_shorts_nav !== false,
         ytShortsShelves: res.hide_yt_shorts_shelves !== false,
         ytMostRelevantShelf: res.hide_yt_most_relevant_shelf !== false,
+        ytPlayables: res.hide_yt_playables !== false,
         igReelsNav: res.hide_ig_reels_nav !== false,
         igSuggested: res.hide_ig_suggested === true,
         fbReelsNav: res.hide_fb_reels_nav !== false,
@@ -1210,6 +1213,11 @@ const UI = {
     if (changes.hide_yt_most_relevant_shelf) {
       CONFIG.visualHiding.ytMostRelevantShelf =
         changes.hide_yt_most_relevant_shelf.newValue !== false;
+      Utils.applyVisualHidingClasses();
+    }
+    if (changes.hide_yt_playables) {
+      CONFIG.visualHiding.ytPlayables =
+        changes.hide_yt_playables.newValue !== false;
       Utils.applyVisualHidingClasses();
     }
     if (changes.hide_ig_reels_nav) {

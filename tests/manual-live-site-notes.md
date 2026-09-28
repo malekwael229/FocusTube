@@ -14,6 +14,9 @@ This opens a real YouTube Shorts URL and expects FocusTube to move away from the
 
 ## Manual Account-Based Checks
 
+YouTube:
+- Where Playables is available, enable Hide Playables and confirm its Home shelf and Explore navigation link disappear while ordinary video shelves stay visible. Turn the setting off and confirm both entry points return. A direct Playables URL remains accessible by design.
+
 Instagram:
 - Log in manually.
 - Confirm Reels/Explore paths are blocked in strict/focus mode.

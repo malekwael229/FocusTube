@@ -443,6 +443,12 @@
   "hideMostRelevantShelfDescription": {
     "message": "إخفاء قسم \"الأكثر صلة\" في الاشتراكات"
   },
+  "hidePlayables": {
+    "message": "إخفاء ألعاب Playables"
+  },
+  "hidePlayablesDescription": {
+    "message": "إخفاء قسم Playables ورابطه في قائمة التنقل على YouTube"
+  },
   "hideStories": {
     "message": "إخفاء القصص"
   },

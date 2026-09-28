@@ -14,6 +14,7 @@ const visualTargets = {
   yt: [
     { key: "hide_yt_shorts_nav", selector: 'ytd-guide-entry-renderer:has(a[href="/shorts/"]), ytd-mini-guide-entry-renderer:has(a[href="/shorts/"])' },
     { key: "hide_yt_shorts_shelves", selector: "ytd-rich-shelf-renderer[is-shorts], ytd-reel-shelf-renderer" },
+    { key: "hide_yt_playables", selector: 'ytd-guide-entry-renderer:has(a[href="/playables"], a[href="/playables/"]), ytd-mini-guide-entry-renderer:has(a[href="/playables"], a[href="/playables/"])' },
     { key: "hide_yt_most_relevant_shelf", selector: "ytd-rich-shelf-renderer", route: "https://www.youtube.com/feed/subscriptions", text: "Most relevant" },
   ],
   ig: [
@@ -103,6 +104,58 @@ async function inspect(page, site) {
   }
 }
 
+function assessPausedMedia(samples) {
+  const videos = new Map();
+  let playable = false;
+  let playing = false;
+  let longestUnpausedMs = 0;
+  for (const sample of samples) {
+    for (const video of sample.videos) {
+      const previous = videos.get(video.id) || { advances: 0, advance: 0 };
+      if (video.readyState >= 2) playable = true;
+      if (video.readyState >= 2 && !video.paused) {
+        const start = previous.start ?? sample.elapsed;
+        const delta = previous.unpaused && previous.readyState >= 2
+          ? video.time - previous.time : 0;
+        const advances = (previous.unpaused ? previous.advances : 0) + (delta > 0.01 ? 1 : 0);
+        const advance = (previous.unpaused ? previous.advance : 0) + (delta > 0.01 ? delta : 0);
+        const unpausedMs = sample.elapsed - start;
+        longestUnpausedMs = Math.max(longestUnpausedMs, unpausedMs);
+        if ((advances >= 2 && advance >= 0.05) || unpausedMs >= 700) playing = true;
+        videos.set(video.id, { unpaused: true, readyState: video.readyState, time: video.time, start, advances, advance });
+      } else {
+        videos.set(video.id, { unpaused: false, readyState: video.readyState, time: video.time, advances: 0, advance: 0 });
+      }
+    }
+  }
+  return { observedVideos: videos.size, playable, playing, longestUnpausedMs };
+}
+
+async function samplePausedMedia(page, overlay, duration = 4000) {
+  return page.evaluate(async ({ overlay, duration }) => {
+    const ids = new WeakMap();
+    let nextId = 0;
+    const started = performance.now();
+    const samples = [];
+    const capture = () => {
+      samples.push({
+        elapsed: Math.round(performance.now() - started),
+        overlay: !!document.querySelector(overlay),
+        videos: [...document.querySelectorAll("video")].map((video) => {
+          if (!ids.has(video)) ids.set(video, ++nextId);
+          return { id: ids.get(video), paused: video.paused, readyState: video.readyState, time: video.currentTime };
+        }),
+      });
+    };
+    capture();
+    const interval = setInterval(capture, 100);
+    try { await new Promise((resolve) => setTimeout(resolve, duration)); }
+    finally { clearInterval(interval); }
+    capture();
+    return samples;
+  }, { overlay, duration });
+}
+
 async function healthy(page, site) {
   await delay(1200);
   const state = await inspect(page, site);
@@ -140,6 +193,7 @@ function baseSettings(code, mode) {
     platformSettings: { yt: "allow", ig: "allow", tt: "allow", fb: "allow", li: "allow", [code]: mode },
     ["popup_visible_" + code]: true, restrictHiddenPlatforms: false, visualHideHiddenPlatforms: false,
     hide_yt_shorts_nav: false, hide_yt_shorts_shelves: false, hide_yt_most_relevant_shelf: false,
+    hide_yt_playables: false,
     hide_ig_stories: false, hide_ig_reels_nav: false, hide_fb_stories: false,
     hide_fb_reels_nav: false, hide_fb_people_you_might_know: false,
     hide_li_feed: true, hide_li_addfeed: false };
@@ -194,12 +248,15 @@ async function runSiteChecks(session, report, { routes = {}, selectedSites = Obj
     await modeTest("strict.allowed", "strict", site.allowed, false);
     const warned = await modeTest("warn", "warn", site.blocked, true);
     if (warned) {
-      await report.case(meta("media.pause", "Every existing video is paused under warning", "warn"), page, async () => {
-        const state = await inspect(page, site);
-        if (!state.videos.length) throw blocked("No video mounted beneath warning; playback cannot be inspected", "D");
-        await delay(750);
-        assert.ok((await inspect(page, site)).videos.every((v) => v.paused), "Video plays beneath warning");
-        return { videos: state.videos.length, paused: true };
+      await report.case(meta("media.pause", "Playable video does not continue beneath warning", "warn"), page, async () => {
+        const samples = await samplePausedMedia(page, site.overlay);
+        const media = assessPausedMedia(samples);
+        if (!media.observedVideos || !media.playable) {
+          throw blocked("No playable video beneath warning; playback cannot be inspected: " + JSON.stringify(media), "D");
+        }
+        assert.ok(samples.every((sample) => sample.overlay), "Warning disappeared during media pause check");
+        assert.equal(media.playing, false, "Playable video advances or remains unpaused beneath warning: " + JSON.stringify(media));
+        return { ...media, enforced: true, durationMs: samples.at(-1).elapsed };
       });
       await report.case(meta("watch-anyway", "Warning closes using its real button", "warn"), page, async () => {
         await delay(3200);
@@ -428,4 +485,4 @@ async function runSiteChecks(session, report, { routes = {}, selectedSites = Obj
   await control.close();
 }
 
-module.exports = { runSiteChecks, sites, visualTargets, inspect, healthy };
+module.exports = { runSiteChecks, sites, visualTargets, inspect, healthy, assessPausedMedia };

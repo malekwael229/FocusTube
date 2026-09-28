@@ -10,6 +10,7 @@ const YouTube = {
   hiddenNavElements: new Set(),
   hiddenFocusElements: new Set(),
   hiddenMostRelevantElements: new Set(),
+  hiddenPlayablesElements: new Set(),
   init: function () {
     if (this.initialized) return;
     Utils.ensureBody(() => this._start());
@@ -45,7 +46,8 @@ const YouTube = {
       if (
         changes.hide_yt_shorts_nav ||
         changes.hide_yt_shorts_shelves ||
-        changes.hide_yt_most_relevant_shelf
+        changes.hide_yt_most_relevant_shelf ||
+        changes.hide_yt_playables
       ) {
         if (changes.hide_yt_shorts_nav) {
           CONFIG.visualHiding.ytShortsNav =
@@ -58,6 +60,10 @@ const YouTube = {
         if (changes.hide_yt_most_relevant_shelf) {
           CONFIG.visualHiding.ytMostRelevantShelf =
             changes.hide_yt_most_relevant_shelf.newValue !== false;
+        }
+        if (changes.hide_yt_playables) {
+          CONFIG.visualHiding.ytPlayables =
+            changes.hide_yt_playables.newValue !== false;
         }
         this.applyInlineHiding();
       }
@@ -74,14 +80,21 @@ const YouTube = {
     if (!document.body) return;
     if (!this.observer) {
       this.observer = Utils.trackObserver(
-        new MutationObserver(() => {
-          this.scheduleInlineHiding();
+        new MutationObserver((mutations) => {
+          if (mutations.some((mutation) =>
+            mutation.type !== "characterData" ||
+            mutation.target.parentElement?.closest("ytd-rich-shelf-renderer")
+          )) {
+            this.scheduleInlineHiding();
+          }
         }),
       );
       this.observer.observe(document.body, {
         childList: true,
         subtree: true,
-        attributes: false,
+        characterData: true,
+        attributes: true,
+        attributeFilter: ["href", "title"],
       });
     }
   },
@@ -260,15 +273,35 @@ const YouTube = {
     Utils.setInlineStyle(el, "display", "none", "important");
     set.add(el);
   },
+  hiddenElementSets: function () {
+    return [
+      this.hiddenNavElements,
+      this.hiddenFocusElements,
+      this.hiddenMostRelevantElements,
+      this.hiddenPlayablesElements,
+    ];
+  },
+  releaseHiddenElement: function (el, set) {
+    if (!set.delete(el)) return;
+    if (!this.hiddenElementSets().some((other) => other.has(el))) {
+      Utils.restoreInlineStyle(el, "display");
+    }
+  },
   restoreHidden: function (targetSet) {
     const set = targetSet || this.hiddenFocusElements;
-    set.forEach((el) => Utils.restoreInlineStyle(el, "display"));
-    set.clear();
+    set.forEach((el) => this.releaseHiddenElement(el, set));
+  },
+  reconcileHidden: function (set, matches) {
+    set.forEach((el) => {
+      if (!matches.has(el)) this.releaseHiddenElement(el, set);
+    });
+    matches.forEach((el) => this.hideElement(el, set));
   },
   clearInlineHiding: function () {
     this.restoreHidden(this.hiddenNavElements);
     this.restoreHidden(this.hiddenFocusElements);
     this.restoreHidden(this.hiddenMostRelevantElements);
+    this.restoreHidden(this.hiddenPlayablesElements);
   },
   scheduleInlineHiding: function () {
     if (this.inlineHidingFrame || !this.isActive) return;
@@ -283,9 +316,11 @@ const YouTube = {
     }
   },
   applyInlineHiding: function () {
-    Utils.pruneDetachedElements(this.hiddenNavElements);
-    Utils.pruneDetachedElements(this.hiddenFocusElements);
-    Utils.pruneDetachedElements(this.hiddenMostRelevantElements);
+    this.hiddenElementSets().forEach((set) => {
+      set.forEach((el) => {
+        if (!el.isConnected) this.releaseHiddenElement(el, set);
+      });
+    });
     const shouldHide =
       FocusState.shouldBlock && Utils.shouldApplyVisualHiding("yt");
     if (!shouldHide) {
@@ -295,6 +330,7 @@ const YouTube = {
     if (!CONFIG.visualHiding.ytShortsNav) {
       this.restoreHidden(this.hiddenNavElements);
     } else {
+      const matches = new Set();
       const navSelectors = [
         'a[title="Shorts"]',
         'a[href="/shorts"]',
@@ -307,24 +343,25 @@ const YouTube = {
         const entry = link.closest(
           "ytd-guide-entry-renderer, ytd-mini-guide-entry-renderer",
         );
-        if (entry) this.hideElement(entry, this.hiddenNavElements);
+        if (entry) matches.add(entry);
       });
+      this.reconcileHidden(this.hiddenNavElements, matches);
     }
     if (!CONFIG.visualHiding.ytShortsShelves) {
       this.restoreHidden(this.hiddenFocusElements);
     } else {
+      const matches = new Set();
       document
         .querySelectorAll(
           'ytd-rich-shelf-renderer[is-shorts], ytd-rich-shelf-renderer[is-shorts=""]',
         )
         .forEach((shelf) => {
           const section = shelf.closest("ytd-rich-section-renderer");
-          if (section) this.hideElement(section, this.hiddenFocusElements);
-          else this.hideElement(shelf, this.hiddenFocusElements);
+          matches.add(section || shelf);
         });
       document.querySelectorAll('a[href^="/shorts"]').forEach((link) => {
         const richItem = link.closest("ytd-rich-item-renderer");
-        if (richItem) this.hideElement(richItem, this.hiddenFocusElements);
+        if (richItem) matches.add(richItem);
       });
       document
         .querySelectorAll(
@@ -332,7 +369,7 @@ const YouTube = {
         )
         .forEach((link) => {
           const chip = link.closest("yt-chip-cloud-chip-renderer");
-          if (chip) this.hideElement(chip, this.hiddenFocusElements);
+          if (chip) matches.add(chip);
         });
       document
         .querySelectorAll(
@@ -340,10 +377,12 @@ const YouTube = {
         )
         .forEach((link) => {
           const tab = link.closest("yt-tab-shape");
-          if (tab) this.hideElement(tab, this.hiddenFocusElements);
+          if (tab) matches.add(tab);
         });
+      this.reconcileHidden(this.hiddenFocusElements, matches);
     }
     this.applyMostRelevantShelfHiding();
+    this.applyPlayablesHiding();
   },
   isSubscriptionsFeed: function () {
     const path = window.location.pathname.replace(/\/+$/, "");
@@ -364,6 +403,28 @@ const YouTube = {
     }
     return "";
   },
+  getPlayablesShelfHeadingText: function (shelf) {
+    const header = shelf.querySelector(
+      ":scope > #rich-shelf-header, :scope > #header, :scope > #title-container",
+    );
+    const heading = header?.querySelector('#title, h2, h3, [role="heading"]') ||
+      shelf.querySelector(':scope > #title, :scope > h2, :scope > h3, :scope > [role="heading"]');
+    return heading?.textContent?.trim() || "";
+  },
+  hasPlayablesHeadingLink: function (container) {
+    const links = 'a[href="/playables"], a[href="/playables/"]';
+    const header = container.querySelector(
+      ':scope > #rich-shelf-header, :scope > #header, :scope > #title-container, ' +
+      ':scope > #title, :scope > h2, :scope > h3, :scope > [role="heading"]',
+    );
+    const directLink = container.querySelector(
+      ':scope > a[href="/playables"], :scope > a[href="/playables/"]',
+    );
+    return Boolean(
+      header?.querySelector(links) ||
+      (directLink && !header)
+    );
+  },
   isEnglishMostRelevantShelf: function (shelf) {
     return this.getShelfHeadingText(shelf).toLowerCase() === "most relevant";
   },
@@ -375,13 +436,54 @@ const YouTube = {
       this.restoreHidden(this.hiddenMostRelevantElements);
       return;
     }
+    const matches = new Set();
     document
       .querySelectorAll("ytd-rich-section-renderer, ytd-reel-shelf-renderer")
       .forEach((shelf) => {
         if (this.isEnglishMostRelevantShelf(shelf)) {
-          this.hideElement(shelf, this.hiddenMostRelevantElements);
+          matches.add(shelf);
         }
       });
+    this.reconcileHidden(this.hiddenMostRelevantElements, matches);
+  },
+  applyPlayablesHiding: function () {
+    if (!CONFIG.visualHiding.ytPlayables) {
+      this.restoreHidden(this.hiddenPlayablesElements);
+      return;
+    }
+
+    const matches = new Set();
+    document
+      .querySelectorAll(
+        'ytd-guide-entry-renderer a[href="/playables"], ' +
+        'ytd-guide-entry-renderer a[href="/playables/"], ' +
+        'ytd-mini-guide-entry-renderer a[href="/playables"], ' +
+        'ytd-mini-guide-entry-renderer a[href="/playables/"]',
+      )
+      .forEach((link) => {
+        const entry = link.closest(
+          "ytd-guide-entry-renderer, ytd-mini-guide-entry-renderer",
+        );
+        if (entry) matches.add(entry);
+      });
+
+    document.querySelectorAll("ytd-rich-shelf-renderer").forEach((shelf) => {
+      const heading = this.getPlayablesShelfHeadingText(shelf).toLowerCase();
+      const isPlayables = heading === "playables" ||
+        heading === "youtube playables" ||
+        this.hasPlayablesHeadingLink(shelf);
+      if (!isPlayables) return;
+      const section = shelf.closest("ytd-rich-section-renderer");
+      matches.add(section || shelf);
+    });
+    document.querySelectorAll("ytd-rich-section-renderer").forEach((section) => {
+      if (section.querySelector(
+        'ytd-rich-item-renderer[is-mini-game-card-shelf]',
+      ) || this.hasPlayablesHeadingLink(section)) {
+        matches.add(section);
+      }
+    });
+    this.reconcileHidden(this.hiddenPlayablesElements, matches);
   },
   setLogoFix: function (isEnabled) {
     if (!document.body) return;

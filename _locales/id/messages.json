@@ -443,6 +443,12 @@
   "hideMostRelevantShelfDescription": {
     "message": "Sembunyikan bagian \"Paling relevan\" di Langganan"
   },
+  "hidePlayables": {
+    "message": "Sembunyikan Playables"
+  },
+  "hidePlayablesDescription": {
+    "message": "Sembunyikan bagian Playables dan tautan navigasinya di YouTube"
+  },
   "hideStories": {
     "message": "Sembunyikan Stories"
   },

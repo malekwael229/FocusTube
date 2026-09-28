@@ -5,7 +5,7 @@ const path = require("node:path");
 const PLATFORMS = ["yt", "ig", "tt", "fb", "li"];
 const MODES = ["strict", "warn", "allow"];
 const VISUAL_KEYS = {
-  yt: ["hide_yt_shorts_nav", "hide_yt_shorts_shelves", "hide_yt_most_relevant_shelf"],
+  yt: ["hide_yt_shorts_nav", "hide_yt_shorts_shelves", "hide_yt_most_relevant_shelf", "hide_yt_playables"],
   ig: ["hide_ig_stories", "hide_ig_reels_nav", "hide_ig_suggested"],
   tt: [],
   fb: ["hide_fb_stories", "hide_fb_reels_nav", "hide_fb_people_you_might_know"],
@@ -18,7 +18,7 @@ const DEFAULT_SETTINGS = {
   popup_visible_tt: true, popup_visible_fb: true, popup_visible_li: true,
   restrictHiddenPlatforms: true, visualHideHiddenPlatforms: true,
   hide_ig_stories: true, hide_fb_stories: true, hide_yt_shorts_nav: true,
-  hide_yt_shorts_shelves: true, hide_yt_most_relevant_shelf: true,
+  hide_yt_shorts_shelves: true, hide_yt_most_relevant_shelf: true, hide_yt_playables: true,
   hide_ig_reels_nav: true, hide_fb_reels_nav: true,
   hide_fb_people_you_might_know: true, hide_li_feed: true, hide_li_addfeed: true,
   showBreakButton: true, accentColor: "#4facfe", tutorialCompleted: true,
@@ -482,8 +482,9 @@ async function runExtensionChecks(session, report, { workDir, quick = false } = 
       settings: { lockSettings: true, notifications: false },
       expected: "active work timer locks focus mode and platform choices",
     }, popup, async () => {
-      await replaceSettings(popup, { lockSettings: true, ft_timer_duration: 25, showNotifications: false });
+      await replaceSettings(popup, { lockSettings: true, focusMode: false, ft_timer_duration: 25, showNotifications: false });
       await popup.reload();
+      await waitFor(popup, () => document.getElementById("mainToggle")?.checked === false);
       await popup.click("#timerBtn");
       await waitFor(popup, () => document.getElementById("timerBtn")?.classList.contains("active"));
       assert.equal(await readDom(popup, "#mainToggle", "disabled"), true);
@@ -632,11 +633,22 @@ async function runExtensionChecks(session, report, { workDir, quick = false } = 
         throw error;
       }
       const before = await storage(options, "get", ["ft_timer_duration", "platformSettings"]);
-      for (const fixture of [invalidFixture, incompleteFixture, invalidDurationFixture]) {
+      const rejectedImports = [
+        { fixture: invalidFixture, messageKey: "importInvalidJson" },
+        { fixture: incompleteFixture, messageKey: "importTimerFieldsTogether" },
+        { fixture: invalidDurationFixture, messageKey: "importInvalidValues", args: ["ft_timer_duration, breakDuration"] },
+      ];
+      for (const { fixture, messageKey, args } of rejectedImports) {
+        const expectedMessage = await options.evaluate(({ key, substitutions }) =>
+          chrome.i18n.getMessage(key, substitutions), { key: messageKey, substitutions: args });
+        assert.ok(expectedMessage, `Missing localized ${messageKey} message`);
         await installDialogInstrumentation(options, { confirm: true });
         await options.setInputFiles("#importFile", fixture);
-        const dialogs = await waitForDialog(options, (event) => event.type === "alert" && /Error importing data/.test(event.message));
-        assert.ok(dialogs.some((event) => event.type === "alert" && /Error importing data/.test(event.message)));
+        await waitForDialog(options, (event) => event.type === "alert");
+        const dialogs = await readDialogInstrumentation(options);
+        assert.deepEqual(dialogs.map(({ type, message }) => ({ type, message })),
+          [{ type: "alert", message: expectedMessage }]);
+        assert.deepEqual(await storage(options, "get", ["ft_timer_duration", "platformSettings"]), before);
       }
       const after = await storage(options, "get", ["ft_timer_duration", "platformSettings"]);
       assert.deepEqual(after, before);
