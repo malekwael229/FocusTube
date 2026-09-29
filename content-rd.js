@@ -107,24 +107,76 @@ const Reddit = {
 
   addNotice(feed, route) {
     this.notice?.remove();
-    const notice = document.createElement("div");
+    const notice = document.createElement("section");
     notice.className = "ft-reddit-feed-notice";
     notice.setAttribute("role", "status");
     localizeOwnedRoot(notice);
-    const label = document.createElement("span");
-    label.textContent = ftMessage("redditFeedHidden");
-    notice.appendChild(label);
+    notice.classList.toggle("dark", CONFIG.isDarkMode);
+
+    const header = document.createElement("div");
+    header.className = "ft-reddit-notice-header";
+    const brand = document.createElement("div");
+    brand.className = "ft-reddit-notice-brand";
+    brand.appendChild(Utils.createBadge("ft-reddit-brand-icon"));
+    const brandName = document.createElement("span");
+    brandName.textContent = ftMessage("appName");
+    brand.appendChild(brandName);
+    const mode = document.createElement("span");
+    mode.className = "ft-reddit-notice-mode";
+    mode.textContent = FocusState.isWork
+      ? ftMessage("focus")
+      : ftMessage(this.effectiveMode() === "warn" ? "modeWarn" : "modeStrict");
+    header.append(brand, mode);
+
+    const body = document.createElement("div");
+    body.className = "ft-reddit-notice-body";
+    const copy = document.createElement("div");
+    copy.className = "ft-reddit-notice-copy";
+    const title = document.createElement("h2");
+    title.textContent = ftMessage("redditFeedHidden");
+    const description = document.createElement("p");
+    description.textContent = ftMessage("redditFeedGuidance");
+    copy.append(title, description);
+
+    const actions = document.createElement("div");
+    actions.className = "ft-reddit-notice-actions";
     if (this.effectiveMode() === "warn") {
       const button = document.createElement("button");
       button.type = "button";
+      button.className = "ft-reddit-notice-reveal";
       button.textContent = ftMessage("viewAnyway");
       button.addEventListener("click", () => {
         if (this.route?.scope !== route.scope || FocusState.isWork) return;
         this.revealedScope = route.scope;
         this.restore();
       });
-      notice.appendChild(button);
+      actions.appendChild(button);
     }
+    const search = document.createElement("a");
+    search.className = "ft-reddit-notice-search";
+    search.href = "/search/";
+    search.textContent = ftMessage("redditSearch");
+    actions.appendChild(search);
+    copy.appendChild(actions);
+
+    const visual = document.createElement("div");
+    visual.className = "ft-reddit-notice-visual";
+    visual.setAttribute("aria-hidden", "true");
+    const back = document.createElement("span");
+    back.className = "ft-reddit-visual-sheet ft-reddit-visual-sheet-back";
+    const front = document.createElement("span");
+    front.className = "ft-reddit-visual-sheet ft-reddit-visual-sheet-front";
+    for (let index = 0; index < 3; index++) {
+      const line = document.createElement("span");
+      line.className = "ft-reddit-visual-line";
+      front.appendChild(line);
+    }
+    const pause = document.createElement("span");
+    pause.className = "ft-reddit-visual-pause";
+    front.appendChild(pause);
+    visual.append(back, front);
+    body.append(copy, visual);
+    notice.append(header, body);
     feed.parentElement.insertBefore(notice, feed);
     this.notice = notice;
     Utils.logStat(`reddit-feed:${route.path}`);
@@ -230,6 +282,13 @@ const Reddit = {
     if (feed === this.feed && this.notice?.isConnected) {
       if (routeChanged || Boolean(this.notice.querySelector("button")) !== (mode === "warn")) {
         this.addNotice(feed, route);
+      }
+      this.notice.classList.toggle("dark", CONFIG.isDarkMode);
+      const modeLabel = this.notice.querySelector(".ft-reddit-notice-mode");
+      if (modeLabel) {
+        modeLabel.textContent = FocusState.isWork
+          ? ftMessage("focus")
+          : ftMessage(mode === "warn" ? "modeWarn" : "modeStrict");
       }
       if (!this.isFeedHidden()) {
         Utils.setInlineStyle(feed, "display", "none", "important");

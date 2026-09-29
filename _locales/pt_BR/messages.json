@@ -574,6 +574,8 @@
   "modeRedditStrictDescription": { "message": "Ocultar feeds sem revelar" },
   "modeRedditWarnDescription": { "message": "Ocultar feeds com Ver mesmo assim" },
   "modeRedditPassiveDescription": { "message": "Mostrar feeds do Reddit" },
-  "redditFeedHidden": { "message": "Feed do Reddit oculto" },
+  "redditFeedHidden": { "message": "Seu feed está pausado" },
+  "redditFeedGuidance": { "message": "A busca, as publicações e os comentários continuam disponíveis." },
+  "redditSearch": { "message": "Pesquisar no Reddit" },
   "catalogDirection": { "message": "ltr" }
 }

@@ -574,6 +574,8 @@
   "modeRedditStrictDescription": { "message": "إخفاء الموجز دون إظهار" },
   "modeRedditWarnDescription": { "message": "إخفاء الموجز مع زر العرض" },
   "modeRedditPassiveDescription": { "message": "إظهار موجز ريديت" },
-  "redditFeedHidden": { "message": "تم إخفاء موجز ريديت" },
+  "redditFeedHidden": { "message": "تم إيقاف موجزك مؤقتًا" },
+  "redditFeedGuidance": { "message": "لا يزال البحث والمنشورات والتعليقات متاحة." },
+  "redditSearch": { "message": "ابحث في ريديت" },
   "catalogDirection": { "message": "rtl" }
 }

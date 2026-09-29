@@ -74,6 +74,34 @@ async function main() {
     await wait(true);
     assert.deepEqual(await state(), { path: "/r/test/", hidden: true, inert: true, notice: 1, reveal: false, mode: "strict", oldMode: "warn" });
     checks++;
+    const notice = page.locator(".ft-reddit-feed-notice");
+    assert.equal(await notice.locator("h2").innerText(), catalog.redditFeedHidden.message);
+    assert.equal(await notice.locator(".ft-reddit-notice-copy p").innerText(), catalog.redditFeedGuidance.message);
+    assert.equal(await notice.locator(".ft-reddit-notice-mode").innerText(), catalog.modeStrict.message);
+    assert.equal(await notice.locator(".ft-reddit-notice-brand svg").count(), 1);
+    assert.equal(await notice.locator("a").getAttribute("href"), "/search/");
+    assert.equal(await notice.locator("button").count(), 0, "Strict has no reveal control");
+    checks += 6;
+    await page.setViewportSize({ width: 320, height: 650 });
+    assert.equal(await notice.evaluate((element) => element.scrollWidth <= element.clientWidth + 1), true, "notice fits a narrow viewport");
+    await notice.locator("a").focus();
+    assert.notEqual(await notice.locator("a").evaluate((link) => getComputedStyle(link).outlineStyle), "none", "search has visible keyboard focus");
+    await page.evaluate(() => window.changeSettings({ darkMode: false }));
+    await page.waitForFunction(() => !document.querySelector(".ft-reddit-feed-notice")?.classList.contains("dark"));
+    await page.evaluate(() => window.changeSettings({ darkMode: true }));
+    await page.waitForFunction(() => document.querySelector(".ft-reddit-feed-notice")?.classList.contains("dark"));
+    checks += 4;
+    await page.setViewportSize({ width: 1200, height: 700 });
+    await page.locator("main").evaluate((main) => { main.style.width = "320px"; });
+    const narrowColumn = await notice.evaluate((element) => ({
+      cardFits: element.scrollWidth <= element.clientWidth + 1,
+      headingFits: element.querySelector("h2").scrollWidth <= element.querySelector("h2").clientWidth + 1,
+      artHidden: getComputedStyle(element.querySelector(".ft-reddit-notice-visual")).display === "none",
+    }));
+    assert.deepEqual(narrowColumn, { cardFits: true, headingFits: true, artHidden: true }, "narrow desktop feed column uses compact layout");
+    checks++;
+    await page.locator("main").evaluate((main) => { main.style.width = ""; });
+    await page.setViewportSize({ width: 900, height: 700 });
 
     await page.evaluate(() => {
       const prior = document.querySelector("shreddit-feed");
@@ -231,12 +259,14 @@ async function main() {
     await page.evaluate(() => window.changeSettings({ platformSettings: { yt: "warn", rd: "warn" } }));
     await page.waitForFunction(() => Boolean(document.querySelector(".ft-reddit-feed-notice button")));
     assert.equal((await state()).hidden, true);
+    assert.equal(await notice.locator(".ft-reddit-notice-mode").innerText(), catalog.modeWarn.message);
+    assert.equal(await notice.locator("a").getAttribute("href"), "/search/");
     await page.locator(".ft-reddit-feed-notice button").click();
     await wait(false);
     assert.equal((await state()).notice, 0, "Warn reveal persists");
     await page.waitForTimeout(150);
     assert.equal((await state()).notice, 0, "mutation scan does not rehide revealed feed");
-    checks += 3;
+    checks += 5;
 
     await page.evaluate(() => window.changeSettings({ platformSettings: { rd: "strict" } }));
     await wait(true);
@@ -362,6 +392,7 @@ async function main() {
     await page.evaluate(() => window.changeSettings({ platformSettings: { rd: "allow" }, ft_timer_end: Date.now() + 1200, ft_timer_type: "work" }));
     await wait(true);
     assert.equal((await state()).reveal, false, "work timer forces Strict from Passive");
+    assert.equal(await notice.locator(".ft-reddit-notice-mode").innerText(), catalog.focus.message, "work timer is labeled as focus");
     await wait(false);
     assert.equal((await state()).notice, 0, "work timer expiry restores the feed without a storage event");
     await page.evaluate(() => window.changeSettings({ ft_timer_end: Date.now() + 60000, ft_timer_type: "work" }));
@@ -377,7 +408,7 @@ async function main() {
     assert.equal(await page.locator("shreddit-feed").getAttribute("aria-hidden"), "false", "disable restores original attribute");
     assert.equal(await page.locator("shreddit-feed").evaluate((feed) => feed.style.color), "red", "disable preserves original styles");
     assert.equal(await page.locator("nav a").isVisible(), true, "search navigation stays usable");
-    checks += 9;
+    checks += 10;
 
     assert.deepEqual(errors, [], "no content-script errors");
     checks++;
