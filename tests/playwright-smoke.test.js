@@ -715,6 +715,12 @@ async function verifyOptions(context, extensionId) {
   assert.equal(await page.locator("#playSound").count(), 0);
   await page.locator("#showNotifications").waitFor({ state: "attached" });
   assert.match(bodyText, /System Notifications/);
+  assert.equal(
+    await page.locator("#popup_visible_rd").evaluate((input) =>
+      input.closest("section")?.querySelector("h2")?.getAttribute("data-i18n")),
+    "popupVisibility",
+    "Show Reddit belongs under Popup Visibility",
+  );
 
   await page.locator('button[data-platform="yt"]').click();
   await page.locator('[data-setting-key="hide_yt_most_relevant_shelf"]').waitFor({
