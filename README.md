@@ -54,7 +54,7 @@ The project supports Chromium browsers with a Manifest V3 build and Firefox with
 - **TikTok:** Blocks common feed/video surfaces while allowing safer areas such as messages and settings.
 - **Facebook:** Blocks Reels paths and can hide Reels navigation, Stories, and People You Might Know suggestions.
 - **LinkedIn:** Can hide the main feed and "Add to your feed" sidebar card, with optional filtering for suggested, outside-network, promoted, and network-activity posts when detected.
-- **Reddit (repository source):** Hides current Reddit Home, Popular, All, and community feeds in Strict mode or during work timers. Warn mode offers a per-feed reveal; individual posts, comments, and search remain available. The legacy `old.reddit.com` interface is not covered.
+- **Reddit (repository source):** Hides current Reddit Home, News, Popular, All, and community feeds in Strict mode or during work timers. Warn mode offers a per-feed reveal; Passive shows feeds. Individual posts, comments, and search remain available. The legacy `old.reddit.com` interface is not covered.
 
 ### Productivity Tools
 

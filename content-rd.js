@@ -7,6 +7,7 @@ const Reddit = {
   savedAttributes: null,
   shadowObservers: new Map(),
   shadowMedia: new Set(),
+  transientFeeds: new Set(),
   route: null,
   revealedScope: null,
   observer: null,
@@ -15,6 +16,8 @@ const Reddit = {
   initialized: false,
   currentMode: null,
   lastShouldHide: false,
+  pendingFeedTransition: false,
+  transitionStartedAt: 0,
 
   onFeedPlay(event) {
     if (event.target instanceof HTMLMediaElement && this.feed && this.notice) {
@@ -28,6 +31,9 @@ const Reddit = {
     const lower = parts.map((part) => part.toLowerCase());
     if (parts.length === 1 && this.homeSorts.has(lower[0])) {
       return { scope: "home", path: `/${lower[0]}` };
+    }
+    if (parts.length === 1 && lower[0] === "news") {
+      return { scope: "news", path: "/news" };
     }
     if (lower[0] !== "r" || parts.length < 2 || parts.length > 3) return null;
     if (!/^[A-Za-z0-9_]+$/.test(parts[1])) return null;
@@ -45,7 +51,7 @@ const Reddit = {
   shouldHide(route) {
     return Boolean(
       route && Utils.isExtensionEnabled() && FocusState.shouldBlock &&
-      !FocusState.isBreak && CONFIG.visualHiding.rdFeed &&
+      !FocusState.isBreak &&
       Utils.shouldApplyVisualHiding("rd") &&
       this.effectiveMode() !== "allow" &&
       (this.effectiveMode() !== "warn" || this.revealedScope !== route.scope),
@@ -62,6 +68,8 @@ const Reddit = {
     this.shadowObservers.clear();
     for (const media of this.shadowMedia) media.removeEventListener("play", this.onFeedPlayBound, true);
     this.shadowMedia.clear();
+    for (const feed of this.transientFeeds) feed.removeEventListener("play", this.onFeedPlayBound, true);
+    this.transientFeeds.clear();
     if (this.feed) {
       this.feed.removeEventListener("play", this.onFeedPlayBound, true);
       Utils.restoreInlineStyle(this.feed, "display");
@@ -75,6 +83,9 @@ const Reddit = {
     this.feed = null;
     this.notice = null;
     this.savedAttributes = null;
+    this.pendingFeedTransition = false;
+    this.transitionStartedAt = 0;
+    document.documentElement.classList.remove("ft-reddit-feed-transition");
   },
 
   hide(feed, route) {
@@ -91,6 +102,11 @@ const Reddit = {
     feed.setAttribute("aria-hidden", "true");
     this.pauseMedia(feed);
 
+    this.addNotice(feed, route);
+  },
+
+  addNotice(feed, route) {
+    this.notice?.remove();
     const notice = document.createElement("div");
     notice.className = "ft-reddit-feed-notice";
     notice.setAttribute("role", "status");
@@ -114,25 +130,38 @@ const Reddit = {
     Utils.logStat(`reddit-feed:${route.path}`);
   },
 
-  pauseMedia(feed) {
+  pauseMedia(feed, extraFeeds = []) {
+    const feeds = [feed, ...extraFeeds].filter(Boolean);
+    for (const prior of this.transientFeeds) {
+      if (extraFeeds.includes(prior)) continue;
+      prior.removeEventListener("play", this.onFeedPlayBound, true);
+      this.transientFeeds.delete(prior);
+    }
+    for (const extra of extraFeeds) {
+      if (this.transientFeeds.has(extra)) continue;
+      extra.addEventListener("play", this.onFeedPlayBound, true);
+      this.transientFeeds.add(extra);
+    }
     for (const [shadow, observer] of this.shadowObservers) {
-      if (feed.contains(shadow.host)) continue;
+      if (feeds.some((candidate) => candidate.contains(shadow.host))) continue;
       observer.disconnect();
       this.shadowObservers.delete(shadow);
     }
     for (const media of this.shadowMedia) {
       const host = media.getRootNode().host;
-      if (media.isConnected && host && feed.contains(host)) continue;
+      if (media.isConnected && host && feeds.some((candidate) => candidate.contains(host))) continue;
       media.removeEventListener("play", this.onFeedPlayBound, true);
       this.shadowMedia.delete(media);
     }
-    const mediaElements = [...feed.querySelectorAll("video, audio")];
-    for (const player of feed.querySelectorAll("shreddit-player, shreddit-embed")) {
+    const mediaElements = feeds.flatMap((candidate) => [...candidate.querySelectorAll("video, audio")]);
+    for (const player of feeds.flatMap((candidate) => [...candidate.querySelectorAll("shreddit-player, shreddit-embed")])) {
       const shadow = player.shadowRoot;
       if (!shadow) continue;
       if (!this.shadowObservers.has(shadow)) {
         const observer = new MutationObserver(() => {
-          if (this.feed === feed && this.notice?.isConnected) this.pauseMedia(feed);
+          if (this.notice?.isConnected && (this.feed === feed || this.transientFeeds.has(feed))) {
+            this.pauseMedia(this.feed, [...this.transientFeeds]);
+          }
         });
         observer.observe(shadow, { childList: true, subtree: true });
         this.shadowObservers.set(shadow, observer);
@@ -162,36 +191,55 @@ const Reddit = {
   apply() {
     const route = this.classifyRoute();
     const mode = this.effectiveMode();
+    const routeChanged = route?.path !== this.route?.path;
+    if (routeChanged && this.feed) this.transitionStartedAt = Date.now();
     if (mode !== this.currentMode) {
       this.revealedScope = null;
       this.currentMode = mode;
     }
-    if (route?.path !== this.route?.path) {
-      this.restore();
-      this.revealedScope = null;
-    }
+    if (routeChanged) this.revealedScope = null;
     this.route = route;
     this.lastShouldHide = this.shouldHide(route);
+    if (routeChanged && this.lastShouldHide && this.feed) {
+      this.pendingFeedTransition = true;
+      document.documentElement.classList.add("ft-reddit-feed-transition");
+    }
     if (!this.lastShouldHide) {
+      document.documentElement.classList.remove("ft-reddit-feed-transition");
+      if (
+        !route && this.feed?.isConnected && this.findFeed() === this.feed &&
+        Utils.isExtensionEnabled() && FocusState.shouldBlock &&
+        !FocusState.isBreak && Utils.shouldApplyVisualHiding("rd") &&
+        mode !== "allow" && Date.now() - this.transitionStartedAt < 3000
+      ) {
+        this.pauseMedia(this.feed);
+        return;
+      }
       this.restore();
       return;
     }
     const feed = this.findFeed();
     if (!feed) {
+      if (this.pendingFeedTransition && document.querySelectorAll("shreddit-feed").length > 0) {
+        this.pauseMedia(this.feed, [...document.querySelectorAll("shreddit-feed")].filter((candidate) => candidate !== this.feed));
+        return;
+      }
       this.restore();
       return;
     }
     if (feed === this.feed && this.notice?.isConnected) {
-      if (Boolean(this.notice.querySelector("button")) === (mode === "warn")) {
-        if (!this.isFeedHidden()) {
-          Utils.setInlineStyle(feed, "display", "none", "important");
-          feed.setAttribute("inert", "");
-          feed.setAttribute("aria-hidden", "true");
-        }
-        this.pauseMedia(feed);
-        return;
+      if (routeChanged || Boolean(this.notice.querySelector("button")) !== (mode === "warn")) {
+        this.addNotice(feed, route);
       }
+      if (!this.isFeedHidden()) {
+        Utils.setInlineStyle(feed, "display", "none", "important");
+        feed.setAttribute("inert", "");
+        feed.setAttribute("aria-hidden", "true");
+      }
+      this.pauseMedia(feed);
+      return;
     }
+    this.pendingFeedTransition = false;
     this.restore();
     this.hide(feed, route);
   },
@@ -199,10 +247,10 @@ const Reddit = {
   scheduleCheck() {
     if (this.checkPending) return;
     this.checkPending = true;
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       this.checkPending = false;
       if (this.initialized) this.apply();
-    }, 50);
+    });
   },
 
   start() {
@@ -222,7 +270,9 @@ const Reddit = {
           (this.feed && !this.feed.isConnected) ||
           (this.feed && !this.isFeedHidden()) ||
           this.effectiveMode() !== this.currentMode ||
-          this.shouldHide(route) !== this.lastShouldHide
+          this.shouldHide(route) !== this.lastShouldHide ||
+          (this.feed && !route && this.transitionStartedAt && Date.now() - this.transitionStartedAt >= 3000) ||
+          (this.pendingFeedTransition && !this.findFeed())
         ) this.apply();
         else if (this.feed) this.pauseMedia(this.feed);
       }, 250);
@@ -241,6 +291,7 @@ const Reddit = {
     this.revealedScope = null;
     this.currentMode = null;
     this.lastShouldHide = false;
+    this.pendingFeedTransition = false;
   },
 };
 

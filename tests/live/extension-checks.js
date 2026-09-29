@@ -10,7 +10,7 @@ const VISUAL_KEYS = {
   tt: [],
   fb: ["hide_fb_stories", "hide_fb_reels_nav", "hide_fb_people_you_might_know"],
   li: ["hide_li_feed", "hide_li_addfeed", "hide_li_suggested", "hide_li_activity"],
-  rd: ["hide_rd_feed"],
+  rd: [],
 };
 const DEFAULT_SETTINGS = {
   ft_enabled: true, ft_timer_duration: 25, breakDuration: 5, autoStartBreaks: true,
@@ -21,7 +21,7 @@ const DEFAULT_SETTINGS = {
   hide_ig_stories: true, hide_fb_stories: true, hide_yt_shorts_nav: true,
   hide_yt_shorts_shelves: true, hide_yt_most_relevant_shelf: true, hide_yt_playables: true,
   hide_ig_reels_nav: true, hide_fb_reels_nav: true,
-  hide_fb_people_you_might_know: true, hide_li_feed: true, hide_li_addfeed: true, hide_rd_feed: true,
+  hide_fb_people_you_might_know: true, hide_li_feed: true, hide_li_addfeed: true,
   showBreakButton: true, accentColor: "#4facfe", tutorialCompleted: true,
   ft_timer_end: null, ft_timer_type: null, ft_work_session_ended: false,
 };

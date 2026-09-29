@@ -441,13 +441,12 @@ async function verifyPopup(context, extensionId) {
   await page.locator("#backBtn").click();
   await page.locator('button[data-platform="rd"]').click();
   await page.waitForFunction(() => !document.querySelector("#platform-detail")?.classList.contains("hidden"));
-  assert.match(await page.locator("body").innerText(), /Hide Reddit feed/);
-  const redditToggle = page.locator('input[data-key="hide_rd_feed"]');
-  assert.equal(await redditToggle.isChecked(), true);
-  await redditToggle.locator("..").click();
-  await waitForStorageValue(page, "hide_rd_feed", false);
-  await redditToggle.locator("..").click();
-  await waitForStorageValue(page, "hide_rd_feed", true);
+  assert.equal(await page.locator('input[data-key="hide_rd_feed"]').count(), 0);
+  assert.equal(await page.locator('.mode-option-detail').count(), 3, "Reddit is controlled by its three modes");
+  assert.equal(await page.locator('button[data-platform="rd"] .reddit-mark img').getAttribute("src"), "icons/reddit-icons8-white-32.png");
+  assert.equal(await page.locator('button[data-platform="rd"] .reddit-mark img').evaluate((image) => image.complete && image.naturalWidth > 0), true);
+  assert.equal(await page.locator("#redditIconCredit").isVisible(), true);
+  assert.equal(await page.locator("#redditIconCredit").getAttribute("href"), "https://icons8.com");
 
   await page.close();
   pass("popup loads and platform settings match expected controls");
@@ -762,6 +761,15 @@ async function verifyOptions(context, extensionId) {
   assert.match(facebookOptionsText, /Hide Stories/);
   assert.match(facebookOptionsText, /Hide People You Might Know/);
   assertNoText(facebookOptionsText, /Hide Reels Shelves/);
+
+  await page.locator("#backBtn").click();
+  await page.locator('button[data-platform="rd"]').click();
+  await page.waitForFunction(() => document.querySelector("#platformDetail")?.classList.contains("active"));
+  assert.equal(await page.locator("#visualHidingSection").isVisible(), false, "Reddit options use modes alone");
+  assert.equal(await page.locator('[data-setting-key="hide_rd_feed"]').count(), 0);
+  assert.equal(await page.locator('button[data-platform="rd"] .reddit-mark img').evaluate((image) => image.complete && image.naturalWidth > 0), true);
+  assert.equal(await page.locator("#redditIconCredit").isVisible(), true);
+  assert.equal(await page.locator("#redditIconCredit").getAttribute("href"), "https://icons8.com");
 
   await setCheckboxValue(page, "#showNotifications", false);
   await waitForStorageValue(page, "showNotifications", false);
@@ -2012,7 +2020,7 @@ async function verifyLinkedInRuntime(context, extensionId) {
 async function verifyRedditRuntime(context, extensionId) {
   const settingsPage = await openExtensionPage(context, extensionId, "popup.html");
   const storageKeys = [
-    "ft_enabled", "focusMode", "platformSettings", "hide_rd_feed",
+    "ft_enabled", "focusMode", "platformSettings",
     "restrictHiddenPlatforms", "ft_timer_end", "ft_timer_type",
   ];
   const priorStorage = await getStorage(settingsPage, storageKeys);
@@ -2031,7 +2039,6 @@ async function verifyRedditRuntime(context, extensionId) {
       ft_enabled: true,
       focusMode: true,
       platformSettings: { rd: "strict" },
-      hide_rd_feed: true,
       restrictHiddenPlatforms: true,
       ft_timer_end: null,
       ft_timer_type: null,

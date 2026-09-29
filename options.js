@@ -34,7 +34,6 @@ document.addEventListener("DOMContentLoaded", function () {
     hide_li_addfeed: true,
     hide_li_suggested: false,
     hide_li_activity: false,
-    hide_rd_feed: true,
     showBreakButton: true,
     accentColor: "#4facfe",
   };
@@ -822,7 +821,7 @@ const platforms = {
   },
   rd: {
     name: msg("platformReddit"),
-    settings: [{ id: "hide_rd_feed", label: msg("hideRedditFeed"), desc: msg("hideRedditFeedDescription") }],
+    settings: [],
   },
 };
 const modes = [
@@ -976,8 +975,10 @@ function showPlatformDetail(id) {
   }
   const detailIcon = document.getElementById("detailIcon");
   const detailName = document.getElementById("detailName");
-  const sourceSvg = document.querySelector(`[data-platform="${id}"] svg`);
-  if (detailIcon && sourceSvg) detailIcon.replaceChildren(sourceSvg.cloneNode(true));
+  const sourceIcon = document.querySelector(`[data-platform="${id}"] svg, [data-platform="${id}"] .reddit-mark`);
+  if (detailIcon && sourceIcon) detailIcon.replaceChildren(sourceIcon.cloneNode(true));
+  const redditIconCredit = document.getElementById("redditIconCredit");
+  if (redditIconCredit) redditIconCredit.style.display = id === "rd" ? "inline-block" : "none";
   if (detailName) detailName.textContent = platform.name;
   const modeContainer = document.getElementById("modeButtons");
   if (modeContainer) {

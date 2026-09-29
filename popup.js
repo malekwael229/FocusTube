@@ -255,7 +255,6 @@ function createPlatformButton(platform) {
     tt: "M19.3 7.3c-1.4-.1-2.7-.7-3.6-1.6-.9-.9-1.5-2.1-1.6-3.4h-3.2v13.3c0 1.7-1.4 3.1-3.1 3.1s-3.1-1.4-3.1-3.1 1.4-3.1 3.1-3.1c.3 0 .6 0 .9.1V9.2c-.3 0-.6-.1-.9-.1-3.5 0-6.4 2.9-6.4 6.4s2.9 6.4 6.4 6.4 6.4-2.9 6.4-6.4V10c1.3.9 2.9 1.4 4.5 1.4V8.1c-.5.1-1 .2-1.5.2v-1z",
     fb: "M24 12c0-6.6-5.4-12-12-12S0 5.4 0 12c0 6 4.4 11 10.1 11.9v-8.4H7.1V12h3v-2.7c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v2.9h-1.5c-1.5 0-2 .9-2 1.9V12h3.3l-.5 3.5h-2.8v8.4C19.6 23 24 18 24 12z",
     li: "M20.4 20.4h-3.5v-5.6c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9v5.7H9.4V9h3.4v1.6h.1c.5-.9 1.6-1.8 3.4-1.8 3.6 0 4.3 2.4 4.3 5.5v6.1zM5.3 7.4c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm1.8 13H3.5V9h3.5v11.4zM22.2 0H1.8C.8 0 0 .8 0 1.8v20.4c0 1 .8 1.8 1.8 1.8h20.4c1 0 1.8-.8 1.8-1.8V1.8c0-1-.8-1.8-1.8-1.8z",
-    rd: "M5 3h9a5 5 0 0 1 1.2 9.9L20 21h-4.2l-4.5-8H9v8H5V3zm4 3v4h5a2 2 0 0 0 0-4H9z",
   };
   const btn = document.createElement("button");
   btn.className = "platform-icon";
@@ -268,20 +267,33 @@ function createPlatformButton(platform) {
       [PLATFORM_NAMES[platform]],
     ),
   );
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("width", "28");
-  svg.setAttribute("height", "28");
-  svg.setAttribute("aria-hidden", "true");
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  path.setAttribute("fill", "currentColor");
-  path.setAttribute("d", svgPaths[platform]);
-  svg.appendChild(path);
+  let icon;
+  if (platform === "rd") {
+    icon = document.createElement("span");
+    icon.className = "reddit-mark";
+    icon.setAttribute("aria-hidden", "true");
+    const image = document.createElement("img");
+    image.src = "icons/reddit-icons8-white-32.png";
+    image.alt = "";
+    image.width = 28;
+    image.height = 28;
+    icon.appendChild(image);
+  } else {
+    icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icon.setAttribute("viewBox", "0 0 24 24");
+    icon.setAttribute("width", "28");
+    icon.setAttribute("height", "28");
+    icon.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("fill", "currentColor");
+    path.setAttribute("d", svgPaths[platform]);
+    icon.appendChild(path);
+  }
   const badge = document.createElement("span");
   badge.className = "platform-mode-badge";
   badge.setAttribute("aria-hidden", "true");
   badge.textContent = "S";
-  btn.append(svg, badge);
+  btn.append(icon, badge);
   return btn;
 }
 function updatePlatformIcon(icon, mode) {
@@ -319,11 +331,12 @@ const PLATFORM_SETTINGS = {
     { key: "hide_li_activity", labelKey: "hideNetworkActivity", defaultValue: false },
   ],
   tt: [],
-  rd: [{ key: "hide_rd_feed", labelKey: "hideRedditFeed" }],
+  rd: [],
 };
 function showPlatformDetail(platform) {
   currentPlatform = platform;
   detailTitle.textContent = PLATFORM_NAMES[platform] || platform;
+  document.getElementById("redditIconCredit")?.classList.toggle("hidden", platform !== "rd");
   chrome.storage.local.get(["ft_timer_end", "ft_timer_type"], (res) => {
     const isWorkTimer =
       res.ft_timer_end &&

@@ -57,6 +57,7 @@ async function main() {
     for (const file of ["i18n.js", "content-common.js", "content-rd.js"]) {
       await page.addScriptTag({ content: source(file) });
     }
+    await page.addStyleTag({ content: source("content.css") });
     const state = () => page.evaluate(() => ({
       path: location.pathname,
       hidden: document.querySelector("shreddit-feed")?.style.display === "none",
@@ -187,10 +188,7 @@ async function main() {
     checks++;
 
     await page.evaluate(() => window.changeSettings({ hide_rd_feed: false }));
-    await wait(false);
-    assert.equal((await state()).notice, 0, "feed toggle restores the container");
-    await page.evaluate(() => window.changeSettings({ hide_rd_feed: true }));
-    await wait(true);
+    assert.equal((await state()).hidden, true, "old Reddit toggle values no longer override Strict mode");
     checks++;
 
     await page.evaluate(() => document.querySelector("main").appendChild(document.createElement("shreddit-feed")));
@@ -219,7 +217,7 @@ async function main() {
     checks += 2;
 
     const routes = [
-      ["/", "home"], ["/best/", "home"], ["/r/popular/", "r/popular"],
+      ["/", "home"], ["/best/", "home"], ["/news/", "news"], ["/r/popular/", "r/popular"],
       ["/r/all/top/", "r/all"], ["/r/Test/new/", "r/test"],
       ["/r/test/comments/abc/post/", null], ["/comments/abc", null],
       ["/search/", null], ["/r/test/search/", null], ["/r/test/wiki/", null],
@@ -252,18 +250,114 @@ async function main() {
     await page.waitForFunction(() => Reddit.route?.path === "/r/other" && document.querySelector("shreddit-feed")?.style.display === "none");
     assert.equal((await state()).reveal, true, "another community requires separate reveal");
     assert.equal(await page.evaluate(() => window.statMessages.length), priorStats + 1, "another blocked listing counts once");
+    const transition = await page.evaluate(() => {
+      history.pushState({}, "", "/news/");
+      Reddit.apply();
+      return {
+        hidden: Reddit.isFeedHidden(),
+        notice: document.querySelectorAll(".ft-reddit-feed-notice").length,
+      };
+    });
+    assert.deepEqual(transition, { hidden: true, notice: 1 }, "old feed stays hidden while News replaces it");
+    const overlapMedia = await page.evaluate(async () => {
+      const old = document.querySelector("shreddit-feed");
+      const next = document.createElement("shreddit-feed");
+      next.setAttribute("data-feed", "news");
+      const video = document.createElement("video");
+      video.muted = true;
+      video.playsInline = true;
+      const canvas = document.createElement("canvas");
+      video.srcObject = canvas.captureStream(5);
+      let playEvents = 0;
+      video.addEventListener("play", () => { playEvents++; });
+      next.appendChild(video);
+      old.after(next);
+      await video.play().catch(() => {});
+      Reddit.apply();
+      window.overlapVideo = video;
+      return { playEvents, paused: video.paused };
+    });
+    assert.ok(overlapMedia.playEvents > 0, "incoming feed video attempted playback");
+    assert.equal(overlapMedia.paused, true, "incoming feed media is paused during overlap");
+    assert.equal(await page.evaluate(() => Reddit.isFeedHidden()), true, "overlapping feeds do not expose the old listing");
+    assert.equal(await page.locator('[data-feed="news"]').evaluate((feed) => getComputedStyle(feed).display), "none", "incoming feed stays hidden during overlap");
+    await page.evaluate(() => window.overlapVideo.play().catch(() => {}));
+    await page.waitForTimeout(3200);
+    assert.equal(await page.evaluate(() => Reddit.isFeedHidden()), true, "overlap remains hidden through a render frame");
+    assert.equal(await page.locator('[data-feed="news"]').evaluate((feed) => getComputedStyle(feed).display), "none", "incoming feed remains hidden through a render frame");
+    assert.equal(await page.evaluate(() => window.overlapVideo.paused), true, "late incoming playback stays paused during a long overlap");
+    await page.evaluate(() => window.overlapVideo.srcObject.getTracks().forEach((track) => track.stop()));
+    await page.evaluate(() => document.querySelector("shreddit-feed:not([data-feed])").remove());
+    await page.waitForFunction(() => document.querySelector('[data-feed="news"]')?.style.display === "none");
+    assert.equal((await state()).notice, 1, "News listing is hidden without duplicate notices");
+    const leaving = await page.evaluate(() => {
+      history.pushState({}, "", "/r/other/comments/abc/");
+      Reddit.apply();
+      return Reddit.isFeedHidden();
+    });
+    assert.equal(leaving, true, "old listing stays hidden before a post replaces it");
+    await page.evaluate(() => document.querySelector("shreddit-feed").remove());
+    await page.waitForFunction(() => document.querySelectorAll(".ft-reddit-feed-notice").length === 0);
+    await page.evaluate(() => {
+      const post = document.createElement("article");
+      post.id = "individual-post";
+      post.textContent = "Individual post";
+      document.querySelector("main").appendChild(post);
+    });
+    assert.equal(await page.locator("#individual-post").isVisible(), true, "post remains usable after transition");
+    await page.evaluate(() => {
+      document.querySelector("#individual-post").remove();
+      document.querySelector("main").appendChild(document.createElement("shreddit-feed"));
+      history.pushState({}, "", "/r/other/");
+    });
+    await wait(true);
     await page.evaluate(() => history.pushState({}, "", "/r/other/comments/abc/"));
-    await wait(false);
-    assert.equal((await state()).notice, 0, "post restores feed");
-    await page.evaluate(() => history.pushState({}, "", "/r/other/"));
+    assert.equal((await state()).hidden, true, "post navigation does not flash the old listing");
+    await page.evaluate(() => document.querySelector("shreddit-feed").remove());
+    await page.waitForFunction(() => document.querySelectorAll(".ft-reddit-feed-notice").length === 0);
+    await page.evaluate(() => {
+      history.pushState({}, "", "/r/other/");
+      document.querySelector("main").appendChild(document.createElement("shreddit-feed"));
+    });
     await wait(true);
-    await page.evaluate(() => history.replaceState({}, "", "/search/?q=focus"));
-    await wait(false);
+    await page.evaluate(() => {
+      history.pushState({}, "", "/search/?q=focus");
+      Reddit.apply();
+    });
+    assert.equal((await state()).hidden, true, "search navigation does not flash the old listing");
+    await page.evaluate(() => document.querySelector("shreddit-feed").remove());
+    await page.waitForFunction(() => document.querySelectorAll(".ft-reddit-feed-notice").length === 0);
     await page.evaluate(() => history.back());
-    await page.waitForFunction(() => location.pathname === "/r/other/comments/abc/" && document.querySelector("shreddit-feed")?.style.display !== "none");
+    await page.waitForFunction(() => location.pathname === "/r/other/");
+    await page.evaluate(() => {
+      const feed = document.createElement("shreddit-feed");
+      feed.style.color = "red";
+      feed.setAttribute("aria-hidden", "false");
+      document.querySelector("main").appendChild(feed);
+    });
+    await wait(true);
+    await page.evaluate(() => {
+      history.pushState({}, "", "/search/?q=focus");
+      Reddit.apply();
+    });
+    assert.equal((await state()).hidden, true, "old feed remains hidden while search navigation settles");
+    await wait(false);
+    assert.equal((await state()).notice, 0, "reused feed is restored after the bounded transition hold");
     await page.evaluate(() => history.pushState({}, "", "/r/other/"));
     await wait(true);
-    checks += 7;
+    await page.evaluate(() => {
+      history.pushState({}, "", "/search/?q=focus");
+      Reddit.apply();
+      window.changeSettings({ visualHideHiddenPlatforms: false, popup_visible_rd: false });
+    });
+    await wait(false);
+    assert.equal((await state()).notice, 0, "visual-hiding policy change releases an excluded-route hold");
+    await page.evaluate(() => {
+      window.changeSettings({ visualHideHiddenPlatforms: true, popup_visible_rd: true });
+      history.pushState({}, "", "/r/other/");
+    });
+    await wait(true);
+    checks += 20;
 
     await page.evaluate(() => window.changeSettings({ platformSettings: { rd: "allow" }, ft_timer_end: Date.now() + 1200, ft_timer_type: "work" }));
     await wait(true);

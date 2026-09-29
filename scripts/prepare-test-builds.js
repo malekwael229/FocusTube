@@ -43,6 +43,8 @@ const runtimeFiles = [
   "icons/icon16.png",
   "icons/icon48.png",
   "icons/icon128.png",
+  "icons/reddit-icons8-white-32.png",
+  "icons/reddit-icons8-LICENSE.txt",
 ];
 
 function enableReproducibleZipMetadata() {

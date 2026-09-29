@@ -484,6 +484,11 @@ body.ft-hide-li-suggested.ft-platform-li .ft-li-collapsed {
 .ft-li-stub-btn:hover {
   opacity: 0.85;
 }
+/* Keep incoming feed nodes hidden while Reddit replaces a blocked listing. */
+html.ft-reddit-feed-transition shreddit-feed {
+  display: none !important;
+}
+
 /* Reddit feed notice is contained beside the inert feed so navigation remains usable. */
 .ft-reddit-feed-notice {
   display: flex;

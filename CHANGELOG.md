@@ -4,7 +4,7 @@ All notable project-facing changes are documented here.
 
 ## [Unreleased]
 
-- Added current Reddit feed controls for Home, Popular, All, and community listings while preserving individual posts, comments, and search. Strict and work timers hide supported feeds; Warn permits a page-local reveal; Passive and breaks leave them visible. Legacy Reddit is outside this change.
+- Added current Reddit feed controls for Home, News, Popular, All, and community listings while preserving individual posts, comments, and search. Strict and work timers hide supported feeds; Warn permits a page-local reveal; Passive and breaks leave them visible. Feed navigation keeps the old listing hidden until Reddit replaces it. Legacy Reddit is outside this change.
 
 ## [2.4.1] - Pending
 

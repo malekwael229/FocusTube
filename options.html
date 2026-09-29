@@ -192,6 +192,34 @@
         height: 1.75rem;
       }
 
+      .reddit-mark {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background: #ff4500;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+      }
+
+      .reddit-mark img {
+        display: block;
+        width: 1.75rem;
+        height: 1.75rem;
+      }
+
+      .reddit-icon-credit {
+        margin-top: 1rem;
+        color: var(--muted-foreground);
+        font-size: 0.75rem;
+      }
+
+      .reddit-icon-credit:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 3px;
+      }
+
       .platform-badge {
         position: absolute;
         top: -0.25rem;
@@ -1147,7 +1175,7 @@
               <span class="platform-badge badge-red" id="badge-li">S</span>
             </button>
             <button class="platform-btn animate-scale-in" data-platform="rd" style="animation-delay: 250ms" aria-label="Reddit settings">
-              <span aria-hidden="true" style="font-weight:700;font-size:22px">R</span>
+              <span class="reddit-mark" aria-hidden="true"><img src="icons/reddit-icons8-white-32.png" alt="" width="28" height="28"></span>
               <span class="platform-badge badge-red" id="badge-rd">S</span>
             </button>
           </div>
@@ -1189,6 +1217,7 @@
             <div class="section-label" data-i18n="visualHiding">Visual Hiding</div>
             <div id="settingsToggles"></div>
           </div>
+          <a id="redditIconCredit" class="reddit-icon-credit" href="https://icons8.com" target="_blank" rel="noopener noreferrer" data-i18n="redditIconCredit" style="display: none">Reddit icon by Icons8</a>
         </div>
 
         <div class="stats-grid">
