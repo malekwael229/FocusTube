@@ -1584,7 +1584,7 @@ test("manifest and package allowlists remain narrow and internally consistent", 
     "_locales/en/messages.json", "_locales/ar/messages.json", "_locales/es/messages.json",
     "_locales/pt_BR/messages.json", "_locales/fr/messages.json", "_locales/de/messages.json",
     "_locales/tr/messages.json", "_locales/id/messages.json",
-    "icons/icon16.png", "icons/icon48.png", "icons/icon128.png", "icons/reddit-icons8-white-32.png", "icons/reddit-icons8-LICENSE.txt",
+    "icons/icon16.png", "icons/icon48.png", "icons/icon128.png", "icons/reddit-icons8-glyph-90.png", "icons/reddit-icons8-LICENSE.txt",
   ]);
   assert.equal(JSON.parse(read("package.json")).private, true);
 });

@@ -443,10 +443,10 @@ async function verifyPopup(context, extensionId) {
   await page.waitForFunction(() => !document.querySelector("#platform-detail")?.classList.contains("hidden"));
   assert.equal(await page.locator('input[data-key="hide_rd_feed"]').count(), 0);
   assert.equal(await page.locator('.mode-option-detail').count(), 3, "Reddit is controlled by its three modes");
-  assert.equal(await page.locator('button[data-platform="rd"] .reddit-mark img').getAttribute("src"), "icons/reddit-icons8-white-32.png");
+  assert.equal(await page.locator('button[data-platform="rd"] .reddit-mark img').getAttribute("src"), "icons/reddit-icons8-glyph-90.png");
   assert.equal(await page.locator('button[data-platform="rd"] .reddit-mark img').evaluate((image) => image.complete && image.naturalWidth > 0), true);
-  assert.equal(await page.locator("#redditIconCredit").isVisible(), true);
-  assert.equal(await page.locator("#redditIconCredit").getAttribute("href"), "https://icons8.com");
+  assert.equal(await page.locator('button[data-platform="rd"] .reddit-mark').evaluate((mark) => getComputedStyle(mark).backgroundColor), "rgba(0, 0, 0, 0)");
+  assert.equal(await page.locator("#redditIconCredit").count(), 0);
 
   await page.close();
   pass("popup loads and platform settings match expected controls");
@@ -768,8 +768,8 @@ async function verifyOptions(context, extensionId) {
   assert.equal(await page.locator("#visualHidingSection").isVisible(), false, "Reddit options use modes alone");
   assert.equal(await page.locator('[data-setting-key="hide_rd_feed"]').count(), 0);
   assert.equal(await page.locator('button[data-platform="rd"] .reddit-mark img').evaluate((image) => image.complete && image.naturalWidth > 0), true);
-  assert.equal(await page.locator("#redditIconCredit").isVisible(), true);
-  assert.equal(await page.locator("#redditIconCredit").getAttribute("href"), "https://icons8.com");
+  assert.equal(await page.locator('button[data-platform="rd"] .reddit-mark').evaluate((mark) => getComputedStyle(mark).backgroundColor), "rgba(0, 0, 0, 0)");
+  assert.equal(await page.locator("#redditIconCredit").count(), 0);
 
   await setCheckboxValue(page, "#showNotifications", false);
   await waitForStorageValue(page, "showNotifications", false);

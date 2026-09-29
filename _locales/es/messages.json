@@ -570,7 +570,6 @@
   },
   "catalogLanguage": { "message": "es" },
   "platformReddit": { "message": "Reddit" },
-  "redditIconCredit": { "message": "Icono de Reddit de Icons8" },
   "modeRedditStrictDescription": { "message": "Ocultar feeds sin mostrar" },
   "modeRedditWarnDescription": { "message": "Ocultar feeds con Ver de todos modos" },
   "modeRedditPassiveDescription": { "message": "Mostrar feeds de Reddit" },

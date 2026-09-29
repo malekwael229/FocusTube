@@ -1,7 +1,7 @@
-Reddit icon: reddit-icons8-white-32.png
+Reddit icon: reddit-icons8-glyph-90.png
 Creator: Icons8 (https://icons8.com)
-Source: https://www.iconsdb.com/white-icons/reddit-icon.html
-License: Creative Commons Attribution-NoDerivs 3.0 Unported
-https://creativecommons.org/licenses/by-nd/3.0/
+Source: https://icons8.com/icon/102689/reddit
+Style: iOS 27 Glyph
+License: https://icons8.com/vue-static/landings/pricing/icons8-license.pdf
 
-The 32x32 PNG is distributed without changes to the source image.
+The 90x90 PNG is distributed without changes to the source image.

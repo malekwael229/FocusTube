@@ -570,7 +570,6 @@
   },
   "catalogLanguage": { "message": "de" },
   "platformReddit": { "message": "Reddit" },
-  "redditIconCredit": { "message": "Reddit-Symbol von Icons8" },
   "modeRedditStrictDescription": { "message": "Feeds ohne Anzeige ausblenden" },
   "modeRedditWarnDescription": { "message": "Feeds mit Trotzdem anzeigen ausblenden" },
   "modeRedditPassiveDescription": { "message": "Reddit-Feeds anzeigen" },

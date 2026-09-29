@@ -121,12 +121,7 @@ const Reddit = {
     const brandName = document.createElement("span");
     brandName.textContent = ftMessage("appName");
     brand.appendChild(brandName);
-    const mode = document.createElement("span");
-    mode.className = "ft-reddit-notice-mode";
-    mode.textContent = FocusState.isWork
-      ? ftMessage("focus")
-      : ftMessage(this.effectiveMode() === "warn" ? "modeWarn" : "modeStrict");
-    header.append(brand, mode);
+    header.appendChild(brand);
 
     const body = document.createElement("div");
     body.className = "ft-reddit-notice-body";
@@ -284,12 +279,6 @@ const Reddit = {
         this.addNotice(feed, route);
       }
       this.notice.classList.toggle("dark", CONFIG.isDarkMode);
-      const modeLabel = this.notice.querySelector(".ft-reddit-notice-mode");
-      if (modeLabel) {
-        modeLabel.textContent = FocusState.isWork
-          ? ftMessage("focus")
-          : ftMessage(mode === "warn" ? "modeWarn" : "modeStrict");
-      }
       if (!this.isFeedHidden()) {
         Utils.setInlineStyle(feed, "display", "none", "important");
         feed.setAttribute("inert", "");

@@ -273,7 +273,7 @@ function createPlatformButton(platform) {
     icon.className = "reddit-mark";
     icon.setAttribute("aria-hidden", "true");
     const image = document.createElement("img");
-    image.src = "icons/reddit-icons8-white-32.png";
+    image.src = "icons/reddit-icons8-glyph-90.png";
     image.alt = "";
     image.width = 28;
     image.height = 28;
@@ -336,7 +336,6 @@ const PLATFORM_SETTINGS = {
 function showPlatformDetail(platform) {
   currentPlatform = platform;
   detailTitle.textContent = PLATFORM_NAMES[platform] || platform;
-  document.getElementById("redditIconCredit")?.classList.toggle("hidden", platform !== "rd");
   chrome.storage.local.get(["ft_timer_end", "ft_timer_type"], (res) => {
     const isWorkTimer =
       res.ft_timer_end &&

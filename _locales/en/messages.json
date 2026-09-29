@@ -13,7 +13,6 @@
   "platformFacebook": { "message": "Facebook" },
   "platformLinkedin": { "message": "LinkedIn" },
   "platformReddit": { "message": "Reddit" },
-  "redditIconCredit": { "message": "Reddit icon by Icons8" },
   "modeRedditStrictDescription": { "message": "Hide feeds with no reveal" },
   "modeRedditWarnDescription": { "message": "Hide feeds with View Anyway" },
   "modeRedditPassiveDescription": { "message": "Show Reddit feeds" },

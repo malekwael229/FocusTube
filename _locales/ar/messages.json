@@ -570,7 +570,6 @@
   },
   "catalogLanguage": { "message": "ar" },
   "platformReddit": { "message": "ريديت" },
-  "redditIconCredit": { "message": "أيقونة ريديت من Icons8" },
   "modeRedditStrictDescription": { "message": "إخفاء الموجز دون إظهار" },
   "modeRedditWarnDescription": { "message": "إخفاء الموجز مع زر العرض" },
   "modeRedditPassiveDescription": { "message": "إظهار موجز ريديت" },

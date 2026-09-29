@@ -570,7 +570,6 @@
   },
   "catalogLanguage": { "message": "tr" },
   "platformReddit": { "message": "Reddit" },
-  "redditIconCredit": { "message": "Reddit simgesi: Icons8" },
   "modeRedditStrictDescription": { "message": "Akışları açma olmadan gizle" },
   "modeRedditWarnDescription": { "message": "Akışları Yine de Gör ile gizle" },
   "modeRedditPassiveDescription": { "message": "Reddit akışlarını göster" },

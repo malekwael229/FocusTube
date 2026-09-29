@@ -77,7 +77,7 @@ async function main() {
     const notice = page.locator(".ft-reddit-feed-notice");
     assert.equal(await notice.locator("h2").innerText(), catalog.redditFeedHidden.message);
     assert.equal(await notice.locator(".ft-reddit-notice-copy p").innerText(), catalog.redditFeedGuidance.message);
-    assert.equal(await notice.locator(".ft-reddit-notice-mode").innerText(), catalog.modeStrict.message);
+    assert.equal(await notice.locator(".ft-reddit-notice-mode").count(), 0);
     assert.equal(await notice.locator(".ft-reddit-notice-brand svg").count(), 1);
     assert.equal(await notice.locator("a").getAttribute("href"), "/search/");
     assert.equal(await notice.locator("button").count(), 0, "Strict has no reveal control");
@@ -259,7 +259,7 @@ async function main() {
     await page.evaluate(() => window.changeSettings({ platformSettings: { yt: "warn", rd: "warn" } }));
     await page.waitForFunction(() => Boolean(document.querySelector(".ft-reddit-feed-notice button")));
     assert.equal((await state()).hidden, true);
-    assert.equal(await notice.locator(".ft-reddit-notice-mode").innerText(), catalog.modeWarn.message);
+    assert.equal(await notice.locator(".ft-reddit-notice-mode").count(), 0);
     assert.equal(await notice.locator("a").getAttribute("href"), "/search/");
     await page.locator(".ft-reddit-feed-notice button").click();
     await wait(false);
@@ -392,7 +392,7 @@ async function main() {
     await page.evaluate(() => window.changeSettings({ platformSettings: { rd: "allow" }, ft_timer_end: Date.now() + 1200, ft_timer_type: "work" }));
     await wait(true);
     assert.equal((await state()).reveal, false, "work timer forces Strict from Passive");
-    assert.equal(await notice.locator(".ft-reddit-notice-mode").innerText(), catalog.focus.message, "work timer is labeled as focus");
+    assert.equal(await notice.locator(".ft-reddit-notice-mode").count(), 0, "work timer does not add a mode pill");
     await wait(false);
     assert.equal((await state()).notice, 0, "work timer expiry restores the feed without a storage event");
     await page.evaluate(() => window.changeSettings({ ft_timer_end: Date.now() + 60000, ft_timer_type: "work" }));

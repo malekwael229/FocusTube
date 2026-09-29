@@ -531,8 +531,7 @@ html.ft-reddit-feed-transition shreddit-feed {
   align-items: center;
 }
 .ft-reddit-notice-header {
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: flex-start;
 }
 .ft-reddit-notice-brand {
   gap: 8px;
@@ -545,16 +544,6 @@ html.ft-reddit-feed-transition shreddit-feed {
   width: 28px;
   height: 28px;
   flex: none;
-}
-.ft-reddit-notice-mode {
-  flex: none;
-  padding: 5px 10px;
-  border: 1px solid var(--ft-rd-line);
-  border-radius: 999px;
-  color: var(--ft-rd-muted);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.025em;
 }
 .ft-reddit-notice-body {
   justify-content: space-between;

@@ -977,8 +977,6 @@ function showPlatformDetail(id) {
   const detailName = document.getElementById("detailName");
   const sourceIcon = document.querySelector(`[data-platform="${id}"] svg, [data-platform="${id}"] .reddit-mark`);
   if (detailIcon && sourceIcon) detailIcon.replaceChildren(sourceIcon.cloneNode(true));
-  const redditIconCredit = document.getElementById("redditIconCredit");
-  if (redditIconCredit) redditIconCredit.style.display = id === "rd" ? "inline-block" : "none";
   if (detailName) detailName.textContent = platform.name;
   const modeContainer = document.getElementById("modeButtons");
   if (modeContainer) {
