@@ -966,7 +966,8 @@
         .platform-grid,
         .platform-detail,
         .stats-grid,
-        .about-section {
+        .about-section,
+        .data-section {
           grid-column: 1 / -1;
           margin-bottom: 0;
         }
@@ -1544,84 +1545,84 @@
                 </div>
               </div>
             </section>
-
-            <section class="settings-section card">
-              <div class="section-bar bar-teal"></div>
-              <div class="section-content">
-                <h2 class="section-title" data-i18n="dataPrivacy">Data & Privacy</h2>
-                <p class="section-desc" data-i18n="dataPrivacyDescription">Manage your data and statistics</p>
-                <input
-                  type="file"
-                  id="importFile"
-                  accept=".json"
-                  style="display: none"
-                />
-
-                <div class="action-btns">
-                  <button class="action-btn" id="importData">
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="17 8 12 3 7 8" />
-                      <line x1="12" x2="12" y1="3" y2="15" />
-                    </svg>
-                    <span data-i18n="import">Import</span>
-                  </button>
-                  <button class="action-btn" id="exportData">
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="7 10 12 15 17 10" />
-                      <line x1="12" x2="12" y1="15" y2="3" />
-                    </svg>
-                    <span data-i18n="export">Export</span>
-                  </button>
-                  <button class="action-btn" id="resetSettings">
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                      <path d="M3 3v5h5" />
-                    </svg>
-                    <span data-i18n="reset">Reset</span>
-                  </button>
-                  <button class="action-btn danger" id="clearData">
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path d="M3 6h18" />
-                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                    </svg>
-                    <span data-i18n="clearAll">Clear All</span>
-                  </button>
-                </div>
-              </div>
-            </section>
           </div>
         </div>
+
+        <section class="settings-section card data-section">
+          <div class="section-bar bar-teal"></div>
+          <div class="section-content">
+            <h2 class="section-title" data-i18n="dataPrivacy">Data & Privacy</h2>
+            <p class="section-desc" data-i18n="dataPrivacyDescription">Manage your data and statistics</p>
+            <input
+              type="file"
+              id="importFile"
+              accept=".json"
+              style="display: none"
+            />
+
+            <div class="action-btns">
+              <button class="action-btn" id="importData">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" x2="12" y1="3" y2="15" />
+                </svg>
+                <span data-i18n="import">Import</span>
+              </button>
+              <button class="action-btn" id="exportData">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" x2="12" y1="15" y2="3" />
+                </svg>
+                <span data-i18n="export">Export</span>
+              </button>
+              <button class="action-btn" id="resetSettings">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
+                </svg>
+                <span data-i18n="reset">Reset</span>
+              </button>
+              <button class="action-btn danger" id="clearData">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M3 6h18" />
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                </svg>
+                <span data-i18n="clearAll">Clear All</span>
+              </button>
+            </div>
+          </div>
+        </section>
 
         <section class="card about-section">
           <h2 class="about-title" data-i18n="appName">FocusTube</h2>
