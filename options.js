@@ -180,6 +180,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const parts = customSelectParts.get(select);
     if (!parts) return;
     const disabled = select.disabled;
+    parts.trigger.disabled = disabled;
     parts.trigger.setAttribute("aria-disabled", String(disabled));
     parts.trigger.classList.toggle("disabled-look", disabled);
   }
@@ -198,11 +199,17 @@ document.addEventListener("DOMContentLoaded", function () {
       parts.trigger.querySelector("span").textContent = selectedOption.text;
       parts.optionsList
         .querySelectorAll(".custom-option")
-        .forEach((el) => el.classList.remove("selected"));
+        .forEach((el) => {
+          el.classList.remove("selected");
+          el.setAttribute("aria-pressed", "false");
+        });
       const matchingOption = Array.from(
         parts.optionsList.querySelectorAll(".custom-option"),
       ).find((option) => option.dataset.value === selectedOption.value);
-      if (matchingOption) matchingOption.classList.add("selected");
+      if (matchingOption) {
+        matchingOption.classList.add("selected");
+        matchingOption.setAttribute("aria-pressed", "true");
+      }
     }
     updateCustomSelectDisabledState(select);
     if (expectedRevision === undefined) {
@@ -351,14 +358,27 @@ document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll(".select-dropdown").forEach((select) => {
     initCustomSelect(select);
   });
+  document.querySelectorAll(".setting-row .toggle-input").forEach((input) => {
+    const label = input.closest(".setting-row")?.querySelector(".setting-label");
+    if (!label) return;
+    label.id ||= `${input.id}-label`;
+    input.setAttribute("aria-labelledby", label.id);
+  });
   function initCustomSelect(select) {
     const wrapper = document.createElement("div");
     wrapper.className = "custom-select-wrapper";
-    const trigger = document.createElement("div");
+    const trigger = document.createElement("button");
+    trigger.type = "button";
     trigger.className = "custom-select-trigger";
-    trigger.setAttribute("role", "button");
+    trigger.setAttribute("aria-expanded", "false");
+    const label = select.closest(".setting-row")?.querySelector(".setting-label");
+    if (label) {
+      label.id ||= `${select.id}-label`;
+      trigger.setAttribute("aria-labelledby", `${label.id} ${select.id}-selected-text`);
+    }
     const selectedOption = select.options[select.selectedIndex];
     const selectedText = document.createElement("span");
+    selectedText.id = `${select.id}-selected-text`;
     selectedText.textContent = selectedOption
       ? selectedOption.text
       : msg("select");
@@ -379,17 +399,23 @@ document.addEventListener("DOMContentLoaded", function () {
     trigger.append(selectedText, arrowSvg);
     const optionsList = document.createElement("div");
     optionsList.className = "custom-options";
+    optionsList.id = `${select.id}-options`;
+    trigger.setAttribute("aria-controls", optionsList.id);
     Array.from(select.options).forEach((option) => {
-      const optDiv = document.createElement("div");
+      const optDiv = document.createElement("button");
+      optDiv.type = "button";
       optDiv.className = `custom-option ${option.selected ? "selected" : ""}`;
       optDiv.dataset.value = option.value;
       optDiv.textContent = option.text;
+      optDiv.setAttribute("aria-pressed", String(option.selected));
       optDiv.addEventListener("click", (e) => {
         e.stopPropagation();
         if (select.disabled) return;
         select.value = option.value;
         select.dispatchEvent(new Event("change"));
         wrapper.classList.remove("open");
+        trigger.setAttribute("aria-expanded", "false");
+        trigger.focus();
       });
       optionsList.appendChild(optDiv);
     });
@@ -397,9 +423,20 @@ document.addEventListener("DOMContentLoaded", function () {
       e.stopPropagation();
       if (select.disabled) return;
       document.querySelectorAll(".custom-select-wrapper").forEach((w) => {
-        if (w !== wrapper) w.classList.remove("open");
+        if (w !== wrapper) {
+          w.classList.remove("open");
+          w.querySelector(".custom-select-trigger")?.setAttribute("aria-expanded", "false");
+        }
       });
       wrapper.classList.toggle("open");
+      trigger.setAttribute("aria-expanded", String(wrapper.classList.contains("open")));
+    });
+    wrapper.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && wrapper.classList.contains("open")) {
+        wrapper.classList.remove("open");
+        trigger.setAttribute("aria-expanded", "false");
+        trigger.focus();
+      }
     });
     wrapper.appendChild(trigger);
     wrapper.appendChild(optionsList);
@@ -414,7 +451,10 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("click", () => {
     document
       .querySelectorAll(".custom-select-wrapper")
-      .forEach((w) => w.classList.remove("open"));
+      .forEach((w) => {
+        w.classList.remove("open");
+        w.querySelector(".custom-select-trigger")?.setAttribute("aria-expanded", "false");
+      });
   });
   document.querySelectorAll(".custom-select").forEach((select) => {
     select.addEventListener("change", function () {

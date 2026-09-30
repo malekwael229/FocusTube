@@ -145,11 +145,11 @@ body.dark-mode {
 @keyframes tileEnter {
   from {
     opacity: 0;
-    transform: translateY(10px) scale(0.96);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: none;
   }
 }
 @keyframes glowPulse {
@@ -1454,10 +1454,10 @@ body:not(.dark-mode) .tutorial-spotlight {
     color var(--duration) var(--ease-out);
   color: var(--text);
   box-shadow: 0 10px 18px rgba(0, 0, 0, 0.12);
-  animation: tileEnter var(--duration-slow) var(--ease-out) both;
+  animation: tileEnter var(--duration-slow) var(--ease-out) backwards;
 }
 .platform-icon:hover {
-  transform: translateY(-2px) scale(1.03);
+  transform: translateY(-2px);
   box-shadow: 0 16px 26px rgba(0, 0, 0, 0.18);
   background: var(--panel-3);
 }
@@ -1489,8 +1489,9 @@ body:not(.dark-mode) .tutorial-spotlight {
   width: 20px;
   height: 20px;
   border-radius: 12px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
+  line-height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;

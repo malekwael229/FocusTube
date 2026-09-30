@@ -715,6 +715,8 @@ async function verifyOptions(context, extensionId) {
   assert.equal(await page.locator("#playSound").count(), 0);
   await page.locator("#showNotifications").waitFor({ state: "attached" });
   assert.match(bodyText, /System Notifications/);
+  assert.equal(await page.getByRole("checkbox", { name: "Auto-start Breaks" }).count(), 1);
+  assert.equal(await page.getByRole("checkbox", { name: "Show Reddit" }).count(), 1);
   assert.equal(
     await page.locator("#popup_visible_rd").evaluate((input) =>
       input.closest("section")?.querySelector("h2")?.getAttribute("data-i18n")),
@@ -884,6 +886,14 @@ async function verifyOptions(context, extensionId) {
   await setStorage(storagePage, { ft_timer_duration: 25, breakDuration: 5 });
   await assertCustomSelectState(page, "#focusDuration", 25, "restored 25-minute focus duration");
   await assertCustomSelectState(page, "#breakDuration", 5, "restored 5-minute break duration");
+  assert.equal(await page.getByRole("button", { name: "Focus Duration 25 minutes" }).count(), 1);
+  const focusTrigger = page.locator("#focusDuration + .custom-select-wrapper .custom-select-trigger");
+  await focusTrigger.press("Enter");
+  assert.equal(await focusTrigger.getAttribute("aria-expanded"), "true");
+  await page.locator('#focusDuration + .custom-select-wrapper .custom-option[data-value="30"]').press("Enter");
+  await waitForStorageValue(storagePage, "ft_timer_duration", 30);
+  assert.equal(await focusTrigger.getAttribute("aria-expanded"), "false");
+  await setStorage(storagePage, { ft_timer_duration: 25 });
 
   await storagePage.close();
   await page.close();

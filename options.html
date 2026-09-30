@@ -24,7 +24,7 @@
         --secondary: hsl(228 12% 18%);
         --secondary-foreground: hsl(220 14% 85%);
         --muted: hsl(228 12% 18%);
-        --muted-foreground: hsl(220 9% 50%);
+        --muted-foreground: hsl(220 10% 68%);
         --accent: hsl(183 100% 50%);
         --destructive: hsl(0 72% 51%);
         --border: hsl(228 12% 20%);
@@ -62,6 +62,12 @@
       select,
       textarea {
         font-family: inherit;
+      }
+
+      button:focus-visible,
+      .toggle-input:focus-visible + .toggle-slider {
+        outline: 2px solid var(--primary);
+        outline-offset: 3px;
       }
 
       .container {
@@ -156,7 +162,7 @@
       }
 
       .platform-btn:hover {
-        transform: scale(1.1);
+        transform: translateY(-1px);
       }
 
       .platform-btn.mode-strict {
@@ -184,7 +190,7 @@
       }
 
       .platform-btn:active {
-        transform: scale(0.95);
+        transform: translateY(0);
       }
 
       .platform-btn svg {
@@ -213,8 +219,9 @@
         width: 1rem;
         height: 1rem;
         border-radius: 50%;
-        font-size: 9px;
+        font-size: 11px;
         font-weight: 700;
+        line-height: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -239,7 +246,7 @@
 
       .platform-hint {
         text-align: center;
-        font-size: 0.75rem;
+        font-size: 0.8125rem;
         color: var(--muted-foreground);
         margin-top: 0.75rem;
       }
@@ -445,7 +452,7 @@
       }
 
       .section-desc {
-        font-size: 0.75rem;
+        font-size: 0.8125rem;
         color: var(--muted-foreground);
         margin-bottom: 0.75rem;
       }
@@ -493,7 +500,7 @@
 
       .setting-info {
         flex: 1;
-        padding-right: 1rem;
+        padding-inline-end: 1rem;
       }
 
       .setting-label {
@@ -501,7 +508,7 @@
       }
 
       .setting-desc {
-        font-size: 0.75rem;
+        font-size: 0.8125rem;
         color: var(--muted-foreground);
         margin-top: 0.125rem;
       }
@@ -743,11 +750,16 @@
       }
 
       .custom-option {
+        display: block;
+        width: 100%;
         padding: 0.375rem 0.5rem;
         font-size: 0.75rem;
         border-radius: 0.25rem;
         cursor: pointer;
         transition: background 0.15s;
+        background: transparent;
+        color: var(--foreground);
+        text-align: start;
       }
 
       .custom-option:hover {
@@ -756,6 +768,13 @@
 
       .custom-option.selected {
         background: hsl(204 100% 65% / 0.15);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
       }
 
       .action-btns {
@@ -936,12 +955,12 @@
 
       @keyframes scaleIn {
         from {
-          transform: scale(0.95);
+          transform: translateY(4px);
           opacity: 0;
         }
 
         to {
-          transform: scale(1);
+          transform: none;
           opacity: 1;
         }
       }
