@@ -934,6 +934,32 @@
         background: hsl(204 100% 65% / 0.1);
       }
 
+      @media (min-width: 800px) {
+        .container {
+          max-width: 64rem;
+        }
+
+        #optionsDimmer {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          align-items: start;
+          gap: 1rem;
+        }
+
+        .platform-grid,
+        .platform-detail,
+        .stats-grid,
+        .about-section {
+          grid-column: 1 / -1;
+          margin-bottom: 0;
+        }
+
+        .settings-section {
+          min-width: 0;
+          margin-bottom: 0;
+        }
+      }
+
       @media (max-width: 1024px) {
         .decor-left,
         .decor-right {
