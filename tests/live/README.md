@@ -1,6 +1,8 @@
 # Live Browser Validation
 
-This optional harness tests a retained 2.4.1 build, not a rebuilt or patched extension. It never publishes anything. Use the existing deterministic suite first; live-site results complement it, not replace it.
+This optional harness tests a retained 2.5.0 build, not a rebuilt or patched extension. It never publishes anything. Use the existing deterministic suite first; live-site results complement it, not replace it.
+
+Its live-site adapters cover YouTube, Instagram, TikTok, Facebook, and LinkedIn. Reddit is covered separately by fixture tests and the [manual live-site checklist](../manual-live-site-notes.md); a completed harness matrix is not a Reddit live-site result.
 
 ## Setup on Windows
 
@@ -19,7 +21,7 @@ The Firefox setup downloads pinned geckodriver 0.37.1 from Mozilla's official Gi
 
 Run `test:all` before preparing or staging the retained local candidate: its package test rebuilds generated folders and ZIPs in `dist-release-builds`. The final command above creates both browser folders and matching ZIPs there. This is a local candidate build, not proof that the files are identical to the already published GitHub release. Keep any published artifacts outside this disposable build directory. Do not rerun `test:all` after staging the candidate; it can replace the files you intended to test.
 
-The harness expects `FocusTube-release-chromium-v2.4.1` and `FocusTube-release-firefox-v2.4.1` folders and ZIPs under `dist-release-builds`. Runtime files must match the current source exactly. The harness refuses stale packages and checks that candidate bytes remain unchanged during its run.
+The harness expects `FocusTube-release-chromium-v2.5.0` and `FocusTube-release-firefox-v2.5.0` folders and ZIPs under `dist-release-builds`. Runtime files must match the current source exactly. The harness refuses stale packages and checks that candidate bytes remain unchanged during its run.
 
 ## One-Time Browser and Login Steps
 
@@ -30,7 +32,7 @@ npm.cmd run test:live -- --setup chrome
 npm.cmd run test:live -- --setup edge
 ```
 
-In the opened extension manager, enable Developer mode, choose **Load unpacked**, and select `dist-release-builds/FocusTube-release-chromium-v2.4.1`. Return to the terminal and press Enter. Do not choose your normal browser profile.
+In the opened extension manager, enable Developer mode, choose **Load unpacked**, and select `dist-release-builds/FocusTube-release-chromium-v2.5.0`. Return to the terminal and press Enter. Do not choose your normal browser profile.
 
 Sign in only where needed, using your own keyboard in these isolated profiles:
 

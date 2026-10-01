@@ -48,10 +48,13 @@ Read [TESTING.md](TESTING.md) for automated commands, fixture boundaries, the Fi
 Before submitting changes, manually test the affected browser and platform behavior:
 
 - YouTube Shorts blocking, Shorts navigation/shelf hiding, and Subscriptions "Most relevant" shelf hiding in English YouTube UI.
+- YouTube Playables visual hiding with the toggle on and off, plus direct Playables routes in Strict, Warn, Passive, work, and break states.
+- Reddit Home, News, Popular, All, and community routes in Strict, Warn, Passive, work, and break states; confirm individual posts, comments, and search remain available, and exclude `old.reddit.com`.
 - Instagram Reels/Explore path blocking, Stories, and Reels navigation behavior.
 - TikTok feed/video blocking and safe pages such as messages/settings.
 - Facebook Reels route blocking, Reels navigation, Stories, and People You Might Know hiding behavior.
 - LinkedIn feed and sidebar hiding behavior.
+- Optional Instagram and LinkedIn post filters conservatively: clearly classified posts may hide, ambiguous posts remain visible, and disabling each setting restores the page.
 - Popup controls, per-platform modes, and timer controls.
 - Options page settings, import/export, reset, and clear-data flows.
 

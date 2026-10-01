@@ -14,7 +14,7 @@ npx.cmd playwright install chromium
 
 The repository requires Node.js 20 or newer. The test dependencies are pinned in `package-lock.json`, including Playwright and `web-ext` 10.7.0.
 
-As rechecked on September 23, 2026, `npm audit --omit=dev` and the full dev-inclusive audit report zero vulnerabilities. The development-only `web-ext`/`addons-linter` chain now uses the fixed `image-size` 2.0.4 release, so the two upstream denial-of-service advisories are resolved without changing the shipped extension. Audit output is intentionally not suppressed.
+As rechecked on October 1, 2026, `npm audit --omit=dev` and the full dev-inclusive audit report zero vulnerabilities. The development-only `web-ext`/`addons-linter` chain uses the fixed `image-size` 2.0.4 release, so the two upstream denial-of-service advisories are resolved without changing the shipped extension. Audit output is intentionally not suppressed.
 
 ## Automated Commands
 
@@ -26,7 +26,7 @@ Run the complete local gate:
 npm.cmd run test:all
 ```
 
-The aggregate runner creates fresh `.tmp/test-builds/chromium` and `.tmp/test-builds/firefox` packages, then runs the package reproducibility check covered by `test:package`, JavaScript syntax checks, regression tests, background timer tests, localization and website validation, feed-filter fixture tests, the Chromium smoke suite, and Firefox lint. It removes the temporary packages after success or failure. Package reproducibility tests also rebuild generated files in `dist-release-builds` and `dist-test-builds` if those directories exist; keep any release artifacts you need to preserve outside these disposable local build directories.
+The aggregate runner creates fresh `.tmp/test-builds/chromium` and `.tmp/test-builds/firefox` packages, then runs JavaScript syntax checks, localization and website validation, package reproducibility, regression, background timer, live-harness unit, Instagram/LinkedIn feed-filter fixture, Reddit-feed fixture, Chromium UI-state and smoke, and Firefox lint checks. It removes the temporary packages after success or failure. Package reproducibility tests also rebuild generated files in `dist-release-builds` and `dist-test-builds` if those directories exist; keep any release artifacts you need to preserve outside these disposable local build directories.
 
 Run individual checks when narrowing a failure:
 
@@ -36,7 +36,10 @@ npm.cmd run test:background
 npm.cmd run test:package
 npm.cmd run test:localization
 npm.cmd run test:feeds
+npm.cmd run test:live:harness
+node tests/reddit-feed.test.js
 node scripts/prepare-test-builds.js
+node tests/ui-state.test.js --build-dir .tmp/test-builds/chromium
 npm.cmd run test:smoke
 node .\node_modules\web-ext\bin\web-ext.js lint --warnings-as-errors --source-dir .tmp\test-builds\firefox
 ```
@@ -51,7 +54,7 @@ npm.cmd run test:smoke:youtube
 
 `test:feeds` runs sanitized Instagram/LinkedIn fixtures in Chromium with real DOM layout, mutation observers and content scripts, substituting only browser-extension APIs and site responses. It is included in `test:all`. Positive, negative, settings, timer, restoration, recycled-node and media cases exercise the opt-in filters. Requests are intercepted; these checks provide no evidence about a signed-in account or today's production site markup. Native-speaker review and authenticated cross-browser site checks remain manual release-review items.
 
-`test:all` also runs `tests/reddit-feed.test.js`, a Chromium fixture check for Reddit feed-route classification, Strict/Warn/Passive behavior, work and break timers, SPA navigation without a feed flash, media pausing, and restoration. Run `node tests/reddit-feed.test.js --firefox` for the same fixture in a locally installed Playwright Firefox browser. Current Home, News, Popular, and community pages were inspected in Brave and each exposed one `shreddit-feed` container; individual post pages did not. Fixture results and DOM inspection do not establish compatibility with every live Reddit route or browser.
+`test:all` also runs `tests/reddit-feed.test.js`, a Chromium fixture check for Reddit feed-route classification, Strict/Warn/Passive behavior, work and break timers, SPA navigation without a feed flash, media pausing, and restoration. For the optional Firefox fixture run, install its browser with `npx.cmd playwright install firefox`, then run `node tests/reddit-feed.test.js --firefox`. This is a Playwright Firefox fixture run, not proof of behavior in an installed native Firefox browser. Current Home, News, Popular, and community pages were inspected in Brave and each exposed one `shreddit-feed` container; individual post pages did not. Fixture results and DOM inspection do not establish compatibility with every live Reddit route or browser.
 
 The deterministic suites cover:
 

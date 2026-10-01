@@ -26,6 +26,14 @@ test("diagnostics redact query tokens, email addresses and authorization values"
   const result = redact("https://example.com/path?token=secret#private person@example.com token=secret");
   assert.equal(result, "https://example.com/path [email] token=[redacted]");
 });
+test("report output identifies the 2.5.0 browser validation", (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "focustube-report-heading-"));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const report = new Report(directory, { requestedBrowsers: ["Fixture"] });
+  report.write();
+  const output = fs.readFileSync(path.join(directory, "report.md"), "utf8");
+  assert.match(output, /^# FocusTube 2\.5\.0 Browser Validation$/m);
+});
 test("Firefox driver accepts only a loopback port reported by geckodriver", () => {
   assert.equal(
     parseListeningPort("123 geckodriver INFO Listening on 127.0.0.1:55056\n"),
