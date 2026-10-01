@@ -15,7 +15,7 @@ const backBtn = document.getElementById("backBtn");
 const detailTitle = document.getElementById("detailTitle");
 const msg = (key, substitutions) =>
   globalThis.FT_I18N?.message(key, substitutions) || "";
-let settings = {
+const defaultPlatformSettings = {
   yt: "strict",
   ig: "strict",
   tt: "strict",
@@ -23,6 +23,7 @@ let settings = {
   li: "strict",
   rd: "strict",
 };
+let settings = { ...defaultPlatformSettings };
 let currentPlatform = null;
 let timerInterval = null;
 let timerEndTime = null;
@@ -75,9 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
       timerBtn.textContent = msg("startTimer");
       const isDark = resolveDarkMode(result.darkMode);
       applyTheme(isDark);
-      if (result.platformSettings) {
-        settings = { ...settings, ...result.platformSettings };
-      }
+      settings = { ...defaultPlatformSettings, ...result.platformSettings };
       updateStats(result.ft_stats_blocked || 0);
       updatePlatformVisibility(result);
       if (result.ft_timer_end && result.ft_timer_end > Date.now()) {
@@ -86,8 +85,11 @@ document.addEventListener("DOMContentLoaded", () => {
       setupEventListeners();
       chrome.storage.onChanged.addListener((changes, area) => {
         if (area === "local") {
-          if (changes.platformSettings && changes.platformSettings.newValue) {
-            settings = { ...settings, ...changes.platformSettings.newValue };
+          if (changes.platformSettings) {
+            settings = {
+              ...defaultPlatformSettings,
+              ...changes.platformSettings.newValue,
+            };
             updateAllPlatformIcons();
           }
           if (changes.ft_enabled) {
@@ -129,6 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           if (changes.ft_stats_blocked) {
             const blocked = changes.ft_stats_blocked.newValue || 0;
+            updateStats(blocked);
             checkReviewPrompt(blocked);
           }
         }
@@ -202,6 +205,12 @@ function updateAllPlatformIcons() {
       const mode = isWorkTimer ? "strict" : settings[platform] || "strict";
       updatePlatformIcon(icon, mode);
     });
+    if (currentPlatform) {
+      const mode = isWorkTimer ? "strict" : settings[currentPlatform];
+      document.querySelectorAll(".mode-option-detail").forEach((option) => {
+        option.classList.toggle("selected", option.dataset.value === mode);
+      });
+    }
   });
 }
 function updatePlatformVisibility(visibility) {
@@ -613,8 +622,13 @@ function handleDocumentClick(e) {
     !modeOption.classList.contains("disabled")
   ) {
     const mode = modeOption.dataset.value;
-    settings[currentPlatform] = mode;
-    chrome.storage.local.set({ platformSettings: settings });
+    const platform = currentPlatform;
+    chrome.storage.local.get(["platformSettings"], (result) => {
+      chrome.storage.local.set({
+        platformSettings: { ...result.platformSettings, [platform]: mode },
+      });
+    });
+    settings[platform] = mode;
     document
       .querySelectorAll(".mode-option-detail")
       .forEach((o) => o.classList.remove("selected"));

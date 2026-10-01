@@ -112,6 +112,21 @@ async function setCheckbox(page, selector, checked) {
   }
 }
 
+async function exerciseVisualToggle(page, key, checked) {
+  const selector = `#${key}`;
+  await waitFor(page, (key) => {
+    const input = document.getElementById(key);
+    return input?.type === "checkbox" && !input.disabled;
+  }, 5000, 100, key);
+  const before = await readDom(page, selector, "checked");
+  const expected = checked === undefined ? !before : checked;
+  if (before !== expected) await page.click(`label[data-setting-key="${key}"]`);
+  await waitForStorage(page, [key], (state) => state[key] === expected);
+  await waitFor(page, ({ key, expected }) => document.getElementById(key)?.checked === expected,
+    5000, 100, { key, expected });
+  return { before, after: await readDom(page, selector, "checked") };
+}
+
 async function waitFor(page, predicate, timeout = 10000, interval = 200, arg) {
   const deadline = Date.now() + timeout;
   while (Date.now() < deadline) {
@@ -318,15 +333,16 @@ async function runExtensionChecks(session, report, { workDir, quick = false } = 
       await setCheckbox(options, "#visualHideHiddenPlatforms", false);
       await options.click('.platform-btn[data-platform="yt"]');
       await waitFor(options, () => Boolean(document.querySelector("#platformDetail.active")), 5000, 100);
-      const visualToggle = ".toggle[data-setting-key=\"hide_yt_shorts_nav\"]";
-      await options.click(visualToggle);
+      const changed = await exerciseVisualToggle(options, "hide_yt_shorts_nav", false);
+      assert.deepEqual(changed, { before: true, after: false });
       await options.reload();
       await options.click('.platform-btn[data-platform="yt"]');
       await waitFor(options, () => Boolean(document.querySelector("#platformDetail.active")), 5000, 100);
+      await waitFor(options, () => document.getElementById("hide_yt_shorts_nav")?.disabled === false, 5000, 100);
       const actual = await options.evaluate(() => ({
         linkedinVisible: document.getElementById("popup_visible_li").checked,
         hiddenVisual: document.getElementById("visualHideHiddenPlatforms").checked,
-        ytShortsNav: document.querySelector(".toggle[data-setting-key=\"hide_yt_shorts_nav\"]")?.classList.contains("on"),
+        ytShortsNav: document.getElementById("hide_yt_shorts_nav")?.checked,
       }));
       assert.equal(actual.linkedinVisible, false);
       assert.equal(actual.hiddenVisual, false);
@@ -347,17 +363,15 @@ async function runExtensionChecks(session, report, { workDir, quick = false } = 
       for (const platform of PLATFORMS) {
         await options.click(`.platform-btn[data-platform="${platform}"]`);
         await waitFor(options, () => Boolean(document.querySelector("#platformDetail.active")), 5000, 100);
+        await waitFor(options, () => document.querySelector(".mode-btn")?.disabled === false, 5000, 100);
         for (const mode of ["S", "W", "P"]) {
           await options.click(`.mode-btn[data-mode="${mode}"]`);
           const name = { S: "strict", W: "warn", P: "allow" }[mode];
           await waitForStorage(options, ["platformSettings"], (state) => state.platformSettings?.[platform] === name);
         }
         for (const key of VISUAL_KEYS[platform]) {
-          const selector = `.toggle[data-setting-key="${key}"]`;
-          const before = await readDom(options, selector, "class");
-          await options.click(selector);
-          const expected = !before.includes("on");
-          await waitForStorage(options, [key], (state) => state[key] === expected);
+          const changed = await exerciseVisualToggle(options, key);
+          assert.equal(changed.after, !changed.before, `native checkbox ${key} changed`);
         }
         actual[platform] = { modes: MODES.length, visualToggles: VISUAL_KEYS[platform].length };
         await options.click("#backBtn");
@@ -729,12 +743,11 @@ async function runExtensionChecks(session, report, { workDir, quick = false } = 
       report.block({ id: "extension-browser-restart-persistence", site: "extension", route: "options.html", mode: "browser-restart", scope: "extension-ui", expected: "same-profile persistent restart without reinstall" }, session.name === "Firefox" ? "Firefox temporary extension cannot establish persistence" : "CLI-sideloaded fallback is not a persistent browser installation", "D");
     }
 
-    const errors = typeof session.backgroundErrors === "function" ? await session.backgroundErrors() : [];
-    return { completed: true, quick, backgroundDiagnostics: errors };
+    return { completed: true, quick };
   } finally {
     await close(popup);
     await close(options);
   }
 }
 
-module.exports = { runExtensionChecks };
+module.exports = { runExtensionChecks, exerciseVisualToggle };

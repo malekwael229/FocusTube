@@ -741,6 +741,7 @@ async function verifyOptions(context, extensionId) {
   const mostRelevantToggle = page.locator(
     '[data-setting-key="hide_yt_most_relevant_shelf"]',
   );
+  assert.equal(await page.locator("#hide_yt_most_relevant_shelf").isChecked(), true);
   await mostRelevantToggle.click();
   await waitForStorageValue(page, "hide_yt_most_relevant_shelf", false);
   await page.reload();
@@ -751,9 +752,7 @@ async function verifyOptions(context, extensionId) {
     timeout: 5000,
   });
   assert.equal(
-    await page
-      .locator('[data-setting-key="hide_yt_most_relevant_shelf"]')
-      .evaluate((toggle) => toggle.classList.contains("on")),
+    await page.locator("#hide_yt_most_relevant_shelf").isChecked(),
     false,
   );
   await page.locator('[data-setting-key="hide_yt_most_relevant_shelf"]').click();
@@ -2106,7 +2105,8 @@ async function verifyYouTubeShortsRedirectFixture(context, extensionId) {
     focusMode: true,
     platformSettings: { yt: "strict" },
   });
-  await context.route("https://www.youtube.com/shorts/**", (route) =>
+  const routePattern = "https://www.youtube.com/shorts/**";
+  const routeHandler = (route) =>
     route.fulfill({
       status: 200,
       contentType: "text/html",
@@ -2117,31 +2117,57 @@ async function verifyYouTubeShortsRedirectFixture(context, extensionId) {
           document.getElementById("home-link").dataset.clicked = "1";
         });
       </script></body></html>`,
-    }),
-  );
-  const page = await context.newPage();
-  await page.goto("https://www.youtube.com/shorts/test", {
-    waitUntil: "domcontentloaded",
-  });
-  await page.waitForFunction(
-    () => document.querySelector("#home-link")?.dataset.clicked === "1",
-  );
-  assert.equal(new URL(page.url()).pathname, "/");
-  await page.close();
-  await settingsPage.close();
+    });
+  let page;
+  try {
+    await context.route(routePattern, routeHandler);
+    page = await context.newPage();
+    await page.goto("https://www.youtube.com/shorts/test", {
+      waitUntil: "domcontentloaded",
+    });
+    await page.waitForFunction(
+      () => document.querySelector("#home-link")?.dataset.clicked === "1",
+    );
+    assert.equal(new URL(page.url()).pathname, "/");
+  } finally {
+    try { await context.unroute(routePattern, routeHandler); }
+    finally {
+      try { if (page) await page.close(); }
+      finally { await settingsPage.close(); }
+    }
+  }
   pass("YouTube Shorts strict mode prefers the in-app Home navigation");
 }
 
-async function verifyYouTubeShorts(context) {
-  const page = await context.newPage();
-  await page.goto("https://www.youtube.com/shorts/test", {
-    waitUntil: "domcontentloaded",
-    timeout: 45000,
-  });
-  await page.waitForTimeout(3000);
-  assertNoText(page.url(), /\/shorts\//, "YouTube Shorts path was not blocked or redirected");
-  await page.close();
-  pass("optional YouTube Shorts smoke check passed");
+async function verifyYouTubeShorts(chromium) {
+  const profile = fs.mkdtempSync(path.join(os.tmpdir(), "focustube-live-shorts-"));
+  let context;
+  try {
+    context = await chromium.launchPersistentContext(profile, {
+      headless: false,
+      args: [`--disable-extensions-except=${chromiumBuild}`, `--load-extension=${chromiumBuild}`, "--no-first-run"],
+    });
+    const page = await context.newPage();
+    let response;
+    try {
+      response = await page.goto("https://www.youtube.com/", { waitUntil: "domcontentloaded", timeout: 45000 });
+      if (!response?.ok()) throw new Error("HTTP " + (response?.status() || "unavailable"));
+      await page.waitForSelector("ytd-app", { timeout: 15000 });
+    } catch (error) {
+      throw new Error("BLOCKED: real YouTube HTTP response and application root prerequisite unavailable: " + error.message);
+    }
+    const extensionId = await getExtensionId(context);
+    const settings = await openExtensionPage(context, extensionId, "popup.html");
+    await setStorage(settings, { ft_enabled: true, focusMode: true, platformSettings: { yt: "strict" } });
+    await settings.close();
+    await page.goto("https://www.youtube.com/shorts/test", { waitUntil: "domcontentloaded", timeout: 45000 });
+    await page.waitForTimeout(3000);
+    assertNoText(page.url(), /\/shorts\//, "YouTube Shorts path was not blocked or redirected");
+    pass("optional YouTube Shorts live check passed with real HTTP/root prerequisite in a fresh context");
+  } finally {
+    try { if (context) await context.close(); }
+    finally { fs.rmSync(profile, { recursive: true, force: true }); }
+  }
 }
 
 async function runBrowserSmoke() {
@@ -2197,7 +2223,7 @@ async function runBrowserSmoke() {
     await verifyYouTubePlayablesRoutes(context, extensionId);
 
     if (runYouTube) {
-      await verifyYouTubeShorts(context);
+      await verifyYouTubeShorts(chromium);
     }
   } finally {
     if (keepOpen) {
@@ -2262,7 +2288,8 @@ async function main() {
   await runBrowserSmoke();
 }
 
-main().catch((error) => {
+if (require.main === module) main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
+module.exports = { verifyYouTubeShortsRedirectFixture, verifyYouTubeShorts };

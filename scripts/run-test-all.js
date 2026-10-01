@@ -49,9 +49,14 @@ function main() {
     run(process.execPath, [path.join("tests", "website-validation.test.js")]);
     run(process.execPath, [path.join("tests", "package-reproducibility.test.js")]);
     run(process.execPath, [path.join("tests", "regression.test.js")]);
+    run(process.execPath, ["--test", path.join("tests", "live", "report.test.js"), path.join("tests", "live", "site-checks.test.js")]);
     run(process.execPath, [path.join("tests", "background-timer.test.js")]);
     run(process.execPath, [path.join("tests", "feed-filters.test.js")]);
     run(process.execPath, [path.join("tests", "reddit-feed.test.js")]);
+    run(process.execPath, [path.join("tests", "ui-state.test.js"), "--build-dir", chromiumBuild], {
+      ...process.env,
+      FOCUSTUBE_CHROMIUM_BUILD: chromiumBuild,
+    });
     run(process.execPath, [path.join("tests", "playwright-smoke.test.js"), "--build-dir", chromiumBuild], {
       ...process.env,
       FOCUSTUBE_CHROMIUM_BUILD: chromiumBuild,

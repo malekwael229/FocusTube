@@ -52,12 +52,17 @@ document.addEventListener("DOMContentLoaded", function () {
     ),
     "ft_timer_end",
     "reviewLaterTime",
+    "reviewNextBlock",
   ]);
   const allowedDurationValues = {
     ft_timer_duration: new Set([15, 25, 30, 45, 60]),
     breakDuration: new Set([5, 10, 15]),
   };
-  const importNullableNumberKeys = new Set(["ft_timer_end", "reviewLaterTime"]);
+  const importNullableNumberKeys = new Set([
+    "ft_timer_end",
+    "reviewLaterTime",
+    "reviewNextBlock",
+  ]);
   const importStringKeys = new Set([
     ...Object.keys(defaultSettings).filter(
       (key) => typeof defaultSettings[key] === "string",
@@ -87,6 +92,13 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
           invalidKeys.push(key);
         }
+        return;
+      }
+      if (
+        key === "reviewNextBlock" &&
+        (typeof raw[key] !== "number" || !Number.isSafeInteger(raw[key]))
+      ) {
+        invalidKeys.push(key);
         return;
       }
       const value = Number(raw[key]);
@@ -669,10 +681,13 @@ document.addEventListener("DOMContentLoaded", function () {
       else el.classList.remove("disabled-look");
     });
   }
+  let disabledStateRevision = 0;
   function updateDisabledState() {
+    const revision = ++disabledStateRevision;
     chrome.storage.local.get(
       ["ft_timer_end", "ft_timer_type", "ft_enabled", "lockSettings"],
       (res) => {
+        if (revision !== disabledStateRevision) return;
         timerActive = Boolean(
           res.ft_timer_end && res.ft_timer_end > Date.now(),
         );
@@ -689,6 +704,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   updateDisabledState();
   setInterval(updateDisabledState, 1000);
+  document.addEventListener("ft-settings-detail-rendered", updateDisabledState);
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local") return;
     if (changes.focusMode) {
@@ -698,6 +714,11 @@ document.addEventListener("DOMContentLoaded", function () {
       const isEnabled = changes.ft_enabled.newValue !== false;
       setToggle("ft_enabled", isEnabled);
       applyExtensionEnabledState(isEnabled);
+    }
+    if (
+      changes.ft_enabled || changes.ft_timer_end ||
+      changes.ft_timer_type || changes.lockSettings
+    ) {
       updateDisabledState();
     }
     if (changes.ft_stats_blocked) {
@@ -719,7 +740,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     for (const [key, { newValue }] of Object.entries(changes)) {
       if (key.startsWith("hide_")) {
-        setToggle(key, newValue);
+        setToggle(key, newValue ?? defaultSettings[key] ?? true);
+        detailSettingsRevision++;
       }
     }
     if (changes.ft_timer_duration) {
@@ -920,10 +942,27 @@ function getModesForPlatform(id) {
 let platformModes = { yt: "S", ig: "S", tt: "S", fb: "S", li: "S", rd: "S" };
 let currentPlatform = null;
 let timerActive = false;
+let platformModesRevision = 0;
+let detailSettingsRevision = 0;
+let detailRenderGeneration = 0;
+function syncSelectedPlatformMode() {
+  if (!currentPlatform) return;
+  document.querySelectorAll("#modeButtons .mode-btn").forEach((button) => {
+    const selected = button.dataset.mode === platformModes[currentPlatform];
+    button.classList.toggle("selected", selected);
+    const mode = getModesForPlatform(currentPlatform).find(
+      (mode) => mode.id === button.dataset.mode,
+    );
+    button.querySelector(".mode-radio").style.borderColor = selected ? mode.color : "";
+  });
+}
 function loadPlatformModes() {
+  const revision = ++platformModesRevision;
   chrome.storage.local.get(
     ["platformSettings", "ft_timer_end", "ft_timer_type"],
     (result) => {
+      if (revision !== platformModesRevision) return;
+      platformModes = { yt: "S", ig: "S", tt: "S", fb: "S", li: "S", rd: "S" };
       if (result.platformSettings) {
         const modeMap = { strict: "S", warn: "W", allow: "P" };
         Object.keys(result.platformSettings).forEach((id) => {
@@ -932,6 +971,7 @@ function loadPlatformModes() {
           platformModes[id] = nextMode;
         });
       }
+      syncSelectedPlatformMode();
       const isWorkTimer =
         result.ft_timer_end &&
         result.ft_timer_end > Date.now() &&
@@ -1005,6 +1045,7 @@ function initPlatformGrid() {
   });
 }
 function showPlatformDetail(id) {
+  const generation = ++detailRenderGeneration;
   const platform = platforms[id];
   const platformGrid = document.getElementById("platformGrid");
   const platformDetail = document.getElementById("platformDetail");
@@ -1025,6 +1066,7 @@ function showPlatformDetail(id) {
       ...availableModes.map((mode) => {
         const btn = document.createElement("button");
         btn.className = "mode-btn";
+        btn.disabled = true;
         if (platformModes[id] === mode.id) btn.classList.add("selected");
         if (mode.disabled) {
           btn.classList.add("disabled");
@@ -1081,75 +1123,67 @@ function showPlatformDetail(id) {
   if (platform.settings.length > 0 && settingsSection && settingsContainer) {
     settingsSection.style.display = "block";
     const settingKeys = platform.settings.map((setting) => setting.id);
-    chrome.storage.local.get(settingKeys, (res) => {
-      settingsContainer.replaceChildren(
-        ...platform.settings.map((setting) => {
-          const isOn = setting.defaultValue === false
-            ? res[setting.id] === true
-            : res[setting.id] !== false;
-          const row = document.createElement("div");
-          row.className = "setting-row";
+    const renderSettings = () => {
+      const revision = ++detailSettingsRevision;
+      chrome.storage.local.get(settingKeys, (res) => {
+        if (currentPlatform !== id || generation !== detailRenderGeneration) {
+          return;
+        }
+        if (revision !== detailSettingsRevision) {
+          renderSettings();
+          return;
+        }
+        settingsContainer.replaceChildren(
+          ...platform.settings.map((setting) => {
+            const isOn = setting.defaultValue === false
+              ? res[setting.id] === true
+              : res[setting.id] !== false;
+            const row = document.createElement("div");
+            row.className = "setting-row";
 
-          const info = document.createElement("div");
-          info.className = "setting-info";
-          const label = document.createElement("div");
-          label.className = "setting-label";
-          label.textContent = setting.label;
-          const desc = document.createElement("div");
-          desc.className = "setting-desc";
-          desc.textContent = setting.desc;
-          info.append(label, desc);
+            const info = document.createElement("div");
+            info.className = "setting-info";
+            const label = document.createElement("div");
+            label.className = "setting-label";
+            label.textContent = setting.label;
+            const desc = document.createElement("div");
+            desc.className = "setting-desc";
+            desc.textContent = setting.desc;
+            info.append(label, desc);
 
-          const toggle = document.createElement("div");
-          toggle.className = "toggle";
-          if (isOn) toggle.classList.add("on");
-          toggle.dataset.settingKey = setting.id;
-          const thumb = document.createElement("div");
-          thumb.className = "toggle-thumb";
-          toggle.appendChild(thumb);
+            const toggle = document.createElement("label");
+            toggle.className = "toggle-switch";
+            toggle.dataset.settingKey = setting.id;
+            label.id = `${setting.id}-label`;
+            const input = document.createElement("input");
+            input.type = "checkbox";
+            input.className = "toggle-input";
+            input.id = setting.id;
+            input.checked = isOn;
+            input.disabled = true;
+            input.setAttribute("aria-labelledby", label.id);
+            const slider = document.createElement("span");
+            slider.className = "toggle-slider";
+            toggle.append(input, slider);
 
-          row.append(info, toggle);
-          return row;
-        }),
-      );
-      settingsContainer.querySelectorAll(".toggle").forEach((toggle) => {
-        toggle.addEventListener("click", () => {
-          const key = toggle.dataset.settingKey;
-          const nextValue = !toggle.classList.contains("on");
-          toggle.classList.toggle("on", nextValue);
-          chrome.storage.local.set({ [key]: nextValue });
+            row.append(info, toggle);
+            return row;
+          }),
+        );
+        settingsContainer.querySelectorAll("input").forEach((input) => {
+          input.addEventListener("change", () => {
+            if (input.disabled) return;
+            chrome.storage.local.set({ [input.id]: input.checked });
+          });
         });
+        document.dispatchEvent(new Event("ft-settings-detail-rendered"));
       });
-    });
+    };
+    renderSettings();
   } else if (settingsSection) {
     settingsSection.style.display = "none";
   }
-  function checkTimerState() {
-    chrome.storage.local.get(["ft_timer_end"], (res) => {
-      timerActive = Boolean(res.ft_timer_end && res.ft_timer_end > Date.now());
-      const inputs = document.querySelectorAll(
-        "input, select, button.mode-btn",
-      );
-      inputs.forEach((input) => {
-        if (
-          input.closest(".about-section") ||
-          input.id === "exportBtn" ||
-          input.id === "importBtn" ||
-          input.id === "importFile"
-        )
-          return;
-        input.disabled = timerActive;
-        input.classList.toggle("disabled-by-timer", timerActive);
-      });
-      document.body.classList.toggle("timer-active-locked", timerActive);
-    });
-  }
-  checkTimerState();
-  chrome.storage.onChanged.addListener((changes) => {
-    if (changes.ft_timer_end || changes.ft_timer_type) {
-      checkTimerState();
-    }
-  });
+  document.dispatchEvent(new Event("ft-settings-detail-rendered"));
 }
 function updateBadge(id, isWorkTimer = false) {
   const badge = document.getElementById(`badge-${id}`);
