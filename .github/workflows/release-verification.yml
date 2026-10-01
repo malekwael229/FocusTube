@@ -62,3 +62,56 @@ jobs:
             cmp --silent "$first" "$second"
             sha256sum "$first"
           done
+
+      - name: Prepare development build download
+        if: github.event_name == 'pull_request'
+        env:
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          download_dir="$RUNNER_TEMP/focustube-development-download"
+          mkdir -p "$download_dir"
+          cp .tmp/release-a/FocusTube-release-chromium-v*.zip .tmp/release-a/FocusTube-release-firefox-v*.zip "$download_dir/"
+          cp tests/development-builds.md "$download_dir/README.md"
+          cd "$download_dir"
+          sha256sum FocusTube-release-chromium-v*.zip FocusTube-release-firefox-v*.zip > SHA256SUMS.txt
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const { execFileSync } = require('node:child_process');
+          fs.writeFileSync('BUILD.json', JSON.stringify({
+            kind: 'unreleased development build',
+            version: require(process.env.GITHUB_WORKSPACE + '/chrome-manifest.json').version,
+            builtCommit: execFileSync('git', ['rev-parse', 'HEAD'], {
+              cwd: process.env.GITHUB_WORKSPACE, encoding: 'utf8',
+            }).trim(),
+            prHeadCommit: process.env.PR_HEAD_SHA,
+            baseCommit: process.env.PR_BASE_SHA,
+            runURL: process.env.RUN_URL,
+          }, null, 2) + '\n');
+          NODE
+
+      - name: Upload verified development packages
+        if: github.event_name == 'pull_request'
+        id: development-build
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: FocusTube-development-pr-${{ github.event.number }}-${{ github.event.pull_request.head.sha }}
+          path: |
+            ${{ runner.temp }}/focustube-development-download/FocusTube-release-chromium-v*.zip
+            ${{ runner.temp }}/focustube-development-download/FocusTube-release-firefox-v*.zip
+            ${{ runner.temp }}/focustube-development-download/SHA256SUMS.txt
+            ${{ runner.temp }}/focustube-development-download/BUILD.json
+            ${{ runner.temp }}/focustube-development-download/README.md
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+          include-hidden-files: false
+
+      - name: Link development build download
+        if: github.event_name == 'pull_request'
+        env:
+          ARTIFACT_URL: ${{ steps.development-build.outputs.artifact-url }}
+        run: |
+          printf '### Development build\n\n[Download verified test packages](%s)\n\nUnreleased, unsigned packages for manual testing. See the included README and BUILD.json.\n' "$ARTIFACT_URL" >> "$GITHUB_STEP_SUMMARY"
