@@ -1,10 +1,12 @@
 # Feed DOM fixtures
 
 These reduced, sanitized captures preserve the header, identity, control, body,
-and nested-post signals used by the feed adapters. Capture dates and reductions
-are recorded in each HTML fixture where known; the divider has no dated capture
-metadata. They are offline examples, not evidence of current authenticated-site
-behavior or universal language/markup support.
+and nested-post signals used by the feed adapters. Most files are reduced captures;
+`ig-permalink-modal.html` is an authored permalink/modal fixture
+for a detected Instagram Reel shape, not an added live capture. Capture dates and
+reductions are recorded in each HTML fixture where known; the divider has no dated
+capture metadata. They are offline examples, not evidence of current
+authenticated-site behavior or universal language/markup support.
 
 `tests/feed-filters.test.js` loads the checked-in HTML fixtures in real Chromium with the
 production i18n, shared content runtime, adapters, CSS, and MutationObserver.

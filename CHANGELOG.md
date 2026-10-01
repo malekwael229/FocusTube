@@ -4,15 +4,22 @@ All notable project-facing changes are documented here.
 
 ## [Unreleased]
 
-- Added current Reddit feed controls for Home, News, Popular, All, and community listings while preserving individual posts, comments, and search. Strict and work timers hide supported feeds; Warn permits a page-local reveal; Passive and breaks leave them visible. Feed navigation keeps the old listing hidden until Reddit replaces it. Legacy Reddit is outside this change.
+## [2.5.0] - 2026-10-01
 
-## [2.4.1] - Pending
+- Added current Reddit feed controls for Home, News, Popular, All, and community listings while preserving individual posts, comments, and search. Strict and work timers hide supported feeds; Warn permits a page-local reveal; Passive and breaks leave them visible. Feed navigation keeps the old listing hidden until Reddit replaces it. Legacy Reddit is outside this change. The new host access is limited to `reddit.com` and `www.reddit.com` relative to 2.4.1.
+- Added a separate setting to hide detected Playables navigation and discovery shelves. Direct `/playables` routes redirect Home in Strict mode or during work sessions, show a Warn interstitial in Warn mode, and remain accessible in Passive mode and during breaks.
+- Arranged settings cards in two columns with centered data and privacy controls, clarified mode badges, and kept the rating prompt overlay from shrinking the popup layout.
+- Fixed settings locking and synchronization across the popup, options page, and content scripts.
+- Improved Instagram Warn overlay recovery on safer routes and during breaks.
+- API permissions and CSP remain unchanged, and FocusTube adds no analytics.
+
+## [2.4.1] - 2026-09-23
 
 - Updated the extension name and store-facing description to better reflect FocusTube's Shorts, Reels, and feed-blocking features.
 - Updated localized package metadata across all supported languages.
 - Refreshed release and contributor documentation for accuracy.
 - Strengthened regression coverage for package metadata and release-state checks.
-- No runtime behavior, permission, host-access, or CSP changes are included in this maintenance candidate.
+- No runtime behavior, permission, host-access, or CSP changes are included in this maintenance release.
 
 ## [2.4.0] - 2026-09-23
 

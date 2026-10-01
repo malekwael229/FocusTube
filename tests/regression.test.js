@@ -1023,7 +1023,7 @@ const checks = [
     },
   ],
   [
-    "settings replacement and displayed version remain release-gated at 2.4.1",
+    "settings replacement and displayed version remain release-gated at 2.5.0",
     () => {
       const options = read("options.html");
       const changelog = read("CHANGELOG.md");
@@ -1031,14 +1031,18 @@ const checks = [
       const firefoxManifest = readJson("firefox-manifest.json");
 
       assert.match(read("options.js"), /action:\s*["']replaceSettings["']/);
-      assert.match(options, /Version\s+2\.4\.1/);
-      assert.equal(chromeManifest.version, "2.4.1");
-      assert.equal(firefoxManifest.version, "2.4.1");
+      assert.match(options, /Version\s+2\.5\.0/);
+      assert.match(options, /data-i18n-args='\["2\.5\.0"\]'/);
+      assert.equal(chromeManifest.version, "2.5.0");
+      assert.equal(firefoxManifest.version, "2.5.0");
       assert.match(
         changelog,
         /^##[ \t]+\[Unreleased\][ \t]*\r?$/m,
       );
-      assert.match(changelog, /^##\s*\[2\.4\.1\]\s*-\s*Pending$/m);
+      assert.match(changelog, /^##\s*\[2\.5\.0\]\s*-\s*2026-10-01$/m);
+      assert.doesNotMatch(changelog, /^##\s*\[2\.5\.0\]\s*-\s*Pending$/m);
+      assert.doesNotMatch(changelog, /^##\s*\[2\.4\.1\]\s*-\s*Pending$/m);
+      assert.match(changelog, /^##\s*\[2\.4\.1\]\s*-\s*2026-09-23$/m);
       assert.match(changelog, /^##\s*\[2\.4\.0\]\s*-\s*2026-09-23$/m);
       assert.doesNotMatch(changelog, /###\s+Pending\s+2\.4\.0/);
       assert.match(changelog, /^##\s*\[2\.3\.2\]\s*-\s*2026-09-01$/m);
@@ -1052,8 +1056,8 @@ const checks = [
 
       assert.equal(chromeManifest.manifest_version, 3);
       assert.equal(firefoxManifest.manifest_version, 2);
-      assert.equal(chromeManifest.version, "2.4.1");
-      assert.equal(firefoxManifest.version, "2.4.1");
+      assert.equal(chromeManifest.version, "2.5.0");
+      assert.equal(firefoxManifest.version, "2.5.0");
       assert.deepEqual(chromeManifest.content_security_policy, {
         extension_pages: "script-src 'self'; object-src 'self';",
       });
