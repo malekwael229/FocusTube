@@ -32,6 +32,85 @@ function assertPerPlatformContentScripts(manifest) {
 
 const checks = [
   [
+    "CodeQL workflows keep init, analyze, and SARIF upload pinned consistently",
+    () => {
+      function assertConsistentPins(codeql, scorecard) {
+        const pins = [];
+        for (const [source, expectedActions] of [
+          [codeql, ["analyze", "init"]],
+          [scorecard, ["upload-sarif"]],
+        ]) {
+          const usages = [
+            ...source.matchAll(
+              /^[ \t]*(?:-[ \t]*)?uses:[ \t]*["']?github\/codeql-action\/([^\s@"']+)([^\r\n]*)$/gm,
+            ),
+          ];
+          assert.deepEqual(
+            usages.map((usage) => usage[1]).sort(),
+            expectedActions,
+            "Each required CodeQL action must appear exactly once",
+          );
+          for (const [, action, reference] of usages) {
+            const pin = reference.match(
+              /^@([a-f\d]{40})["']?[ \t]*#[ \t]*(v\d+\.\d+\.\d+)[ \t]*$/i,
+            );
+            assert.ok(pin, `${action} must have a full SHA and version comment`);
+            pins.push({ sha: pin[1].toLowerCase(), version: pin[2] });
+          }
+        }
+        assert.equal(
+          new Set(pins.map((pin) => pin.sha)).size, 1,
+          "CodeQL action SHAs must match across workflows",
+        );
+        assert.equal(
+          new Set(pins.map((pin) => pin.version)).size, 1,
+          "CodeQL action version comments must match across workflows",
+        );
+      }
+
+      const previous = "cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9";
+      const updated = "2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2";
+      const fixture = (init, analyze, upload) => [
+        `- uses: github/codeql-action/init@${init}\n  uses: github/codeql-action/analyze@${analyze}`,
+        `  uses: github/codeql-action/upload-sarif@${upload}`,
+      ];
+
+      // Reproduce the independent updates in PRs #54 and #56, and a stale uploader.
+      for (const pins of [
+        [previous, updated, previous],
+        [updated, previous, previous],
+        [updated, updated, previous],
+      ]) {
+        assert.throws(() => assertConsistentPins(...fixture(...pins)),
+          /CodeQL action SHAs must match/);
+      }
+      assert.throws(() => assertConsistentPins(...fixture(
+        updated, updated, updated.replace("v4.38.2", "v4.37.9"),
+      )), /CodeQL action version comments must match/);
+      for (const invalidPin of ["v4", `${"a".repeat(39)} # v9.0.0`, "a".repeat(40)]) {
+        assert.throws(() => assertConsistentPins(...fixture(
+          invalidPin, invalidPin, invalidPin,
+        )), /full SHA and version comment/);
+      }
+      const validPin = `${"a".repeat(40)} # v9.0.0`;
+      const validFixture = fixture(validPin, validPin, validPin);
+      assertConsistentPins(...validFixture);
+      assertConsistentPins(...validFixture.map((source) => source
+        .replaceAll("uses: ", 'uses:\t"')
+        .replaceAll(" # ", '"\t#\t')
+        .replaceAll("\n", "\r\n")));
+      assert.throws(() => assertConsistentPins(validFixture[0], ""),
+        /Each required CodeQL action/);
+      assert.throws(() => assertConsistentPins(
+        `${validFixture[0]}\n${validFixture[0]}`, validFixture[1],
+      ), /Each required CodeQL action/);
+      assertConsistentPins(
+        read(".github/workflows/codeql.yml"),
+        read(".github/workflows/scorecard.yml"),
+      );
+    },
+  ],
+  [
     "site detection accepts only supported domains and subdomains",
     () => {
       const common = read("content-common.js");
