@@ -7,6 +7,9 @@ const { spawn } = require("node:child_process");
 const { chromium } = require("playwright");
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+function isOwnChromiumError(error, pageURL, extensionURL) {
+  return Boolean(extensionURL && (pageURL.startsWith(extensionURL) || error.stack?.includes(extensionURL)));
+}
 
 async function freePort() {
   const server = net.createServer();
@@ -26,9 +29,11 @@ async function launchChromium(options) {
   let browser, context, processHandle, extensionId, version;
   const errors = [];
   const workers = new Set();
+  const pageDiagnostics = new Set();
   let backgroundDiagnosticGap = null;
 
   async function observeWorker(worker) {
+    if (!extensionId || !worker.url().startsWith("chrome-extension://" + extensionId + "/")) return;
     if (workers.has(worker)) return;
     workers.add(worker);
     try {
@@ -42,9 +47,16 @@ async function launchChromium(options) {
 
   function wrap(page) {
     const pageErrors = [];
-    page.on("pageerror", (error) => pageErrors.push(error.message));
+    pageDiagnostics.add(pageErrors);
+    page.on("pageerror", (error) => pageErrors.push({ message: error.message, severity: "error",
+      sourceName: page.url(), stack: error.stack || "",
+      ownExtension: isOwnChromiumError(error, page.url(), extensionId ? "chrome-extension://" + extensionId + "/" : null) }));
     page.on("console", (message) => {
-      if (message.type() === "error") pageErrors.push(message.text());
+      const type = message.type();
+      if (!["error", "warning", "info"].includes(type)) return;
+      const sourceName = message.location().url || page.url();
+      pageErrors.push({ message: message.text(), severity: type, sourceName,
+        ownExtension: Boolean(extensionId && sourceName.startsWith("chrome-extension://" + extensionId + "/")) });
     });
     page.setDefaultTimeout(8000);
     async function goto(url) {
@@ -152,8 +164,13 @@ async function launchChromium(options) {
     close,
     backgroundErrors: async () => {
       const result = errors.splice(0);
+      for (const diagnostics of pageDiagnostics) result.push(...diagnostics.splice(0));
       for (const worker of context.serviceWorkers()) {
-        try { result.push(...await worker.evaluate(() => (globalThis.__ftValidationErrors || []).splice(0))); }
+        if (!worker.url().startsWith("chrome-extension://" + extensionId + "/")) continue;
+        try {
+          result.push(...(await worker.evaluate(() => (globalThis.__ftValidationErrors || []).splice(0)))
+            .map((message) => ({ message, severity: "error", sourceName: worker.url(), ownExtension: true })));
+        }
         catch (error) { backgroundDiagnosticGap = error.message; }
       }
       if (backgroundDiagnosticGap) result.push("DIAGNOSTIC GAP: " + backgroundDiagnosticGap);
@@ -162,4 +179,4 @@ async function launchChromium(options) {
   };
 }
 
-module.exports = { launchChromium };
+module.exports = { launchChromium, isOwnChromiumError };

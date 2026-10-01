@@ -10,12 +10,12 @@ YouTube Shorts can be checked with:
 npm run test:smoke:youtube
 ```
 
-This opens a real YouTube Shorts URL and expects FocusTube to move away from the Shorts path while strict/focus mode is active. Run it only when network access is available.
+This uses a fresh isolated extension context, requires a real successful YouTube HTTP response and application root, then opens a real Shorts URL and expects FocusTube to move away from the Shorts path while strict/focus mode is active. Network/challenge failure blocks the live prerequisite; deterministic fixtures do not certify this optional check. Run it only when network access is available.
 
 ## Manual Account-Based Checks
 
 YouTube:
-- Where Playables is available, enable Hide Playables and confirm its Home shelf and Explore navigation link disappear while ordinary video shelves stay visible. Turn the setting off and confirm both entry points return. A direct Playables URL remains accessible by design.
+- Where Playables is available, enable Hide Playables and confirm its Home shelf and Explore navigation link disappear while ordinary video shelves stay visible. Turn the setting off and confirm both entry points return. On a direct Playables URL, Strict mode or an active work timer redirects Home; Warn shows an interstitial; Passive or an active break allows the route.
 
 Instagram:
 - Log in manually.

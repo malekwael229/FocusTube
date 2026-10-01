@@ -24,7 +24,7 @@
         --secondary: hsl(228 12% 18%);
         --secondary-foreground: hsl(220 14% 85%);
         --muted: hsl(228 12% 18%);
-        --muted-foreground: hsl(220 9% 50%);
+        --muted-foreground: hsl(220 10% 68%);
         --accent: hsl(183 100% 50%);
         --destructive: hsl(0 72% 51%);
         --border: hsl(228 12% 20%);
@@ -62,6 +62,12 @@
       select,
       textarea {
         font-family: inherit;
+      }
+
+      button:focus-visible,
+      .toggle-input:focus-visible + .toggle-slider {
+        outline: 2px solid var(--primary);
+        outline-offset: 3px;
       }
 
       .container {
@@ -156,7 +162,7 @@
       }
 
       .platform-btn:hover {
-        transform: scale(1.1);
+        transform: translateY(-1px);
       }
 
       .platform-btn.mode-strict {
@@ -184,13 +190,27 @@
       }
 
       .platform-btn:active {
-        transform: scale(0.95);
+        transform: translateY(0);
       }
 
       .platform-btn svg {
         width: 1.75rem;
         height: 1.75rem;
       }
+
+      .reddit-mark {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+      }
+
+      .reddit-mark img {
+        display: block;
+        width: 1.75rem;
+        height: 1.75rem;
+      }
+
 
       .platform-badge {
         position: absolute;
@@ -199,8 +219,9 @@
         width: 1rem;
         height: 1rem;
         border-radius: 50%;
-        font-size: 9px;
+        font-size: 11px;
         font-weight: 700;
+        line-height: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -225,7 +246,7 @@
 
       .platform-hint {
         text-align: center;
-        font-size: 0.75rem;
+        font-size: 0.8125rem;
         color: var(--muted-foreground);
         margin-top: 0.75rem;
       }
@@ -431,7 +452,7 @@
       }
 
       .section-desc {
-        font-size: 0.75rem;
+        font-size: 0.8125rem;
         color: var(--muted-foreground);
         margin-bottom: 0.75rem;
       }
@@ -479,7 +500,7 @@
 
       .setting-info {
         flex: 1;
-        padding-right: 1rem;
+        padding-inline-end: 1rem;
       }
 
       .setting-label {
@@ -487,7 +508,7 @@
       }
 
       .setting-desc {
-        font-size: 0.75rem;
+        font-size: 0.8125rem;
         color: var(--muted-foreground);
         margin-top: 0.125rem;
       }
@@ -729,11 +750,16 @@
       }
 
       .custom-option {
+        display: block;
+        width: 100%;
         padding: 0.375rem 0.5rem;
         font-size: 0.75rem;
         border-radius: 0.25rem;
         cursor: pointer;
         transition: background 0.15s;
+        background: transparent;
+        color: var(--foreground);
+        text-align: start;
       }
 
       .custom-option:hover {
@@ -742,6 +768,13 @@
 
       .custom-option.selected {
         background: hsl(204 100% 65% / 0.15);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
       }
 
       .action-btns {
@@ -901,6 +934,60 @@
         background: hsl(204 100% 65% / 0.1);
       }
 
+      .settings-columns {
+        display: grid;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .data-section {
+        padding-inline: 0;
+        text-align: center;
+      }
+
+      .data-section .action-btns {
+        justify-content: center;
+      }
+
+      .settings-column {
+        display: grid;
+        align-content: start;
+        gap: 1rem;
+        min-width: 0;
+      }
+
+      .settings-column .settings-section {
+        margin-bottom: 0;
+      }
+
+      @media (min-width: 800px) {
+        .container {
+          max-width: 64rem;
+        }
+
+        #optionsDimmer {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          align-items: start;
+          gap: 1rem;
+        }
+
+        .platform-grid,
+        .platform-detail,
+        .stats-grid,
+        .about-section,
+        .data-section {
+          grid-column: 1 / -1;
+          margin-bottom: 0;
+        }
+
+        .settings-columns {
+          grid-column: 1 / -1;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          margin-bottom: 0;
+        }
+      }
+
       @media (max-width: 1024px) {
         .decor-left,
         .decor-right {
@@ -922,12 +1009,12 @@
 
       @keyframes scaleIn {
         from {
-          transform: scale(0.95);
+          transform: translateY(4px);
           opacity: 0;
         }
 
         to {
-          transform: scale(1);
+          transform: none;
           opacity: 1;
         }
       }
@@ -1146,6 +1233,10 @@
               </svg>
               <span class="platform-badge badge-red" id="badge-li">S</span>
             </button>
+            <button class="platform-btn animate-scale-in" data-platform="rd" style="animation-delay: 250ms" aria-label="Reddit settings">
+              <span class="reddit-mark" aria-hidden="true"><img src="icons/reddit-icons8-glyph-90.png" alt="" width="28" height="28"></span>
+              <span class="platform-badge badge-red" id="badge-rd">S</span>
+            </button>
           </div>
           <p class="platform-hint" data-i18n="platformConfigurationHint">
             Click a platform to configure blocking mode
@@ -1229,231 +1320,244 @@
           </div>
         </div>
 
-        <section class="settings-section card">
-          <div class="section-bar bar-blue"></div>
-          <div class="section-content">
-            <h2 class="section-title" data-i18n="focusTimer">Focus Timer</h2>
-            <p class="section-desc" data-i18n="focusTimerDescription">Configure your focus session preferences</p>
+        <div class="settings-columns">
+          <div class="settings-column">
+            <section class="settings-section card">
+              <div class="section-bar bar-blue"></div>
+              <div class="section-content">
+                <h2 class="section-title" data-i18n="focusTimer">Focus Timer</h2>
+                <p class="section-desc" data-i18n="focusTimerDescription">Configure your focus session preferences</p>
 
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-label" data-i18n="focusDuration">Focus Duration</div>
-                <div class="setting-desc" data-i18n="focusDurationDescription">Length of each focus session</div>
-              </div>
-              <select class="select-dropdown custom-select" id="focusDuration">
-                <option value="15" data-i18n="minutesLong" data-i18n-args='["15"]'>15 minutes</option>
-                <option value="25" selected data-i18n="minutesLong" data-i18n-args='["25"]'>25 minutes</option>
-                <option value="30" data-i18n="minutesLong" data-i18n-args='["30"]'>30 minutes</option>
-                <option value="45" data-i18n="minutesLong" data-i18n-args='["45"]'>45 minutes</option>
-                <option value="60" data-i18n="minutesLong" data-i18n-args='["60"]'>60 minutes</option>
-              </select>
-            </div>
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <div class="setting-label" data-i18n="focusDuration">Focus Duration</div>
+                    <div class="setting-desc" data-i18n="focusDurationDescription">Length of each focus session</div>
+                  </div>
+                  <select class="select-dropdown custom-select" id="focusDuration">
+                    <option value="15" data-i18n="minutesLong" data-i18n-args='["15"]'>15 minutes</option>
+                    <option value="25" selected data-i18n="minutesLong" data-i18n-args='["25"]'>25 minutes</option>
+                    <option value="30" data-i18n="minutesLong" data-i18n-args='["30"]'>30 minutes</option>
+                    <option value="45" data-i18n="minutesLong" data-i18n-args='["45"]'>45 minutes</option>
+                    <option value="60" data-i18n="minutesLong" data-i18n-args='["60"]'>60 minutes</option>
+                  </select>
+                </div>
 
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-label" data-i18n="breakDuration">Break Duration</div>
-                <div class="setting-desc" data-i18n="breakDurationDescription">Length of break between sessions</div>
-              </div>
-              <select class="select-dropdown custom-select" id="breakDuration">
-                <option value="5" selected data-i18n="minutesLong" data-i18n-args='["5"]'>5 minutes</option>
-                <option value="10" data-i18n="minutesLong" data-i18n-args='["10"]'>10 minutes</option>
-                <option value="15" data-i18n="minutesLong" data-i18n-args='["15"]'>15 minutes</option>
-              </select>
-            </div>
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <div class="setting-label" data-i18n="breakDuration">Break Duration</div>
+                    <div class="setting-desc" data-i18n="breakDurationDescription">Length of break between sessions</div>
+                  </div>
+                  <select class="select-dropdown custom-select" id="breakDuration">
+                    <option value="5" selected data-i18n="minutesLong" data-i18n-args='["5"]'>5 minutes</option>
+                    <option value="10" data-i18n="minutesLong" data-i18n-args='["10"]'>10 minutes</option>
+                    <option value="15" data-i18n="minutesLong" data-i18n-args='["15"]'>15 minutes</option>
+                  </select>
+                </div>
 
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-label" data-i18n="autoStartBreaks">Auto-start Breaks</div>
-                <div class="setting-desc" data-i18n="autoStartBreaksDescription">
-                  Automatically start break timer after focus ends
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <div class="setting-label" data-i18n="autoStartBreaks">Auto-start Breaks</div>
+                    <div class="setting-desc" data-i18n="autoStartBreaksDescription">
+                      Automatically start break timer after focus ends
+                    </div>
+                  </div>
+                  <label class="toggle-switch">
+                    <input
+                      type="checkbox"
+                      id="autoStartBreaks"
+                      class="toggle-input"
+                      checked
+                    />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="setting-row setting-nested">
+                  <div class="setting-info">
+                    <div class="setting-label" data-i18n="showBreakButton">Show Break Button</div>
+                    <div class="setting-desc" data-i18n="showBreakButtonDescription">
+                      Display "Take Break" button in popup during focus
+                    </div>
+                  </div>
+                  <label class="toggle-switch">
+                    <input
+                      type="checkbox"
+                      id="showBreakButton"
+                      class="toggle-input"
+                      checked
+                    />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <div class="setting-label" data-i18n="lockSettingsDuringTimer">Lock Settings During Timer</div>
+                    <div class="setting-desc" data-i18n="lockSettingsDuringTimerDescription">
+                      Prevent changes while Focus Timer is active
+                    </div>
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="lockSettings" class="toggle-input" />
+                    <span class="toggle-slider"></span>
+                  </label>
                 </div>
               </div>
-              <label class="toggle-switch">
-                <input
-                  type="checkbox"
-                  id="autoStartBreaks"
-                  class="toggle-input"
-                  checked
-                />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
+            </section>
 
-            <div class="setting-row setting-nested">
-              <div class="setting-info">
-                <div class="setting-label" data-i18n="showBreakButton">Show Break Button</div>
-                <div class="setting-desc" data-i18n="showBreakButtonDescription">
-                  Display "Take Break" button in popup during focus
+            <section class="settings-section card">
+              <div class="section-bar bar-orange"></div>
+              <div class="section-content">
+                <h2 class="section-title" data-i18n="notifications">Notifications</h2>
+                <p class="section-desc" data-i18n="notificationsDescription">Manage alerts and reminders</p>
+
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <div class="setting-label" data-i18n="systemNotifications">System Notifications</div>
+                    <div class="setting-desc" data-i18n="systemNotificationsDescription">
+                      Show notifications when timer ends
+                    </div>
+                  </div>
+                  <label class="toggle-switch">
+                    <input
+                      type="checkbox"
+                      id="showNotifications"
+                      class="toggle-input"
+                      checked
+                    />
+                    <span class="toggle-slider"></span>
+                  </label>
                 </div>
               </div>
-              <label class="toggle-switch">
-                <input
-                  type="checkbox"
-                  id="showBreakButton"
-                  class="toggle-input"
-                  checked
-                />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-label" data-i18n="lockSettingsDuringTimer">Lock Settings During Timer</div>
-                <div class="setting-desc" data-i18n="lockSettingsDuringTimerDescription">
-                  Prevent changes while Focus Timer is active
-                </div>
-              </div>
-              <label class="toggle-switch">
-                <input type="checkbox" id="lockSettings" class="toggle-input" />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
+            </section>
           </div>
-        </section>
+          <div class="settings-column">
+            <section class="settings-section card">
+              <div class="section-bar bar-orange"></div>
+              <div class="section-content">
+                <h2 class="section-title" data-i18n="popupVisibility">Popup Visibility</h2>
+                <p class="section-desc" data-i18n="popupVisibilityDescription">
+                  Choose which platforms appear in the popup
+                </p>
 
-        <section class="settings-section card">
-          <div class="section-bar bar-orange"></div>
-          <div class="section-content">
-            <h2 class="section-title" data-i18n="popupVisibility">Popup Visibility</h2>
-            <p class="section-desc" data-i18n="popupVisibilityDescription">
-              Choose which platforms appear in the popup
-            </p>
-
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-label" data-i18n="showPlatform" data-i18n-args='["YouTube"]'>Show YouTube</div>
-              </div>
-              <label class="toggle-switch">
-                <input
-                  type="checkbox"
-                  id="popup_visible_yt"
-                  class="toggle-input"
-                  checked
-                />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-label" data-i18n="showPlatform" data-i18n-args='["Instagram"]'>Show Instagram</div>
-              </div>
-              <label class="toggle-switch">
-                <input
-                  type="checkbox"
-                  id="popup_visible_ig"
-                  class="toggle-input"
-                  checked
-                />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-label" data-i18n="showPlatform" data-i18n-args='["TikTok"]'>Show TikTok</div>
-              </div>
-              <label class="toggle-switch">
-                <input
-                  type="checkbox"
-                  id="popup_visible_tt"
-                  class="toggle-input"
-                  checked
-                />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-label" data-i18n="showPlatform" data-i18n-args='["Facebook"]'>Show Facebook</div>
-              </div>
-              <label class="toggle-switch">
-                <input
-                  type="checkbox"
-                  id="popup_visible_fb"
-                  class="toggle-input"
-                  checked
-                />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-label" data-i18n="showPlatform" data-i18n-args='["LinkedIn"]'>Show LinkedIn</div>
-              </div>
-              <label class="toggle-switch">
-                <input
-                  type="checkbox"
-                  id="popup_visible_li"
-                  class="toggle-input"
-                  checked
-                />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-label" data-i18n="restrictHiddenPlatforms">Restrict Hidden Platforms</div>
-                <div class="setting-desc" data-i18n="restrictHiddenPlatformsDescription">
-                  Apply blocking rules even if hidden from popup
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <div class="setting-label" data-i18n="showPlatform" data-i18n-args='["YouTube"]'>Show YouTube</div>
+                  </div>
+                  <label class="toggle-switch">
+                    <input
+                      type="checkbox"
+                      id="popup_visible_yt"
+                      class="toggle-input"
+                      checked
+                    />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <div class="setting-label" data-i18n="showPlatform" data-i18n-args='["Instagram"]'>Show Instagram</div>
+                  </div>
+                  <label class="toggle-switch">
+                    <input
+                      type="checkbox"
+                      id="popup_visible_ig"
+                      class="toggle-input"
+                      checked
+                    />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <div class="setting-label" data-i18n="showPlatform" data-i18n-args='["TikTok"]'>Show TikTok</div>
+                  </div>
+                  <label class="toggle-switch">
+                    <input
+                      type="checkbox"
+                      id="popup_visible_tt"
+                      class="toggle-input"
+                      checked
+                    />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <div class="setting-label" data-i18n="showPlatform" data-i18n-args='["Facebook"]'>Show Facebook</div>
+                  </div>
+                  <label class="toggle-switch">
+                    <input
+                      type="checkbox"
+                      id="popup_visible_fb"
+                      class="toggle-input"
+                      checked
+                    />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <div class="setting-label" data-i18n="showPlatform" data-i18n-args='["LinkedIn"]'>Show LinkedIn</div>
+                  </div>
+                  <label class="toggle-switch">
+                    <input
+                      type="checkbox"
+                      id="popup_visible_li"
+                      class="toggle-input"
+                      checked
+                    />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <div class="setting-label" data-i18n="showPlatform" data-i18n-args='["Reddit"]'>Show Reddit</div>
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="popup_visible_rd" class="toggle-input" checked />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <div class="setting-label" data-i18n="restrictHiddenPlatforms">Restrict Hidden Platforms</div>
+                    <div class="setting-desc" data-i18n="restrictHiddenPlatformsDescription">
+                      Apply blocking rules even if hidden from popup
+                    </div>
+                  </div>
+                  <label class="toggle-switch">
+                    <input
+                      type="checkbox"
+                      id="restrictHiddenPlatforms"
+                      class="toggle-input"
+                      checked
+                    />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <div class="setting-label" data-i18n="visualHidingHidden">Visual Hiding on Hidden</div>
+                    <div class="setting-desc" data-i18n="visualHidingHiddenDescription">
+                      Hide distracting elements on hidden platforms
+                    </div>
+                  </div>
+                  <label class="toggle-switch">
+                    <input
+                      type="checkbox"
+                      id="visualHideHiddenPlatforms"
+                      class="toggle-input"
+                      checked
+                    />
+                    <span class="toggle-slider"></span>
+                  </label>
                 </div>
               </div>
-              <label class="toggle-switch">
-                <input
-                  type="checkbox"
-                  id="restrictHiddenPlatforms"
-                  class="toggle-input"
-                  checked
-                />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-label" data-i18n="visualHidingHidden">Visual Hiding on Hidden</div>
-                <div class="setting-desc" data-i18n="visualHidingHiddenDescription">
-                  Hide distracting elements on hidden platforms
-                </div>
-              </div>
-              <label class="toggle-switch">
-                <input
-                  type="checkbox"
-                  id="visualHideHiddenPlatforms"
-                  class="toggle-input"
-                  checked
-                />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
+            </section>
           </div>
-        </section>
+        </div>
 
-        <section class="settings-section card">
-          <div class="section-bar bar-orange"></div>
-          <div class="section-content">
-            <h2 class="section-title" data-i18n="notifications">Notifications</h2>
-            <p class="section-desc" data-i18n="notificationsDescription">Manage alerts and reminders</p>
-
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-label" data-i18n="systemNotifications">System Notifications</div>
-                <div class="setting-desc" data-i18n="systemNotificationsDescription">
-                  Show notifications when timer ends
-                </div>
-              </div>
-              <label class="toggle-switch">
-                <input
-                  type="checkbox"
-                  id="showNotifications"
-                  class="toggle-input"
-                  checked
-                />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-          </div>
-        </section>
-
-        <section class="settings-section card">
+        <section class="settings-section card data-section">
           <div class="section-bar bar-teal"></div>
           <div class="section-content">
             <h2 class="section-title" data-i18n="dataPrivacy">Data & Privacy</h2>

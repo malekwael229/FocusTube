@@ -18,6 +18,21 @@ function matrixStatus(cases) {
   return cases.some((c) => c.status === "BLOCKED") ? "PARTIAL" : "PASS";
 }
 
+function diagnosticStatus(diagnostic, session, { background = false, pageURL = "" } = {}) {
+  const message = typeof diagnostic === "string" ? diagnostic : diagnostic.message || "";
+  if (diagnostic.kind === "gap" || /^(?:DIAGNOSTIC GAP:|Extension inventory unavailable:|Automated sideload unavailable:|Worker identification unavailable:|Browser close:)/.test(message)) return "BLOCKED";
+  const source = diagnostic.sourceName || diagnostic.url || "";
+  const ownSource = Boolean(session?.extensionURL && source.startsWith(session.extensionURL));
+  const ownPage = Boolean(session?.extensionURL && pageURL.startsWith(session.extensionURL));
+  const own = diagnostic.ownExtension === true || ownSource ||
+    (typeof diagnostic === "string" && (background || ownPage));
+  if (!own) return null;
+  const severity = typeof diagnostic === "string" ? "error" : diagnostic.severity;
+  if (severity === "error") return "FAIL";
+  if (severity === "warning" || severity === "info") return null;
+  return "BLOCKED";
+}
+
 class Report {
   constructor(directory, metadata) {
     this.directory = directory;
@@ -43,6 +58,8 @@ class Report {
 
   async case(meta, page, action) {
     const record = this.entry(meta);
+    const diagnosticFindings = [];
+    let pageURL = "";
     try {
       record.actual = await action();
       record.status = "PASS";
@@ -59,14 +76,37 @@ class Report {
         } catch (captureError) { record.screenshotError = redact(captureError.message); }
       }
     }
-    if (page?.getErrors) {
-      try { record.consoleErrors = (await page.getErrors()).map((e) => redact(typeof e === "string" ? e : JSON.stringify(e))); }
+    if (page?.url) {
+      try { pageURL = await page.url(); }
       catch (error) { record.consoleCollectionGap = redact(error.message); }
-    } else record.consoleCollectionGap = "Driver cannot collect page console errors";
-    if (this.session?.backgroundErrors) {
-      try { record.extensionErrors = (await this.session.backgroundErrors()).map((e) => redact(typeof e === "string" ? e : JSON.stringify(e))); }
-      catch (error) { record.extensionCollectionGap = redact(error.message); }
     }
+    if (page?.getErrors) {
+      try {
+        const diagnostics = await page.getErrors();
+        diagnosticFindings.push(...diagnostics.map((diagnostic) => diagnosticStatus(diagnostic, this.session, { pageURL })));
+        record.consoleErrors = diagnostics.map((e) => redact(typeof e === "string" ? e : JSON.stringify(e)));
+      }
+      catch (error) { record.consoleCollectionGap = redact(error.message); }
+    } else if (page) record.consoleCollectionGap = "Driver cannot collect page console errors";
+    if (this.session?.backgroundErrors) {
+      try {
+        const diagnostics = await this.session.backgroundErrors();
+        diagnosticFindings.push(...diagnostics.map((diagnostic) => diagnosticStatus(diagnostic, this.session, { background: true })));
+        record.extensionErrors = diagnostics.map((e) => redact(typeof e === "string" ? e : JSON.stringify(e)));
+      }
+      catch (error) { record.extensionCollectionGap = redact(error.message); }
+    } else if (this.session) record.extensionCollectionGap = "Driver cannot collect extension background diagnostics";
+    if (diagnosticFindings.includes("FAIL")) {
+      record.status = "FAIL";
+      record.category = "A";
+      record.reason = record.reason || "Confirmed extension runtime error; see retained diagnostics";
+    } else if (record.status !== "FAIL" &&
+      (diagnosticFindings.includes("BLOCKED") || record.consoleCollectionGap || record.extensionCollectionGap)) {
+      record.status = "BLOCKED";
+      record.category = "D";
+      record.reason = record.reason || "Required diagnostic collection is unavailable or unclassified; see retained diagnostics";
+    }
+    if (record.category) this.lastCategory = record.category;
     this.data.cases.push(record);
     console.log(record.status + " " + record.browser + " " + record.id + (record.reason ? ": " + record.reason : ""));
     this.write();
@@ -77,6 +117,11 @@ class Report {
       throw error;
     }
     return record.status === "PASS";
+  }
+
+  async finishSession() {
+    return this.case({ id: "browser-final-diagnostics", site: "extension", scope: "browser-diagnostics",
+      expected: "Final extension diagnostics collected before browser closure" }, null, async () => "Final diagnostic drain");
   }
 
   write() {

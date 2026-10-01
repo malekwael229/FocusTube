@@ -21,6 +21,10 @@ const flag = (key, fallback) => {
 };
 function digest(file) { return crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex"); }
 function firstFile(candidates) { return candidates.filter(Boolean).find((p) => fs.existsSync(p)); }
+function reportExitCode(report, halted = false, interactive = false) {
+  if (halted || report.data.counts.FAIL) return 1;
+  return report.data.counts.BLOCKED && !interactive ? 2 : 0;
+}
 
 function environment() {
   const pf = process.env.PROGRAMFILES || "C:/Program Files";
@@ -143,7 +147,16 @@ async function main() {
             for (const code of selectedSites) report.block({ id: code + ".browser-unavailable", site: sites[code].name, expected: "Full live matrix" }, error.message, "D");
           }
         }
-      } finally { if (session) await session.close(); }
+      } finally {
+        if (session) {
+          try {
+            if (!setup && !login) await report.finishSession();
+          } catch (error) {
+            if (error.code === "CASE_FAILURE") halted = true;
+            else throw error;
+          } finally { await session.close(); }
+        }
+      }
       if (halted) break;
     }
   } finally {
@@ -154,9 +167,8 @@ async function main() {
     console.log("Evidence: " + reportDir);
     if (!report.data.candidateUnchanged) throw new Error("Candidate bytes changed; do not publish");
   }
-  if (halted) process.exitCode = 1;
-  else if (report.data.counts.BLOCKED && !setup && !login) process.exitCode = 2;
+  process.exitCode = reportExitCode(report, halted, Boolean(setup || login));
 }
 
 if (require.main === module) main().catch((error) => { console.error(error); process.exitCode = 1; });
-module.exports = { environment, candidate };
+module.exports = { environment, candidate, reportExitCode };

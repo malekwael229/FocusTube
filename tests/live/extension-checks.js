@@ -2,7 +2,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const PLATFORMS = ["yt", "ig", "tt", "fb", "li"];
+const PLATFORMS = ["yt", "ig", "tt", "fb", "li", "rd"];
 const MODES = ["strict", "warn", "allow"];
 const VISUAL_KEYS = {
   yt: ["hide_yt_shorts_nav", "hide_yt_shorts_shelves", "hide_yt_most_relevant_shelf", "hide_yt_playables"],
@@ -10,12 +10,13 @@ const VISUAL_KEYS = {
   tt: [],
   fb: ["hide_fb_stories", "hide_fb_reels_nav", "hide_fb_people_you_might_know"],
   li: ["hide_li_feed", "hide_li_addfeed", "hide_li_suggested", "hide_li_activity"],
+  rd: [],
 };
 const DEFAULT_SETTINGS = {
   ft_enabled: true, ft_timer_duration: 25, breakDuration: 5, autoStartBreaks: true,
   focusMode: true, lockSettings: false, showNotifications: false, darkMode: true,
   ft_stats_blocked: 0, popup_visible_yt: true, popup_visible_ig: true,
-  popup_visible_tt: true, popup_visible_fb: true, popup_visible_li: true,
+  popup_visible_tt: true, popup_visible_fb: true, popup_visible_li: true, popup_visible_rd: true,
   restrictHiddenPlatforms: true, visualHideHiddenPlatforms: true,
   hide_ig_stories: true, hide_fb_stories: true, hide_yt_shorts_nav: true,
   hide_yt_shorts_shelves: true, hide_yt_most_relevant_shelf: true, hide_yt_playables: true,
@@ -109,6 +110,21 @@ async function setCheckbox(page, selector, checked) {
     const expected = await readDom(page, selector, "checked");
     await waitForStorage(page, [key], (state) => state[key] === expected);
   }
+}
+
+async function exerciseVisualToggle(page, key, checked) {
+  const selector = `#${key}`;
+  await waitFor(page, (key) => {
+    const input = document.getElementById(key);
+    return input?.type === "checkbox" && !input.disabled;
+  }, 5000, 100, key);
+  const before = await readDom(page, selector, "checked");
+  const expected = checked === undefined ? !before : checked;
+  if (before !== expected) await page.click(`label[data-setting-key="${key}"]`);
+  await waitForStorage(page, [key], (state) => state[key] === expected);
+  await waitFor(page, ({ key, expected }) => document.getElementById(key)?.checked === expected,
+    5000, 100, { key, expected });
+  return { before, after: await readDom(page, selector, "checked") };
 }
 
 async function waitFor(page, predicate, timeout = 10000, interval = 200, arg) {
@@ -317,15 +333,16 @@ async function runExtensionChecks(session, report, { workDir, quick = false } = 
       await setCheckbox(options, "#visualHideHiddenPlatforms", false);
       await options.click('.platform-btn[data-platform="yt"]');
       await waitFor(options, () => Boolean(document.querySelector("#platformDetail.active")), 5000, 100);
-      const visualToggle = ".toggle[data-setting-key=\"hide_yt_shorts_nav\"]";
-      await options.click(visualToggle);
+      const changed = await exerciseVisualToggle(options, "hide_yt_shorts_nav", false);
+      assert.deepEqual(changed, { before: true, after: false });
       await options.reload();
       await options.click('.platform-btn[data-platform="yt"]');
       await waitFor(options, () => Boolean(document.querySelector("#platformDetail.active")), 5000, 100);
+      await waitFor(options, () => document.getElementById("hide_yt_shorts_nav")?.disabled === false, 5000, 100);
       const actual = await options.evaluate(() => ({
         linkedinVisible: document.getElementById("popup_visible_li").checked,
         hiddenVisual: document.getElementById("visualHideHiddenPlatforms").checked,
-        ytShortsNav: document.querySelector(".toggle[data-setting-key=\"hide_yt_shorts_nav\"]")?.classList.contains("on"),
+        ytShortsNav: document.getElementById("hide_yt_shorts_nav")?.checked,
       }));
       assert.equal(actual.linkedinVisible, false);
       assert.equal(actual.hiddenVisual, false);
@@ -346,17 +363,15 @@ async function runExtensionChecks(session, report, { workDir, quick = false } = 
       for (const platform of PLATFORMS) {
         await options.click(`.platform-btn[data-platform="${platform}"]`);
         await waitFor(options, () => Boolean(document.querySelector("#platformDetail.active")), 5000, 100);
+        await waitFor(options, () => document.querySelector(".mode-btn")?.disabled === false, 5000, 100);
         for (const mode of ["S", "W", "P"]) {
           await options.click(`.mode-btn[data-mode="${mode}"]`);
           const name = { S: "strict", W: "warn", P: "allow" }[mode];
           await waitForStorage(options, ["platformSettings"], (state) => state.platformSettings?.[platform] === name);
         }
         for (const key of VISUAL_KEYS[platform]) {
-          const selector = `.toggle[data-setting-key="${key}"]`;
-          const before = await readDom(options, selector, "class");
-          await options.click(selector);
-          const expected = !before.includes("on");
-          await waitForStorage(options, [key], (state) => state[key] === expected);
+          const changed = await exerciseVisualToggle(options, key);
+          assert.equal(changed.after, !changed.before, `native checkbox ${key} changed`);
         }
         actual[platform] = { modes: MODES.length, visualToggles: VISUAL_KEYS[platform].length };
         await options.click("#backBtn");
@@ -391,7 +406,7 @@ async function runExtensionChecks(session, report, { workDir, quick = false } = 
       settings: { platformSettings: Object.fromEntries(PLATFORMS.map((id) => [id, "strict"])) },
       expected: "each platform exposes strict, warn, passive and its supported visual toggles",
     }, popup, async () => {
-      assert.equal(await popup.evaluate(() => document.querySelectorAll("button[data-platform]").length), 5);
+      assert.equal(await popup.evaluate(() => document.querySelectorAll("button[data-platform]").length), PLATFORMS.length);
       const result = {};
       for (const platform of PLATFORMS) {
         await popup.click(`.platform-icon[data-platform="${platform}"]`);
@@ -660,7 +675,7 @@ async function runExtensionChecks(session, report, { workDir, quick = false } = 
       route: "options.html",
       mode: "clear-all",
       settings: { confirm: "instrumented false then true" },
-      expected: "cancel preserves data and confirmation clears settings to defaults",
+      expected: "cancel preserves data and confirmation resets settings, including the blocked count",
     }, options, async () => {
       if (session.name === "Firefox") {
         const error = categoryError("Firefox WebDriver loses the extension-page command context when Clear All reloads the page", "D");
@@ -672,16 +687,29 @@ async function runExtensionChecks(session, report, { workDir, quick = false } = 
       await options.click("#clearData");
       assert.equal((await storage(options, "get", ["ft_stats_blocked"])).ft_stats_blocked, 7);
       await installDialogInstrumentation(options, { confirm: true });
-      await options.evaluate(() => { window.__ftClearContext = true; });
-      await options.click("#clearData");
-      await sleep(1200);
-      await close(options);
-      options = await open(session, "options.html");
-      const actual = await waitForStorage(options, ["ft_stats_blocked", "ft_timer_duration", "ft_enabled"], (state) => state.ft_stats_blocked === 0 && Number(state.ft_timer_duration) === 25 && state.ft_enabled !== false);
-      assert.equal(actual.ft_stats_blocked, 0);
-      assert.equal(Number(actual.ft_timer_duration), 25);
-      assert.notEqual(actual.ft_enabled, false);
-      return actual;
+      const witness = await open(session, "options.html");
+      try {
+        await witness.evaluate(() => {
+          window.__ftClearStats = [];
+          chrome.storage.onChanged.addListener((changes, area) => {
+            if (area !== "local" || !changes.ft_stats_blocked) return;
+            window.__ftClearStats.push(changes.ft_stats_blocked.newValue);
+          });
+        });
+        await options.click("#clearData");
+        await sleep(1200);
+        await close(options);
+        options = await open(session, "options.html");
+        const actual = await waitForStorage(options, ["ft_stats_blocked", "ft_timer_duration", "ft_enabled"],
+          (state) => Number(state.ft_timer_duration) === 25 && state.ft_enabled !== false);
+        const statEvents = await witness.evaluate(() => window.__ftClearStats);
+        assert.ok(statEvents.includes(0), `Clear All never reset the blocked count: ${JSON.stringify(statEvents)}`);
+        assert.equal(Number(actual.ft_timer_duration), 25);
+        assert.notEqual(actual.ft_enabled, false);
+        return { ...actual, blockedCountResetObserved: true };
+      } finally {
+        await close(witness);
+      }
     });
 
     await seed(options, { ft_timer_duration: 30, ft_timer_end: Date.now() + 150000, ft_timer_type: "work", ft_work_session_ended: false });
@@ -715,12 +743,11 @@ async function runExtensionChecks(session, report, { workDir, quick = false } = 
       report.block({ id: "extension-browser-restart-persistence", site: "extension", route: "options.html", mode: "browser-restart", scope: "extension-ui", expected: "same-profile persistent restart without reinstall" }, session.name === "Firefox" ? "Firefox temporary extension cannot establish persistence" : "CLI-sideloaded fallback is not a persistent browser installation", "D");
     }
 
-    const errors = typeof session.backgroundErrors === "function" ? await session.backgroundErrors() : [];
-    return { completed: true, quick, backgroundDiagnostics: errors };
+    return { completed: true, quick };
   } finally {
     await close(popup);
     await close(options);
   }
 }
 
-module.exports = { runExtensionChecks };
+module.exports = { runExtensionChecks, exerciseVisualToggle };

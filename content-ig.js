@@ -195,6 +195,7 @@ const Instagram = {
     if (FocusState.isBreak) {
       action = "remove";
       reason = "break timer";
+      UI.remove();
       this.showNavLinks();
       IGFeed.sync();
       this.removeStoriesOverlay();
@@ -267,6 +268,7 @@ const Instagram = {
     } else {
       action = "safe";
       reason = "non-blockable path";
+      UI.remove();
       if (CONFIG.session.platform === "ig") Utils.clearSession();
       this.showKickNotice();
     }
@@ -616,7 +618,7 @@ const IGFeed = {
       if (post.dataset.ftIgGiveUp === "1") return;
       if (post.dataset.ftIgReveal === "1" && revealAllowed) return;
       delete post.dataset.ftIgReveal;
-      if (kind === "keep" || kind === "pending") {
+      if (kind === "keep") {
         if (this.collapsed.has(post)) this.restore(post);
       } else if (this.collapsed.has(post)) {
         this.repairStub(post, kind);

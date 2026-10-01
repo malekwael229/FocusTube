@@ -145,11 +145,11 @@ body.dark-mode {
 @keyframes tileEnter {
   from {
     opacity: 0;
-    transform: translateY(10px) scale(0.96);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: none;
   }
 }
 @keyframes glowPulse {
@@ -191,32 +191,15 @@ body.preload .checkmark {
   overflow: hidden;
 }
 .focustube-popup-body.review-visible {
-  padding: 6px 7px 0;
+  padding-block: 4px;
+  transition-property: background-color, color !important;
 }
-.focustube-popup-body.review-visible #popupControls {
-  padding: 8px;
-}
-.focustube-popup-body.review-visible .header-row {
-  margin-bottom: 6px;
-}
-.focustube-popup-body.review-visible .timer-section-compact {
-  padding: 2px 0;
-}
-.focustube-popup-body.review-visible .control-row {
-  padding: 6px 8px;
-  margin-bottom: 6px;
-}
-.focustube-popup-body.review-visible .platform-grid {
-  gap: 6px;
-  padding: 6px 0 2px;
-}
-.focustube-popup-body.review-visible .platform-icon {
-  width: 58px;
-  height: 58px;
-  border-radius: 16px;
-}
-.focustube-popup-body.review-visible .footer-compact {
-  padding-top: 6px;
+.focustube-popup-body.review-visible::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: rgba(12, 20, 34, 0.38);
 }
 .focustube-popup-body .header-row {
   display: flex;
@@ -1471,10 +1454,10 @@ body:not(.dark-mode) .tutorial-spotlight {
     color var(--duration) var(--ease-out);
   color: var(--text);
   box-shadow: 0 10px 18px rgba(0, 0, 0, 0.12);
-  animation: tileEnter var(--duration-slow) var(--ease-out) both;
+  animation: tileEnter var(--duration-slow) var(--ease-out) backwards;
 }
 .platform-icon:hover {
-  transform: translateY(-2px) scale(1.03);
+  transform: translateY(-2px);
   box-shadow: 0 16px 26px rgba(0, 0, 0, 0.18);
   background: var(--panel-3);
 }
@@ -1506,8 +1489,9 @@ body:not(.dark-mode) .tutorial-spotlight {
   width: 20px;
   height: 20px;
   border-radius: 12px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
+  line-height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1528,6 +1512,20 @@ body:not(.dark-mode) .tutorial-spotlight {
 .platform-icon svg {
   width: 26px;
   height: 26px;
+}
+.reddit-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.reddit-mark img {
+  display: block;
+  width: 28px;
+  height: 28px;
+}
+body:not(.dark-mode) .reddit-mark img {
+  filter: brightness(0);
 }
 .timer-section-compact {
   padding: 14px 0;
@@ -1944,14 +1942,12 @@ body.dark-mode .platform-icon {
     height, max-height, margin, padding !important;
 }
 .review-prompt {
-  position: relative;
-  width: 100%;
-  margin: 0 0 6px;
-  background: linear-gradient(
-    135deg,
-    rgba(79, 172, 254, 0.16),
-    rgba(0, 242, 254, 0.12)
-  );
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  width: calc(100% - 32px);
+  margin: 0;
+  background: var(--panel);
   border: 1px solid var(--border);
   padding: 7px 9px;
   border-radius: 14px;
@@ -1964,6 +1960,7 @@ body.dark-mode .platform-icon {
   align-items: center;
   text-align: center;
   z-index: 20;
+  transform: translateY(-50%);
 }
 .review-copy {
   display: flex;
@@ -2030,7 +2027,7 @@ body.dark-mode .platform-icon {
 }
 .review-prompt.fade-out {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(calc(-50% - 10px));
   transition:
     opacity 0.3s,
     transform 0.3s;

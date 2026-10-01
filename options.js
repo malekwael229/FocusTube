@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
     popup_visible_tt: true,
     popup_visible_fb: true,
     popup_visible_li: true,
+    popup_visible_rd: true,
     restrictHiddenPlatforms: true,
     visualHideHiddenPlatforms: true,
     hide_ig_stories: true,
@@ -51,19 +52,24 @@ document.addEventListener("DOMContentLoaded", function () {
     ),
     "ft_timer_end",
     "reviewLaterTime",
+    "reviewNextBlock",
   ]);
   const allowedDurationValues = {
     ft_timer_duration: new Set([15, 25, 30, 45, 60]),
     breakDuration: new Set([5, 10, 15]),
   };
-  const importNullableNumberKeys = new Set(["ft_timer_end", "reviewLaterTime"]);
+  const importNullableNumberKeys = new Set([
+    "ft_timer_end",
+    "reviewLaterTime",
+    "reviewNextBlock",
+  ]);
   const importStringKeys = new Set([
     ...Object.keys(defaultSettings).filter(
       (key) => typeof defaultSettings[key] === "string",
     ),
     "ft_timer_type",
   ]);
-  const importPlatformKeys = ["yt", "ig", "tt", "fb", "li"];
+  const importPlatformKeys = ["yt", "ig", "tt", "fb", "li", "rd"];
   const importPlatformModes = new Set(["strict", "warn", "allow"]);
   const hasOwn = (object, key) =>
     Object.prototype.hasOwnProperty.call(object, key);
@@ -86,6 +92,13 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
           invalidKeys.push(key);
         }
+        return;
+      }
+      if (
+        key === "reviewNextBlock" &&
+        (typeof raw[key] !== "number" || !Number.isSafeInteger(raw[key]))
+      ) {
+        invalidKeys.push(key);
         return;
       }
       const value = Number(raw[key]);
@@ -179,6 +192,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const parts = customSelectParts.get(select);
     if (!parts) return;
     const disabled = select.disabled;
+    parts.trigger.disabled = disabled;
     parts.trigger.setAttribute("aria-disabled", String(disabled));
     parts.trigger.classList.toggle("disabled-look", disabled);
   }
@@ -197,11 +211,17 @@ document.addEventListener("DOMContentLoaded", function () {
       parts.trigger.querySelector("span").textContent = selectedOption.text;
       parts.optionsList
         .querySelectorAll(".custom-option")
-        .forEach((el) => el.classList.remove("selected"));
+        .forEach((el) => {
+          el.classList.remove("selected");
+          el.setAttribute("aria-pressed", "false");
+        });
       const matchingOption = Array.from(
         parts.optionsList.querySelectorAll(".custom-option"),
       ).find((option) => option.dataset.value === selectedOption.value);
-      if (matchingOption) matchingOption.classList.add("selected");
+      if (matchingOption) {
+        matchingOption.classList.add("selected");
+        matchingOption.setAttribute("aria-pressed", "true");
+      }
     }
     updateCustomSelectDisabledState(select);
     if (expectedRevision === undefined) {
@@ -253,6 +273,7 @@ document.addEventListener("DOMContentLoaded", function () {
       setToggle("popup_visible_tt", items.popup_visible_tt);
       setToggle("popup_visible_fb", items.popup_visible_fb);
       setToggle("popup_visible_li", items.popup_visible_li);
+      setToggle("popup_visible_rd", items.popup_visible_rd);
       setToggle("restrictHiddenPlatforms", items.restrictHiddenPlatforms);
       setToggle("visualHideHiddenPlatforms", items.visualHideHiddenPlatforms);
       if (document.getElementById("totalBlocked"))
@@ -349,14 +370,27 @@ document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll(".select-dropdown").forEach((select) => {
     initCustomSelect(select);
   });
+  document.querySelectorAll(".setting-row .toggle-input").forEach((input) => {
+    const label = input.closest(".setting-row")?.querySelector(".setting-label");
+    if (!label) return;
+    label.id ||= `${input.id}-label`;
+    input.setAttribute("aria-labelledby", label.id);
+  });
   function initCustomSelect(select) {
     const wrapper = document.createElement("div");
     wrapper.className = "custom-select-wrapper";
-    const trigger = document.createElement("div");
+    const trigger = document.createElement("button");
+    trigger.type = "button";
     trigger.className = "custom-select-trigger";
-    trigger.setAttribute("role", "button");
+    trigger.setAttribute("aria-expanded", "false");
+    const label = select.closest(".setting-row")?.querySelector(".setting-label");
+    if (label) {
+      label.id ||= `${select.id}-label`;
+      trigger.setAttribute("aria-labelledby", `${label.id} ${select.id}-selected-text`);
+    }
     const selectedOption = select.options[select.selectedIndex];
     const selectedText = document.createElement("span");
+    selectedText.id = `${select.id}-selected-text`;
     selectedText.textContent = selectedOption
       ? selectedOption.text
       : msg("select");
@@ -377,17 +411,23 @@ document.addEventListener("DOMContentLoaded", function () {
     trigger.append(selectedText, arrowSvg);
     const optionsList = document.createElement("div");
     optionsList.className = "custom-options";
+    optionsList.id = `${select.id}-options`;
+    trigger.setAttribute("aria-controls", optionsList.id);
     Array.from(select.options).forEach((option) => {
-      const optDiv = document.createElement("div");
+      const optDiv = document.createElement("button");
+      optDiv.type = "button";
       optDiv.className = `custom-option ${option.selected ? "selected" : ""}`;
       optDiv.dataset.value = option.value;
       optDiv.textContent = option.text;
+      optDiv.setAttribute("aria-pressed", String(option.selected));
       optDiv.addEventListener("click", (e) => {
         e.stopPropagation();
         if (select.disabled) return;
         select.value = option.value;
         select.dispatchEvent(new Event("change"));
         wrapper.classList.remove("open");
+        trigger.setAttribute("aria-expanded", "false");
+        trigger.focus();
       });
       optionsList.appendChild(optDiv);
     });
@@ -395,9 +435,20 @@ document.addEventListener("DOMContentLoaded", function () {
       e.stopPropagation();
       if (select.disabled) return;
       document.querySelectorAll(".custom-select-wrapper").forEach((w) => {
-        if (w !== wrapper) w.classList.remove("open");
+        if (w !== wrapper) {
+          w.classList.remove("open");
+          w.querySelector(".custom-select-trigger")?.setAttribute("aria-expanded", "false");
+        }
       });
       wrapper.classList.toggle("open");
+      trigger.setAttribute("aria-expanded", String(wrapper.classList.contains("open")));
+    });
+    wrapper.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && wrapper.classList.contains("open")) {
+        wrapper.classList.remove("open");
+        trigger.setAttribute("aria-expanded", "false");
+        trigger.focus();
+      }
     });
     wrapper.appendChild(trigger);
     wrapper.appendChild(optionsList);
@@ -412,7 +463,10 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("click", () => {
     document
       .querySelectorAll(".custom-select-wrapper")
-      .forEach((w) => w.classList.remove("open"));
+      .forEach((w) => {
+        w.classList.remove("open");
+        w.querySelector(".custom-select-trigger")?.setAttribute("aria-expanded", "false");
+      });
   });
   document.querySelectorAll(".custom-select").forEach((select) => {
     select.addEventListener("change", function () {
@@ -627,10 +681,13 @@ document.addEventListener("DOMContentLoaded", function () {
       else el.classList.remove("disabled-look");
     });
   }
+  let disabledStateRevision = 0;
   function updateDisabledState() {
+    const revision = ++disabledStateRevision;
     chrome.storage.local.get(
       ["ft_timer_end", "ft_timer_type", "ft_enabled", "lockSettings"],
       (res) => {
+        if (revision !== disabledStateRevision) return;
         timerActive = Boolean(
           res.ft_timer_end && res.ft_timer_end > Date.now(),
         );
@@ -647,6 +704,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   updateDisabledState();
   setInterval(updateDisabledState, 1000);
+  document.addEventListener("ft-settings-detail-rendered", updateDisabledState);
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local") return;
     if (changes.focusMode) {
@@ -656,6 +714,11 @@ document.addEventListener("DOMContentLoaded", function () {
       const isEnabled = changes.ft_enabled.newValue !== false;
       setToggle("ft_enabled", isEnabled);
       applyExtensionEnabledState(isEnabled);
+    }
+    if (
+      changes.ft_enabled || changes.ft_timer_end ||
+      changes.ft_timer_type || changes.lockSettings
+    ) {
       updateDisabledState();
     }
     if (changes.ft_stats_blocked) {
@@ -677,7 +740,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     for (const [key, { newValue }] of Object.entries(changes)) {
       if (key.startsWith("hide_")) {
-        setToggle(key, newValue);
+        setToggle(key, newValue ?? defaultSettings[key] ?? true);
+        detailSettingsRevision++;
       }
     }
     if (changes.ft_timer_duration) {
@@ -817,6 +881,10 @@ const platforms = {
       },
     ],
   },
+  rd: {
+    name: msg("platformReddit"),
+    settings: [],
+  },
 };
 const modes = [
   {
@@ -860,18 +928,41 @@ const modesByPlatform = {
       color: "#4facfe",
     },
   ],
+  rd: [
+    { id: "S", label: msg("modeStrict"), desc: msg("modeRedditStrictDescription"), color: "#ef4444" },
+    { id: "W", label: msg("modeWarn"), desc: msg("modeRedditWarnDescription"), color: "#f59e0b" },
+    { id: "P", label: msg("modePassive"), desc: msg("modeRedditPassiveDescription"), color: "#4facfe" },
+  ],
 };
 function getModesForPlatform(id) {
   if (id === "li") return modesByPlatform.li;
+  if (id === "rd") return modesByPlatform.rd;
   return modesByPlatform.default;
 }
-let platformModes = { yt: "S", ig: "S", tt: "S", fb: "S", li: "S" };
+let platformModes = { yt: "S", ig: "S", tt: "S", fb: "S", li: "S", rd: "S" };
 let currentPlatform = null;
 let timerActive = false;
+let platformModesRevision = 0;
+let detailSettingsRevision = 0;
+let detailRenderGeneration = 0;
+function syncSelectedPlatformMode() {
+  if (!currentPlatform) return;
+  document.querySelectorAll("#modeButtons .mode-btn").forEach((button) => {
+    const selected = button.dataset.mode === platformModes[currentPlatform];
+    button.classList.toggle("selected", selected);
+    const mode = getModesForPlatform(currentPlatform).find(
+      (mode) => mode.id === button.dataset.mode,
+    );
+    button.querySelector(".mode-radio").style.borderColor = selected ? mode.color : "";
+  });
+}
 function loadPlatformModes() {
+  const revision = ++platformModesRevision;
   chrome.storage.local.get(
     ["platformSettings", "ft_timer_end", "ft_timer_type"],
     (result) => {
+      if (revision !== platformModesRevision) return;
+      platformModes = { yt: "S", ig: "S", tt: "S", fb: "S", li: "S", rd: "S" };
       if (result.platformSettings) {
         const modeMap = { strict: "S", warn: "W", allow: "P" };
         Object.keys(result.platformSettings).forEach((id) => {
@@ -880,11 +971,12 @@ function loadPlatformModes() {
           platformModes[id] = nextMode;
         });
       }
+      syncSelectedPlatformMode();
       const isWorkTimer =
         result.ft_timer_end &&
         result.ft_timer_end > Date.now() &&
         result.ft_timer_type === "work";
-      ["yt", "ig", "tt", "fb", "li"].forEach((id) =>
+      ["yt", "ig", "tt", "fb", "li", "rd"].forEach((id) =>
         updateBadge(id, isWorkTimer),
       );
     },
@@ -935,7 +1027,7 @@ function initPlatformGrid() {
         res.ft_timer_end &&
         res.ft_timer_end > Date.now() &&
         res.ft_timer_type === "work";
-      ["yt", "ig", "tt", "fb", "li"].forEach((id) =>
+      ["yt", "ig", "tt", "fb", "li", "rd"].forEach((id) =>
         updateBadge(id, isWorkTimer),
       );
     });
@@ -953,6 +1045,7 @@ function initPlatformGrid() {
   });
 }
 function showPlatformDetail(id) {
+  const generation = ++detailRenderGeneration;
   const platform = platforms[id];
   const platformGrid = document.getElementById("platformGrid");
   const platformDetail = document.getElementById("platformDetail");
@@ -963,8 +1056,8 @@ function showPlatformDetail(id) {
   }
   const detailIcon = document.getElementById("detailIcon");
   const detailName = document.getElementById("detailName");
-  const sourceSvg = document.querySelector(`[data-platform="${id}"] svg`);
-  if (detailIcon && sourceSvg) detailIcon.replaceChildren(sourceSvg.cloneNode(true));
+  const sourceIcon = document.querySelector(`[data-platform="${id}"] svg, [data-platform="${id}"] .reddit-mark`);
+  if (detailIcon && sourceIcon) detailIcon.replaceChildren(sourceIcon.cloneNode(true));
   if (detailName) detailName.textContent = platform.name;
   const modeContainer = document.getElementById("modeButtons");
   if (modeContainer) {
@@ -973,6 +1066,7 @@ function showPlatformDetail(id) {
       ...availableModes.map((mode) => {
         const btn = document.createElement("button");
         btn.className = "mode-btn";
+        btn.disabled = true;
         if (platformModes[id] === mode.id) btn.classList.add("selected");
         if (mode.disabled) {
           btn.classList.add("disabled");
@@ -1029,75 +1123,67 @@ function showPlatformDetail(id) {
   if (platform.settings.length > 0 && settingsSection && settingsContainer) {
     settingsSection.style.display = "block";
     const settingKeys = platform.settings.map((setting) => setting.id);
-    chrome.storage.local.get(settingKeys, (res) => {
-      settingsContainer.replaceChildren(
-        ...platform.settings.map((setting) => {
-          const isOn = setting.defaultValue === false
-            ? res[setting.id] === true
-            : res[setting.id] !== false;
-          const row = document.createElement("div");
-          row.className = "setting-row";
+    const renderSettings = () => {
+      const revision = ++detailSettingsRevision;
+      chrome.storage.local.get(settingKeys, (res) => {
+        if (currentPlatform !== id || generation !== detailRenderGeneration) {
+          return;
+        }
+        if (revision !== detailSettingsRevision) {
+          renderSettings();
+          return;
+        }
+        settingsContainer.replaceChildren(
+          ...platform.settings.map((setting) => {
+            const isOn = setting.defaultValue === false
+              ? res[setting.id] === true
+              : res[setting.id] !== false;
+            const row = document.createElement("div");
+            row.className = "setting-row";
 
-          const info = document.createElement("div");
-          info.className = "setting-info";
-          const label = document.createElement("div");
-          label.className = "setting-label";
-          label.textContent = setting.label;
-          const desc = document.createElement("div");
-          desc.className = "setting-desc";
-          desc.textContent = setting.desc;
-          info.append(label, desc);
+            const info = document.createElement("div");
+            info.className = "setting-info";
+            const label = document.createElement("div");
+            label.className = "setting-label";
+            label.textContent = setting.label;
+            const desc = document.createElement("div");
+            desc.className = "setting-desc";
+            desc.textContent = setting.desc;
+            info.append(label, desc);
 
-          const toggle = document.createElement("div");
-          toggle.className = "toggle";
-          if (isOn) toggle.classList.add("on");
-          toggle.dataset.settingKey = setting.id;
-          const thumb = document.createElement("div");
-          thumb.className = "toggle-thumb";
-          toggle.appendChild(thumb);
+            const toggle = document.createElement("label");
+            toggle.className = "toggle-switch";
+            toggle.dataset.settingKey = setting.id;
+            label.id = `${setting.id}-label`;
+            const input = document.createElement("input");
+            input.type = "checkbox";
+            input.className = "toggle-input";
+            input.id = setting.id;
+            input.checked = isOn;
+            input.disabled = true;
+            input.setAttribute("aria-labelledby", label.id);
+            const slider = document.createElement("span");
+            slider.className = "toggle-slider";
+            toggle.append(input, slider);
 
-          row.append(info, toggle);
-          return row;
-        }),
-      );
-      settingsContainer.querySelectorAll(".toggle").forEach((toggle) => {
-        toggle.addEventListener("click", () => {
-          const key = toggle.dataset.settingKey;
-          const nextValue = !toggle.classList.contains("on");
-          toggle.classList.toggle("on", nextValue);
-          chrome.storage.local.set({ [key]: nextValue });
+            row.append(info, toggle);
+            return row;
+          }),
+        );
+        settingsContainer.querySelectorAll("input").forEach((input) => {
+          input.addEventListener("change", () => {
+            if (input.disabled) return;
+            chrome.storage.local.set({ [input.id]: input.checked });
+          });
         });
+        document.dispatchEvent(new Event("ft-settings-detail-rendered"));
       });
-    });
+    };
+    renderSettings();
   } else if (settingsSection) {
     settingsSection.style.display = "none";
   }
-  function checkTimerState() {
-    chrome.storage.local.get(["ft_timer_end"], (res) => {
-      timerActive = Boolean(res.ft_timer_end && res.ft_timer_end > Date.now());
-      const inputs = document.querySelectorAll(
-        "input, select, button.mode-btn",
-      );
-      inputs.forEach((input) => {
-        if (
-          input.closest(".about-section") ||
-          input.id === "exportBtn" ||
-          input.id === "importBtn" ||
-          input.id === "importFile"
-        )
-          return;
-        input.disabled = timerActive;
-        input.classList.toggle("disabled-by-timer", timerActive);
-      });
-      document.body.classList.toggle("timer-active-locked", timerActive);
-    });
-  }
-  checkTimerState();
-  chrome.storage.onChanged.addListener((changes) => {
-    if (changes.ft_timer_end || changes.ft_timer_type) {
-      checkTimerState();
-    }
-  });
+  document.dispatchEvent(new Event("ft-settings-detail-rendered"));
 }
 function updateBadge(id, isWorkTimer = false) {
   const badge = document.getElementById(`badge-${id}`);

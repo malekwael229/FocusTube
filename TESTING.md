@@ -51,6 +51,8 @@ npm.cmd run test:smoke:youtube
 
 `test:feeds` runs sanitized Instagram/LinkedIn fixtures in Chromium with real DOM layout, mutation observers and content scripts, substituting only browser-extension APIs and site responses. It is included in `test:all`. Positive, negative, settings, timer, restoration, recycled-node and media cases exercise the opt-in filters. Requests are intercepted; these checks provide no evidence about a signed-in account or today's production site markup. Native-speaker review and authenticated cross-browser site checks remain manual release-review items.
 
+`test:all` also runs `tests/reddit-feed.test.js`, a Chromium fixture check for Reddit feed-route classification, Strict/Warn/Passive behavior, work and break timers, SPA navigation without a feed flash, media pausing, and restoration. Run `node tests/reddit-feed.test.js --firefox` for the same fixture in a locally installed Playwright Firefox browser. Current Home, News, Popular, and community pages were inspected in Brave and each exposed one `shreddit-feed` container; individual post pages did not. Fixture results and DOM inspection do not establish compatibility with every live Reddit route or browser.
+
 The deterministic suites cover:
 
 - Manifest parsing, permission and CSP checks, per-platform content-script splitting, icon metadata, and the package allowlist.
@@ -91,6 +93,7 @@ Run the following matrix in current Chrome, Edge, and Firefox. Record browser ve
 | TikTok | [ ] | [ ] | [ ] |
 | Facebook | [ ] | [ ] | [ ] |
 | LinkedIn | [ ] | [ ] | [ ] |
+| Reddit | [ ] | [ ] | [ ] |
 
 For every matrix cell, check:
 
@@ -109,6 +112,6 @@ Firefox temporary add-ons are removed when the browser restarts. Do not claim a 
 
 ## Fixtures Versus Live Sites
 
-The Playwright smoke suite uses local HTML fixtures served through route interception. These fixtures provide stable DOM and media cases for the five supported sites, but they do not prove compatibility with each site's current production markup, account state, locale, or anti-bot behavior. A fixture pass also does not prove Firefox live-site behavior.
+The Playwright smoke suite uses local HTML fixtures served through route interception. These fixtures provide stable DOM and media cases for the established platforms; the separate Reddit fixture checks its new feed adapter. Neither suite proves compatibility with a site's current production markup, account state, locale, or anti-bot behavior. A fixture pass also does not prove Firefox live-site behavior.
 
 Use [the optional live-browser harness](tests/live/README.md) and [manual live-site notes](tests/manual-live-site-notes.md) for account-based checks. Run the full deterministic gate before staging a retained candidate for live testing, because the package test rebuilds `dist-release-builds`. Live-site results are separate evidence from fixture results. English and locale-dependent selectors can limit visual-hiding checks.
