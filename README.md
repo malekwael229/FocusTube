@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="1920" height="1080" alt="focustube-01-hero-v18" src="https://github.com/user-attachments/assets/e204789b-5ac0-467f-8e62-a7c5933ceda0" />
+<img width="1672" height="941" alt="focustube-screenshot-01-hero" src="https://github.com/user-attachments/assets/da3954d3-9a88-4ae8-81bf-62eafff7bfb5" />
 
   <h1>FocusTube - Shorts, Reels &amp; Feed Blocker</h1>
 
