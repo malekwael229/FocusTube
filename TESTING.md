@@ -14,7 +14,9 @@ npx.cmd playwright install chromium
 
 The repository requires Node.js 20 or newer. The test dependencies are pinned in `package-lock.json`, including Playwright and `web-ext` 10.7.0.
 
-As rechecked on October 1, 2026, `npm audit --omit=dev` and the full dev-inclusive audit report zero vulnerabilities. The development-only `web-ext`/`addons-linter` chain uses the fixed `image-size` 2.0.4 release, so the two upstream denial-of-service advisories are resolved without changing the shipped extension. Audit output is intentionally not suppressed.
+On October 9, 2026, the production-only audit reports zero vulnerabilities. The full audit still reports the unpatched `node-forge` advisory [GHSA-86w9-cpqp-85rv](https://github.com/advisories/GHSA-86w9-cpqp-85rv), reached through development-only `web-ext` → `@devicefarmer/adbkit`. The affected signature-verification path belongs to Android ADB authentication, not FocusTube's build/lint commands or shipped extension. Keep this finding visible until upstream publishes a fix. Audit output is not suppressed.
+
+The installed tooling tree fixes [GHSA-68fv-2mgg-jv7q](https://github.com/advisories/GHSA-68fv-2mgg-jv7q) with `source-map-js` 1.2.2 and [GHSA-pqg4-j6r4-53mv](https://github.com/advisories/GHSA-pqg4-j6r4-53mv) with `shell-quote` 1.11.0. A scoped override selects `fx-runner` 1.7.0 under `web-ext` 10.7.0; this upstream runner release updates the dependency without changing its runtime JavaScript. Remove the override when a compatible `web-ext` release includes that runner. The earlier `image-size` 2.0.4 fix remains in place.
 
 ## Automated Commands
 
@@ -26,12 +28,14 @@ Run the complete local gate:
 npm.cmd run test:all
 ```
 
-The aggregate runner creates fresh `.tmp/test-builds/chromium` and `.tmp/test-builds/firefox` packages, then runs JavaScript syntax checks, localization and website validation, package reproducibility, regression, background timer, live-harness unit, Instagram/LinkedIn feed-filter fixture, Reddit-feed fixture, Chromium UI-state and smoke, and Firefox lint checks. It removes the temporary packages after success or failure. Package reproducibility tests also rebuild generated files in `dist-release-builds` and `dist-test-builds` if those directories exist; keep any release artifacts you need to preserve outside these disposable local build directories.
+The aggregate runner creates fresh `.tmp/test-builds/chromium` and `.tmp/test-builds/firefox` packages, then runs JavaScript syntax checks, localization and website validation, package reproducibility, regression, tooling-security and generated property tests, background timer, live-harness unit, Instagram/LinkedIn feed-filter fixture, Reddit-feed fixture, Chromium UI-state and smoke, and Firefox lint checks. It removes the temporary packages after success or failure. Package reproducibility tests also rebuild generated files in `dist-release-builds` and `dist-test-builds` if those directories exist; keep any release artifacts you need to preserve outside these disposable local build directories.
 
 Run individual checks when narrowing a failure:
 
 ```powershell
 npm.cmd run test:regression
+npm.cmd run test:security
+npm.cmd run test:fuzz
 npm.cmd run test:background
 npm.cmd run test:package
 npm.cmd run test:localization
@@ -51,6 +55,19 @@ npm.cmd run test:smoke:youtube
 ```
 
 ## Automated Coverage
+
+`test:security` exercises the dependency copies actually resolved by Firefox tooling. It checks that malicious indexed source-map offsets are rejected and that shell quoting rejects line terminators after comment tokens. The quoting test never executes a shell.
+
+`test:fuzz` uses development-only `fast-check` to generate settings-import and hostname-classification cases against the real helpers extracted from `options.js` and `content-common.js`. It covers accepted values, malformed fields, timer pairs, prototype-looking keys, input immutability, re-importability, and lookalike hostnames. A test-only mutation confirms that an unsafe-integer regression is detected. Each property uses 500 cases with seed `20261009`; failures report a shrinking path. Replay a failure in PowerShell with the reported enclosing test name:
+
+```powershell
+$env:FC_SEED = "20261009"
+$env:FC_PATH = "path reported by fast-check"
+node --test --test-name-pattern="test name reported by the failure" tests/property-security.test.js
+Remove-Item Env:FC_SEED, Env:FC_PATH
+```
+
+These bounded generated tests run in `test:all`; they are not continuous fuzzing, browser-runtime execution, or coverage measurements. Neither `fast-check` nor the other development dependencies is included in extension packages.
 
 `test:feeds` runs sanitized Instagram/LinkedIn fixtures in Chromium with real DOM layout, mutation observers and content scripts, substituting only browser-extension APIs and site responses. It is included in `test:all`. Positive, negative, settings, timer, restoration, recycled-node and media cases exercise the opt-in filters. Requests are intercepted; these checks provide no evidence about a signed-in account or today's production site markup. Native-speaker review and authenticated cross-browser site checks remain manual release-review items.
 

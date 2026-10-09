@@ -12,6 +12,8 @@
     "test:package": "node tests/package-reproducibility.test.js",
     "test:localization": "node tests/localization.test.js",
     "test:website": "node tests/website-validation.test.js",
+    "test:security": "node --test tests/tooling-security.test.js",
+    "test:fuzz": "node --test tests/property-security.test.js",
     "test:feeds": "node tests/feed-filters.test.js",
     "test:syntax": "node scripts/run-test-all.js --syntax",
     "test:live": "node tests/live-browser.test.js",
@@ -19,9 +21,13 @@
     "test:all": "node scripts/run-test-all.js"
   },
   "overrides": {
-    "adm-zip": "0.6.1"
+    "adm-zip": "0.6.1",
+    "web-ext": {
+      "fx-runner": "1.7.0"
+    }
   },
   "devDependencies": {
+    "fast-check": "4.10.2",
     "playwright": "1.63.0",
     "web-ext": "10.7.0"
   }
