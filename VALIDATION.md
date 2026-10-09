@@ -2,7 +2,7 @@
 
 This file tracks evidence and remaining work for external validation. It is not a certification claim.
 
-Last reviewed: October 1, 2026.
+Last security-tooling review: October 9, 2026. Earlier browser-validation evidence below remains dated separately.
 
 ## Repository Evidence
 
@@ -17,7 +17,7 @@ Last reviewed: October 1, 2026.
 - The full Windows Node 24 gate and Linux Node 20 package-reproducibility check pass; CI runs the full suite on Node 20.
 - Fixture checks and manual/live checks are recorded separately: fixtures establish deterministic behavior, while manual reports are limited observations and do not establish a complete browser matrix.
 - The 2.4.0 localization work packages eight browser-native catalogs with English as the default. It adds no permissions, CSP allowances, network endpoints, or runtime dependencies, and it leaves storage keys and runtime message identities unchanged.
-- As rechecked on October 1, 2026, the production-only and full development dependency audits report zero vulnerabilities. The `web-ext` and `addons-linter` chain uses the fixed `image-size` 2.0.4 release; the tooling is not packaged with the extension.
+- On October 9, 2026, the production-only dependency audit reports zero vulnerabilities. The current tooling fixes the `source-map-js` and `shell-quote` advisories, while the full audit still reports the unpatched `node-forge` advisory through `web-ext` → `@devicefarmer/adbkit`. Its vulnerable verification path is Android ADB authentication, outside FocusTube's build/lint commands. No development dependencies are packaged with the extension. See `TESTING.md` for dependency versions and advisory links; the finding remains visible without an ignore rule.
 - On October 1, an issue reporter confirmed Firefox feed blocking, posts, comments, and search in [issue #49](https://github.com/malekwael229/FocusTube/issues/49#issuecomment-5934030951); the browser version and full matrix were not provided.
 
 ## Historical 2.4.0 Localization Evidence
@@ -53,7 +53,11 @@ When updating the questionnaire:
 
 The repository runs the official OpenSSF Scorecard workflow. Review the actual findings rather than optimizing only for the numeric score.
 
-On October 1, the API showed three open Scorecard findings: Code-Review (alert 6, with no independent human approvals in recent history), Fuzzing (alert 4, with no recognized fuzzing integration), and Branch-Protection (alert 1, with no required approver, code-owner review, stale-review dismissal, or last-push approval). The Vulnerabilities finding was absent from that API result. The project has one active maintainer; do not claim independent human reviews, approvals, or fuzzing coverage unless they actually occur.
+The October 9 scan on `main` reports four open findings: Code-Review (alert 6, zero approved changesets among 18 sampled), Vulnerabilities (alert 5, the three newly disclosed tooling advisories), Fuzzing (alert 4, no recognized integration on that scanned tree), and Branch-Protection (alert 1, review-related requirements are incomplete). The earlier October 1 scan had no Vulnerabilities finding; that historical result does not establish the current dependency state.
+
+The tooling update fixes two advisories; `node-forge` has no published patched version and remains an upstream dependency risk. This change also adds bounded `fast-check` property tests to CI, but the Fuzzing finding must be rechecked after these tests reach the default branch. A green Scorecard workflow only establishes that the scan completed.
+
+`Protect main` now dismisses stale approvals and requires review-thread resolution. It still requires pull requests, three up-to-date status checks, and blocks deletion and force pushes, with no bypass actors. Mandatory approval count remains zero. Required approvals, code-owner approval, or last-push approval would require another human and can deadlock this single-maintainer project. Automated review does not satisfy Code-Review; real independent human reviews are needed to improve that finding. Do not fabricate approvals or dismiss these valid limitations to change the score.
 
 ## Mozilla Recommended
 
@@ -83,7 +87,7 @@ This verifies repository build reproducibility. A browser-store package must sti
 ## Next Steps
 
 1. Keep the existing `main` ruleset and repository security settings under review without creating a single-maintainer approval deadlock.
-2. Recheck the three remaining OpenSSF Scorecard findings when the review process or test coverage changes.
+2. Recheck OpenSSF Scorecard findings when dependency fixes, the review process, or test coverage change; retain unresolved risks and single-maintainer limitations in the record.
 3. Complete the OpenSSF Best Practices Passing questionnaire with repository evidence.
 4. Confirm each browser-store listing matches the intended stable release. GitHub publication alone does not establish store availability.
 5. Submit the Edge feature request.
