@@ -15,13 +15,15 @@ const backBtn = document.getElementById("backBtn");
 const detailTitle = document.getElementById("detailTitle");
 const msg = (key, substitutions) =>
   globalThis.FT_I18N?.message(key, substitutions) || "";
-let settings = {
+const defaultPlatformSettings = {
   yt: "strict",
   ig: "strict",
   tt: "strict",
   fb: "strict",
   li: "strict",
+  rd: "strict",
 };
+let settings = { ...defaultPlatformSettings };
 let currentPlatform = null;
 let timerInterval = null;
 let timerEndTime = null;
@@ -31,8 +33,10 @@ const PLATFORM_NAMES = {
   tt: msg("platformTiktok"),
   fb: msg("platformFacebook"),
   li: msg("platformLinkedin"),
+  rd: msg("platformReddit"),
 };
 let reviewHideTimeout = null;
+let reviewRestoreFocus = null;
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => document.body.classList.remove("preload"), 100);
   initReviewPrompt();
@@ -50,6 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
       "popup_visible_tt",
       "popup_visible_fb",
       "popup_visible_li",
+      "popup_visible_rd",
       "tutorialCompleted",
       "showBreakButton",
       "autoStartBreaks",
@@ -71,9 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
       timerBtn.textContent = msg("startTimer");
       const isDark = resolveDarkMode(result.darkMode);
       applyTheme(isDark);
-      if (result.platformSettings) {
-        settings = { ...settings, ...result.platformSettings };
-      }
+      settings = { ...defaultPlatformSettings, ...result.platformSettings };
       updateStats(result.ft_stats_blocked || 0);
       updatePlatformVisibility(result);
       if (result.ft_timer_end && result.ft_timer_end > Date.now()) {
@@ -82,8 +85,11 @@ document.addEventListener("DOMContentLoaded", () => {
       setupEventListeners();
       chrome.storage.onChanged.addListener((changes, area) => {
         if (area === "local") {
-          if (changes.platformSettings && changes.platformSettings.newValue) {
-            settings = { ...settings, ...changes.platformSettings.newValue };
+          if (changes.platformSettings) {
+            settings = {
+              ...defaultPlatformSettings,
+              ...changes.platformSettings.newValue,
+            };
             updateAllPlatformIcons();
           }
           if (changes.ft_enabled) {
@@ -125,6 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           if (changes.ft_stats_blocked) {
             const blocked = changes.ft_stats_blocked.newValue || 0;
+            updateStats(blocked);
             checkReviewPrompt(blocked);
           }
         }
@@ -198,12 +205,18 @@ function updateAllPlatformIcons() {
       const mode = isWorkTimer ? "strict" : settings[platform] || "strict";
       updatePlatformIcon(icon, mode);
     });
+    if (currentPlatform) {
+      const mode = isWorkTimer ? "strict" : settings[currentPlatform];
+      document.querySelectorAll(".mode-option-detail").forEach((option) => {
+        option.classList.toggle("selected", option.dataset.value === mode);
+      });
+    }
   });
 }
 function updatePlatformVisibility(visibility) {
   const platformGrid = document.querySelector(".platform-grid");
   if (!platformGrid) return;
-  const allPlatforms = ["yt", "ig", "tt", "fb", "li"];
+  const allPlatforms = ["yt", "ig", "tt", "fb", "li", "rd"];
   const visiblePlatforms = allPlatforms.filter(
     (p) => visibility[`popup_visible_${p}`] !== false,
   );
@@ -263,20 +276,33 @@ function createPlatformButton(platform) {
       [PLATFORM_NAMES[platform]],
     ),
   );
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("width", "28");
-  svg.setAttribute("height", "28");
-  svg.setAttribute("aria-hidden", "true");
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  path.setAttribute("fill", "currentColor");
-  path.setAttribute("d", svgPaths[platform]);
-  svg.appendChild(path);
+  let icon;
+  if (platform === "rd") {
+    icon = document.createElement("span");
+    icon.className = "reddit-mark";
+    icon.setAttribute("aria-hidden", "true");
+    const image = document.createElement("img");
+    image.src = "icons/reddit-icons8-glyph-90.png";
+    image.alt = "";
+    image.width = 28;
+    image.height = 28;
+    icon.appendChild(image);
+  } else {
+    icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icon.setAttribute("viewBox", "0 0 24 24");
+    icon.setAttribute("width", "28");
+    icon.setAttribute("height", "28");
+    icon.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("fill", "currentColor");
+    path.setAttribute("d", svgPaths[platform]);
+    icon.appendChild(path);
+  }
   const badge = document.createElement("span");
   badge.className = "platform-mode-badge";
   badge.setAttribute("aria-hidden", "true");
   badge.textContent = "S";
-  btn.append(svg, badge);
+  btn.append(icon, badge);
   return btn;
 }
 function updatePlatformIcon(icon, mode) {
@@ -314,6 +340,7 @@ const PLATFORM_SETTINGS = {
     { key: "hide_li_activity", labelKey: "hideNetworkActivity", defaultValue: false },
   ],
   tt: [],
+  rd: [],
 };
 function showPlatformDetail(platform) {
   currentPlatform = platform;
@@ -342,6 +369,10 @@ function showPlatformDetail(platform) {
           if (modeVal === "warn")
             desc.textContent = msg("modeLinkedinWarnDescription");
           if (modeVal === "allow") desc.textContent = msg("modeLinkedinPassiveDescription");
+        } else if (platform === "rd") {
+          if (modeVal === "strict") desc.textContent = msg("modeRedditStrictDescription");
+          if (modeVal === "warn") desc.textContent = msg("modeRedditWarnDescription");
+          if (modeVal === "allow") desc.textContent = msg("modeRedditPassiveDescription");
         } else if (modeVal === "allow") {
           desc.textContent = msg("modePassiveDescription");
         } else if (modeVal === "warn") {
@@ -591,8 +622,13 @@ function handleDocumentClick(e) {
     !modeOption.classList.contains("disabled")
   ) {
     const mode = modeOption.dataset.value;
-    settings[currentPlatform] = mode;
-    chrome.storage.local.set({ platformSettings: settings });
+    const platform = currentPlatform;
+    chrome.storage.local.get(["platformSettings"], (result) => {
+      chrome.storage.local.set({
+        platformSettings: { ...result.platformSettings, [platform]: mode },
+      });
+    });
+    settings[platform] = mode;
     document
       .querySelectorAll(".mode-option-detail")
       .forEach((o) => o.classList.remove("selected"));
@@ -1011,9 +1047,20 @@ function detectBrowser() {
   return "chrome";
 }
 function initReviewPrompt() {
+  const prompt = document.getElementById("review-prompt");
   const reviewNow = document.getElementById("reviewNow");
   const reviewLater = document.getElementById("reviewLater");
   const reviewNoThanks = document.getElementById("reviewNoThanks");
+  prompt?.addEventListener("keydown", (event) => {
+    if (event.key !== "Tab") return;
+    if (event.shiftKey && document.activeElement === reviewNow) {
+      event.preventDefault();
+      reviewNoThanks?.focus();
+    } else if (!event.shiftKey && document.activeElement === reviewNoThanks) {
+      event.preventDefault();
+      reviewNow?.focus();
+    }
+  });
   if (reviewNow) {
     reviewNow.addEventListener("click", () => {
       chrome.tabs.create({
@@ -1058,6 +1105,7 @@ function checkReviewPrompt(blockedCount) {
 }
 function showReviewPrompt(blockedCount) {
   const prompt = document.getElementById("review-prompt");
+  const controls = document.getElementById("popupControls");
   const blockedCountText = document.getElementById("reviewBlockedCount");
   const currentBlockedCount = Math.max(0, parseInt(blockedCount, 10) || 0);
   if (reviewHideTimeout !== null) {
@@ -1068,15 +1116,21 @@ function showReviewPrompt(blockedCount) {
     blockedCountText.textContent = msg("reviewPrompt", [String(currentBlockedCount)]);
   }
   if (prompt) {
+    const wasVisible = prompt.classList.contains("show");
+    if (!wasVisible) reviewRestoreFocus = document.activeElement;
     prompt.classList.remove("fade-out");
     prompt.classList.remove("hidden");
     prompt.classList.add("show");
+    if (controls) controls.inert = true;
+    if (!wasVisible) prompt.querySelector("button")?.focus();
   }
   document.body.classList.add("review-visible");
   document.documentElement.classList.add("review-visible");
 }
 function hideReviewPrompt() {
   const prompt = document.getElementById("review-prompt");
+  const controls = document.getElementById("popupControls");
+  const wasVisible = prompt?.classList.contains("show");
   if (prompt && !prompt.classList.contains("hidden")) {
     if (reviewHideTimeout !== null) clearTimeout(reviewHideTimeout);
     prompt.classList.add("fade-out");
@@ -1087,6 +1141,14 @@ function hideReviewPrompt() {
       reviewHideTimeout = null;
     }, 300);
   }
+  if (controls) controls.inert = false;
+  if (wasVisible) {
+    const restoreTarget = controls?.contains(reviewRestoreFocus)
+      ? reviewRestoreFocus
+      : enabledToggle;
+    restoreTarget?.focus();
+  }
+  reviewRestoreFocus = null;
   document.body.classList.remove("review-visible");
   document.documentElement.classList.remove("review-visible");
 }

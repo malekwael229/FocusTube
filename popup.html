@@ -25,7 +25,7 @@
       </div>
     </div>
 
-    <div id="review-prompt" class="review-prompt hidden">
+    <div id="review-prompt" class="review-prompt hidden" role="dialog" aria-modal="true" aria-labelledby="reviewBlockedCount">
       <div class="review-copy">
         <p id="reviewBlockedCount" data-i18n="reviewPrompt" data-i18n-args='["0"]'>
           FocusTube has blocked 0 distractions for you.
@@ -193,6 +193,10 @@
                   d="M20.4 20.4h-3.5v-5.6c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9v5.7H9.4V9h3.4v1.6h.1c.5-.9 1.6-1.8 3.4-1.8 3.6 0 4.3 2.4 4.3 5.5v6.1zM5.3 7.4c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm1.8 13H3.5V9h3.5v11.4zM22.2 0H1.8C.8 0 0 .8 0 1.8v20.4c0 1 .8 1.8 1.8 1.8h20.4c1 0 1.8-.8 1.8-1.8V1.8c0-1-.8-1.8-1.8-1.8z"
                 />
               </svg>
+              <span class="platform-mode-badge" aria-hidden="true">S</span>
+            </button>
+            <button class="platform-icon" data-platform="rd" title="Reddit" aria-label="Reddit settings" data-i18n-title="platformReddit">
+              <span class="reddit-mark" aria-hidden="true"><img src="icons/reddit-icons8-glyph-90.png" alt="" width="28" height="28"></span>
               <span class="platform-mode-badge" aria-hidden="true">S</span>
             </button>
           </div>

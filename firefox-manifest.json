@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "__MSG_extensionName__",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
   "incognito": "not_allowed",
@@ -14,7 +14,9 @@
     "*://*.instagram.com/*",
     "*://*.tiktok.com/*",
     "*://*.facebook.com/*",
-    "*://*.linkedin.com/*"
+    "*://*.linkedin.com/*",
+    "*://reddit.com/*",
+    "*://www.reddit.com/*"
   ],
   "browser_action": {
     "default_popup": "popup.html"
@@ -55,6 +57,12 @@
       "matches": ["*://*.linkedin.com/*"],
       "css": ["content.css"],
       "js": ["i18n.js", "content-common.js", "content-li.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["*://reddit.com/*", "*://www.reddit.com/*"],
+      "css": ["content.css"],
+      "js": ["i18n.js", "content-common.js", "content-rd.js"],
       "run_at": "document_start"
     }
   ],

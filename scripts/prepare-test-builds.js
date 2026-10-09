@@ -30,6 +30,7 @@ const runtimeFiles = [
   "content-fb.js",
   "content-ig.js",
   "content-li.js",
+  "content-rd.js",
   "content-tt.js",
   "content-yt.js",
   "content.css",
@@ -42,6 +43,8 @@ const runtimeFiles = [
   "icons/icon16.png",
   "icons/icon48.png",
   "icons/icon128.png",
+  "icons/reddit-icons8-glyph-90.png",
+  "icons/reddit-icons8-LICENSE.txt",
 ];
 
 function enableReproducibleZipMetadata() {

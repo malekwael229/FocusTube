@@ -1575,16 +1575,16 @@ test("manifest and package allowlists remain narrow and internally consistent", 
   assert.deepEqual(chrome.permissions.sort(), ["alarms", "notifications", "storage"]);
   assert.deepEqual(firefox.permissions.sort(), [
     "*://*.facebook.com/*", "*://*.instagram.com/*", "*://*.linkedin.com/*",
-    "*://*.tiktok.com/*", "*://*.youtube.com/*", "alarms", "notifications", "storage",
+    "*://*.tiktok.com/*", "*://*.youtube.com/*", "*://reddit.com/*", "*://www.reddit.com/*", "alarms", "notifications", "storage",
   ]);
   assert.deepEqual(runtimeFiles, [
-    "background.js", "i18n.js", "content-common.js", "content-fb.js", "content-ig.js", "content-li.js",
+    "background.js", "i18n.js", "content-common.js", "content-fb.js", "content-ig.js", "content-li.js", "content-rd.js",
     "content-tt.js", "content-yt.js", "content.css", "styles.css", "popup.html", "popup.js",
     "options.html", "options.js",
     "_locales/en/messages.json", "_locales/ar/messages.json", "_locales/es/messages.json",
     "_locales/pt_BR/messages.json", "_locales/fr/messages.json", "_locales/de/messages.json",
     "_locales/tr/messages.json", "_locales/id/messages.json",
-    "icons/icon16.png", "icons/icon48.png", "icons/icon128.png",
+    "icons/icon16.png", "icons/icon48.png", "icons/icon128.png", "icons/reddit-icons8-glyph-90.png", "icons/reddit-icons8-LICENSE.txt",
   ]);
   assert.equal(JSON.parse(read("package.json")).private, true);
 });

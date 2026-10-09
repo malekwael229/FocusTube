@@ -301,8 +301,13 @@ async function launchFirefox({
         message: String(m.errorMessage || m.message || ''),
         sourceName: String(m.sourceName || ''),
         category: String(m.category || ''),
-      })).filter((m) => m.sourceName.includes(id) || m.message.includes(id) || m.sourceName.includes('moz-extension://'));
+        flags: m instanceof Ci.nsIScriptError ? m.flags : null,
+        severity: m instanceof Ci.nsIScriptError
+          ? (m.flags & Ci.nsIScriptError.warningFlag ? 'warning' : m.flags & Ci.nsIScriptError.infoFlag ? 'info' : 'error')
+          : 'info',
+      })).filter((m) => m.sourceName.startsWith('moz-extension://') || m.message.includes(id));
     `, extensionId);
+    for (const item of messages) item.ownExtension = Boolean(extensionURL && item.sourceName.startsWith(extensionURL));
     return messages.filter((item) => {
       const key = JSON.stringify(item);
       if (seenErrors.has(key)) return false;
@@ -323,7 +328,13 @@ async function launchFirefox({
         message: String(m.errorMessage || m.message || ''),
         sourceName: String(m.sourceName || ''),
         category: String(m.category || ''),
-      })).filter((m) => m.sourceName.includes(host) && m.category.toLowerCase().includes('error'));
+        flags: m instanceof Ci.nsIScriptError ? m.flags : null,
+        severity: m instanceof Ci.nsIScriptError
+          ? (m.flags & Ci.nsIScriptError.warningFlag ? 'warning' : m.flags & Ci.nsIScriptError.infoFlag ? 'info' : 'error')
+          : 'info',
+      })).filter((m) => {
+        try { return new URL(m.sourceName).hostname === host; } catch { return false; }
+      });
     `, host);
   }
 

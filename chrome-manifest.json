@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extensionName__",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
   "content_security_policy": {
@@ -13,7 +13,9 @@
     "*://*.instagram.com/*",
     "*://*.tiktok.com/*",
     "*://*.facebook.com/*",
-    "*://*.linkedin.com/*"
+    "*://*.linkedin.com/*",
+    "*://reddit.com/*",
+    "*://www.reddit.com/*"
   ],
   "action": {
     "default_popup": "popup.html"
@@ -55,6 +57,12 @@
       "css": ["content.css"],
       "js": ["i18n.js", "content-common.js", "content-li.js"],
       "run_at": "document_start"
+    },
+    {
+      "matches": ["*://reddit.com/*", "*://www.reddit.com/*"],
+      "css": ["content.css"],
+      "js": ["i18n.js", "content-common.js", "content-rd.js"],
+      "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
@@ -65,7 +73,9 @@
         "*://*.instagram.com/*",
         "*://*.tiktok.com/*",
         "*://*.facebook.com/*",
-        "*://*.linkedin.com/*"
+        "*://*.linkedin.com/*",
+        "*://reddit.com/*",
+        "*://www.reddit.com/*"
       ]
     }
   ],

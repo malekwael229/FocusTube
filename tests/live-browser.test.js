@@ -21,6 +21,10 @@ const flag = (key, fallback) => {
 };
 function digest(file) { return crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex"); }
 function firstFile(candidates) { return candidates.filter(Boolean).find((p) => fs.existsSync(p)); }
+function reportExitCode(report, halted = false, interactive = false) {
+  if (halted || report.data.counts.FAIL) return 1;
+  return report.data.counts.BLOCKED && !interactive ? 2 : 0;
+}
 
 function environment() {
   const pf = process.env.PROGRAMFILES || "C:/Program Files";
@@ -39,11 +43,11 @@ function candidate() {
   const hashes = Object.fromEntries(files.map((file) => [file, digest(path.join(root, file))]));
   const buildRoot = path.join(root, "dist-release-builds");
   for (const browser of ["chromium", "firefox"]) {
-    const directory = path.join(buildRoot, "FocusTube-release-" + browser + "-v2.4.1");
+    const directory = path.join(buildRoot, "FocusTube-release-" + browser + "-v2.5.0");
     const sourceManifest = browser === "chromium" ? "chrome-manifest.json" : "firefox-manifest.json";
     if (JSON.stringify(JSON.parse(fs.readFileSync(path.join(root, sourceManifest)))) !== JSON.stringify(JSON.parse(fs.readFileSync(path.join(directory, "manifest.json"))))) throw new Error("Retained manifest differs from source");
     for (const file of runtimeFiles) if (digest(path.join(directory, file)) !== hashes[file]) throw new Error("Retained candidate differs from source: " + file);
-    hashes["dist-release-builds/FocusTube-release-" + browser + "-v2.4.1.zip"] = digest(path.join(buildRoot, "FocusTube-release-" + browser + "-v2.4.1.zip"));
+    hashes["dist-release-builds/FocusTube-release-" + browser + "-v2.5.0.zip"] = digest(path.join(buildRoot, "FocusTube-release-" + browser + "-v2.5.0.zip"));
   }
   return hashes;
 }
@@ -83,7 +87,7 @@ async function main() {
   try {
     for (const id of chosen) {
       const browser = available[id];
-      const buildDir = path.join(root, "dist-release-builds", "FocusTube-release-" + (id === "firefox" ? "firefox" : "chromium") + "-v2.4.1");
+      const buildDir = path.join(root, "dist-release-builds", "FocusTube-release-" + (id === "firefox" ? "firefox" : "chromium") + "-v2.5.0");
       const profileDir = path.join(local, "profiles", id);
       if (fs.existsSync(profileDir) && fs.lstatSync(profileDir).isSymbolicLink()) throw new Error("Profile must not be a symlink/junction");
       report.data.browsers.push({ name: browser.name, executablePath: browser.executablePath || null, profile: path.relative(root, profileDir) });
@@ -112,10 +116,10 @@ async function main() {
           continue;
         }
         const page = await session.newPage();
-        await report.case({ id: "extension-load", site: "extension", scope: "extension-ui", route: "popup.html", expected: "The exact 2.4.1 manifest is loaded" }, page, async () => {
+        await report.case({ id: "extension-load", site: "extension", scope: "extension-ui", route: "popup.html", expected: "The exact 2.5.0 manifest is loaded" }, page, async () => {
           await page.goto(session.extensionURL + "popup.html");
           const manifest = await page.evaluate(() => chrome.runtime.getManifest());
-          if (manifest.version !== "2.4.1") throw new Error("Wrong version loaded");
+          if (manifest.version !== "2.5.0") throw new Error("Wrong version loaded");
           const loadedHashes = await page.evaluate(async (files) => {
             const entries = [];
             for (const file of files) {
@@ -143,7 +147,16 @@ async function main() {
             for (const code of selectedSites) report.block({ id: code + ".browser-unavailable", site: sites[code].name, expected: "Full live matrix" }, error.message, "D");
           }
         }
-      } finally { if (session) await session.close(); }
+      } finally {
+        if (session) {
+          try {
+            if (!setup && !login) await report.finishSession();
+          } catch (error) {
+            if (error.code === "CASE_FAILURE") halted = true;
+            else throw error;
+          } finally { await session.close(); }
+        }
+      }
       if (halted) break;
     }
   } finally {
@@ -154,9 +167,8 @@ async function main() {
     console.log("Evidence: " + reportDir);
     if (!report.data.candidateUnchanged) throw new Error("Candidate bytes changed; do not publish");
   }
-  if (halted) process.exitCode = 1;
-  else if (report.data.counts.BLOCKED && !setup && !login) process.exitCode = 2;
+  process.exitCode = reportExitCode(report, halted, Boolean(setup || login));
 }
 
 if (require.main === module) main().catch((error) => { console.error(error); process.exitCode = 1; });
-module.exports = { environment, candidate };
+module.exports = { environment, candidate, reportExitCode };

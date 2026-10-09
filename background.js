@@ -1016,6 +1016,8 @@ function completeTimer(expected, done, retryAttempt = 0, completionClaimOwned = 
                   "*://*.tiktok.com/*",
                   "*://*.facebook.com/*",
                   "*://*.linkedin.com/*",
+                  "*://reddit.com/*",
+                  "*://www.reddit.com/*",
                 ],
               },
               (tabs) => {

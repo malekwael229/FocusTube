@@ -12,6 +12,7 @@ const expectedPlatformScripts = [
   ["*://*.tiktok.com/*", "content-tt.js"],
   ["*://*.facebook.com/*", "content-fb.js"],
   ["*://*.linkedin.com/*", "content-li.js"],
+  ["*://reddit.com/*", "content-rd.js"],
 ];
 
 function assertPerPlatformContentScripts(manifest) {
@@ -23,7 +24,7 @@ function assertPerPlatformContentScripts(manifest) {
     );
 
     assert.ok(entry, `Missing content script entry for ${match}`);
-    assert.deepEqual(entry.matches, [match]);
+    assert.deepEqual(entry.matches, platformScript === "content-rd.js" ? ["*://reddit.com/*", "*://www.reddit.com/*"] : [match]);
     assert.deepEqual(entry.css, ["content.css"]);
     assert.deepEqual(entry.js, ["i18n.js", "content-common.js", platformScript]);
     assert.equal(entry.run_at, "document_start");
@@ -133,6 +134,10 @@ const checks = [
         assert.equal(isSite(`${domain}.example.com`, method), false);
         assert.equal(isSite(`not${domain}`, method), false);
       });
+      assert.equal(isSite("reddit.com", "isRD"), true);
+      assert.equal(isSite("www.reddit.com", "isRD"), true);
+      assert.equal(isSite("old.reddit.com", "isRD"), false);
+      assert.equal(isSite("redd.it", "isRD"), false);
     },
   ],
   [
@@ -1097,7 +1102,7 @@ const checks = [
     },
   ],
   [
-    "settings replacement and displayed version remain release-gated at 2.4.1",
+    "settings replacement and displayed version remain release-gated at 2.5.0",
     () => {
       const options = read("options.html");
       const changelog = read("CHANGELOG.md");
@@ -1105,14 +1110,18 @@ const checks = [
       const firefoxManifest = readJson("firefox-manifest.json");
 
       assert.match(read("options.js"), /action:\s*["']replaceSettings["']/);
-      assert.match(options, /Version\s+2\.4\.1/);
-      assert.equal(chromeManifest.version, "2.4.1");
-      assert.equal(firefoxManifest.version, "2.4.1");
+      assert.match(options, /Version\s+2\.5\.0/);
+      assert.match(options, /data-i18n-args='\["2\.5\.0"\]'/);
+      assert.equal(chromeManifest.version, "2.5.0");
+      assert.equal(firefoxManifest.version, "2.5.0");
       assert.match(
         changelog,
         /^##[ \t]+\[Unreleased\][ \t]*\r?$/m,
       );
-      assert.match(changelog, /^##\s*\[2\.4\.1\]\s*-\s*Pending$/m);
+      assert.match(changelog, /^##\s*\[2\.5\.0\]\s*-\s*2026-10-01$/m);
+      assert.doesNotMatch(changelog, /^##\s*\[2\.5\.0\]\s*-\s*Pending$/m);
+      assert.doesNotMatch(changelog, /^##\s*\[2\.4\.1\]\s*-\s*Pending$/m);
+      assert.match(changelog, /^##\s*\[2\.4\.1\]\s*-\s*2026-09-23$/m);
       assert.match(changelog, /^##\s*\[2\.4\.0\]\s*-\s*2026-09-23$/m);
       assert.doesNotMatch(changelog, /###\s+Pending\s+2\.4\.0/);
       assert.match(changelog, /^##\s*\[2\.3\.2\]\s*-\s*2026-09-01$/m);
@@ -1126,8 +1135,8 @@ const checks = [
 
       assert.equal(chromeManifest.manifest_version, 3);
       assert.equal(firefoxManifest.manifest_version, 2);
-      assert.equal(chromeManifest.version, "2.4.1");
-      assert.equal(firefoxManifest.version, "2.4.1");
+      assert.equal(chromeManifest.version, "2.5.0");
+      assert.equal(firefoxManifest.version, "2.5.0");
       assert.deepEqual(chromeManifest.content_security_policy, {
         extension_pages: "script-src 'self'; object-src 'self';",
       });
@@ -1150,6 +1159,10 @@ const checks = [
       }
       assertPerPlatformContentScripts(chromeManifest);
       assertPerPlatformContentScripts(firefoxManifest);
+      for (const manifest of [chromeManifest, firefoxManifest]) {
+        const reddit = manifest.content_scripts.find((script) => script.js.includes("content-rd.js"));
+        assert.deepEqual(reddit.matches, ["*://reddit.com/*", "*://www.reddit.com/*"]);
+      }
       assert.doesNotMatch(JSON.stringify(chromeManifest), /hide_ig_feed_reels/);
       assert.doesNotMatch(JSON.stringify(firefoxManifest), /hide_ig_feed_reels/);
     },

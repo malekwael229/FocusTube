@@ -569,5 +569,12 @@
     "message": "Odaklanma oturumu tamamlandı."
   },
   "catalogLanguage": { "message": "tr" },
+  "platformReddit": { "message": "Reddit" },
+  "modeRedditStrictDescription": { "message": "Akışları açma olmadan gizle" },
+  "modeRedditWarnDescription": { "message": "Akışları Yine de Gör ile gizle" },
+  "modeRedditPassiveDescription": { "message": "Reddit akışlarını göster" },
+  "redditFeedHidden": { "message": "Akışın duraklatıldı" },
+  "redditFeedGuidance": { "message": "Arama, gönderiler ve yorumlar kullanılabilir olmaya devam eder." },
+  "redditSearch": { "message": "Reddit'te ara" },
   "catalogDirection": { "message": "ltr" }
 }

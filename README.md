@@ -1,11 +1,11 @@
 <div align="center">
-  <img width="1920" height="1080" alt="focustube-01-hero-v18" src="https://github.com/user-attachments/assets/e204789b-5ac0-467f-8e62-a7c5933ceda0" />
+<img width="1672" height="941" alt="focustube-screenshot-01-hero" src="https://github.com/user-attachments/assets/da3954d3-9a88-4ae8-81bf-62eafff7bfb5" />
 
   <h1>FocusTube - Shorts, Reels &amp; Feed Blocker</h1>
 
   <p><strong>A privacy-first browser extension for reducing distracting social video and feed surfaces.</strong></p>
 
-  <p><strong>Supports YouTube Shorts, Instagram Reels, TikTok, Facebook Reels, and LinkedIn feed controls.</strong></p>
+  <p><strong>Supports YouTube Shorts, Instagram Reels, TikTok, Facebook Reels, LinkedIn feeds, and current Reddit feeds.</strong></p>
 
   <p>
     <strong>Install:</strong>
@@ -28,7 +28,7 @@
     <a href="https://www.bestpractices.dev/projects/14395"><img alt="OpenSSF Best Practices Passing" src="https://www.bestpractices.dev/projects/14395/badge" /></a>
     <a href="https://www.bestpractices.dev/projects/14395"><img alt="OpenSSF Best Practices Baseline Level 1" src="https://www.bestpractices.dev/projects/14395/baseline" /></a>
     <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" />
-    <img alt="GitHub release version: 2.4.0" src="https://img.shields.io/badge/version-2.4.0-green.svg" />
+    <img alt="GitHub release version: 2.5.0" src="https://img.shields.io/badge/version-2.5.0-green.svg" />
     <img alt="Firefox compatible" src="https://img.shields.io/badge/firefox-compatible-orange.svg" />
   </p>
 </div>
@@ -54,6 +54,7 @@ The project supports Chromium browsers with a Manifest V3 build and Firefox with
 - **TikTok:** Blocks common feed/video surfaces while allowing safer areas such as messages and settings.
 - **Facebook:** Blocks Reels paths and can hide Reels navigation, Stories, and People You Might Know suggestions.
 - **LinkedIn:** Can hide the main feed and "Add to your feed" sidebar card, with optional filtering for suggested, outside-network, promoted, and network-activity posts when detected.
+- **Reddit:** Hides current Reddit Home, News, Popular, All, and community feeds in Strict mode or during work timers. Warn mode offers a per-feed reveal; Passive shows feeds. Individual posts, comments, and search remain available. The legacy `old.reddit.com` interface is not covered.
 
 ### Productivity Tools
 
@@ -68,7 +69,7 @@ The project supports Chromium browsers with a Manifest V3 build and Firefox with
 
 The [FocusTube project website](https://malekwael229.github.io/FocusTube/) includes platform-specific guides and the same official store links used by the extension.
 
-The GitHub source release is 2.4.0. Browser-store updates are separate; check the version shown on each listing before assuming it includes the 2.4.0 filters and localization.
+The latest published GitHub release is 2.5.0. Browser-store updates are separate; check the version shown on each listing before treating a store listing as current.
 
 ### Official Stores
 
@@ -131,7 +132,7 @@ Snapshot refreshed September 13, 2026. Store analytics use different activity wi
 
 - Browser extension APIs for storage, alarms, notifications, popup UI, options UI, and content scripts.
 - Cross-browser manifests for Chromium and Firefox.
-- Site-specific content scripts for YouTube, Instagram, TikTok, Facebook, and LinkedIn.
+- Site-specific content scripts for YouTube, Instagram, TikTok, Facebook, LinkedIn, and the current Reddit interface.
 - Shared DOM utilities for overlays, visual hiding, timer state, and SPA updates.
 - `MutationObserver`, browser navigation events, and timer-driven messaging for dynamic single-page applications.
 - Local browser storage for preferences, timer state, stats, and import/export data.

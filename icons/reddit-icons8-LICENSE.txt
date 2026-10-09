@@ -1,0 +1,7 @@
+Reddit icon: reddit-icons8-glyph-90.png
+Creator: Icons8 (https://icons8.com)
+Source: https://icons8.com/icon/102689/reddit
+Style: iOS 27 Glyph
+License: https://icons8.com/vue-static/landings/pricing/icons8-license.pdf
+
+The 90x90 PNG is distributed without changes to the source image.

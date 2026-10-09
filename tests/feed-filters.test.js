@@ -208,6 +208,71 @@ async function main() {
     }
    }
   }
+  async function testInstagramWarningExits() {
+   const exits = [];
+   for (const exit of ['break', '/', '/direct/inbox/']) {
+    const env = await open('ig', '<video id="warning-media" muted></video>',
+     { platformSettings: { ig: 'warn' } }, () => {
+      const video = document.querySelector('#warning-media');
+      video.volume = 0.35;
+      window.warningPlayCalls = 0;
+      video.play = () => { window.warningPlayCalls++; return Promise.resolve(); };
+     }, '/reels/warning-exit/');
+    const { page, change, close } = env;
+    const waitBlocked = () => page.waitForFunction(() =>
+     document.getElementById(UI.overlayId) && UI.persistenceObserver &&
+     UI.videoLockInterval && Utils.videoLockInterval);
+    await waitBlocked();
+    // Exercise the shared teardown even if a stale scroll lock survives SPA entry.
+    await page.evaluate(() => {
+     document.body.classList.add('ft-scroll-lock');
+     document.documentElement.classList.add('ft-scroll-lock');
+    });
+    if (exit === 'break') await change({ ft_timer_end: Date.now() + 60000, ft_timer_type: 'break' });
+    else {
+     await page.evaluate(pathname => history.pushState({}, '', pathname), exit);
+     await page.waitForFunction(pathname => Instagram.lastPath === pathname, exit);
+    }
+    // A subsequent DOM change must not resurrect the warning through persistence.
+    await page.evaluate(() => document.body.appendChild(document.createElement('span')));
+    await env.settle();
+    exits.push(await page.evaluate(exit => {
+     const video = document.querySelector('#warning-media');
+     return {
+      exit, overlay: Boolean(document.getElementById(UI.overlayId)),
+      persistence: Boolean(UI.persistenceObserver), needed: UI.isOverlayNeeded,
+      uiInterval: Boolean(UI.videoLockInterval), mediaInterval: Boolean(Utils.videoLockInterval),
+      bodyLock: document.body.classList.contains('ft-scroll-lock'),
+      rootLock: document.documentElement.classList.contains('ft-scroll-lock'),
+      trackedMedia: Utils._mediaElements.size,
+      paused: video.paused, muted: video.muted, volume: video.volume,
+      playCalls: window.warningPlayCalls,
+     };
+    }, exit));
+
+    if (exit === 'break') await change({ ft_timer_end: null });
+    else await page.evaluate(() => history.pushState({}, '', '/reels/warning-reentry/'));
+    await waitBlocked();
+    assert.equal(await page.locator('#focus-tube-warning-overlay').getAttribute('data-ft-type'), 'warn', `${exit}: Warn reentry remains blocked`);
+    checks++;
+    await page.evaluate(() => {
+     window.warningWorkKicks = 0;
+     Instagram.rapidKick = function () { window.warningWorkKicks++; this.isRedirecting = true; };
+     Utils.setAllowWindow('ig', 'reels');
+    });
+    await change({ ft_timer_end: Date.now() + 60000, ft_timer_type: 'work' });
+    assert.equal(await page.evaluate(() => window.warningWorkKicks), 1, `${exit}: work blocks Reels despite an allowed Warn session`);
+    checks++;
+    await close();
+   }
+   assert.deepEqual(exits, ['break', '/', '/direct/inbox/'].map(exit => ({
+    exit, overlay: false, persistence: false, needed: false,
+    uiInterval: false, mediaInterval: false, bodyLock: false, rootLock: false,
+    trackedMedia: 0, paused: true, muted: true, volume: 0.35, playCalls: 0,
+   })), 'break and safe SPA exits remove warning state and restore paused media without play or unmute');
+   checks += exits.length;
+  }
+  await testInstagramWarningExits();
   await testReelPermalinkHandling();
   // Captured markup plus explicit adversarial derivatives; no authenticated-site claim.
   const cases = [

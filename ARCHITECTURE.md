@@ -11,7 +11,7 @@ The repository keeps one manifest per browser family:
 | `chrome-manifest.json` | Chromium Manifest V3 | Event-driven `background.js` service worker |
 | `firefox-manifest.json` | Firefox Manifest V2 | `background.js` background script |
 
-Both manifests declare `storage`, `alarms`, and `notifications`. They grant access only to the YouTube, Instagram, TikTok, Facebook, and LinkedIn host patterns used by the content scripts. Both use extension-page CSP that permits scripts from `self` only. Firefox also declares its extension ID, minimum Firefox version, and no required data collection.
+Both manifests declare `storage`, `alarms`, and `notifications`. They grant access only to the YouTube, Instagram, TikTok, Facebook, LinkedIn, `reddit.com`, and `www.reddit.com` host patterns used by the content scripts. Both use extension-page CSP that permits scripts from `self` only. Firefox also declares its extension ID, minimum Firefox version, and no required data collection.
 
 Both manifests set English as `default_locale`. The package includes browser-native message catalogs for English, Arabic, Spanish, Brazilian Portuguese, French, German, Turkish, and Indonesian. Manifest names and descriptions use catalog references, and `i18n.js` loads before the background, popup, options, and content-script code that requests localized text.
 
@@ -19,7 +19,7 @@ The Chromium manifest uses `action`; the Firefox manifest uses `browser_action`.
 
 ## Build and Packaging
 
-`scripts/prepare-test-builds.js` validates that the output root is a dedicated child of an approved repository build directory or an owned temporary directory. Before each build, it removes only known generated FocusTube directories, ZIPs, and `.web-ext-artifacts`; unrelated output remains untouched.
+`scripts/prepare-test-builds.js` accepts an output root only when it is exactly `dist-release-builds` or `dist-test-builds`, a descendant of the repository `.tmp` directory, or a direct child of the system temporary directory whose name starts with `focustube-`. Before each build it removes only known generated FocusTube directories, ZIPs, and `.web-ext-artifacts` inside the selected output root; reusing a retained-build root can therefore remove prior generated version directories and ZIPs in that root. Keep verified release artifacts outside a root selected for cleanup.
 
 ## Background Context
 
@@ -52,6 +52,11 @@ Each supported host receives `i18n.js`, `content-common.js`, and then one adapte
 | TikTok | `content-tt.js` |
 | Facebook | `content-fb.js` |
 | LinkedIn | `content-li.js` |
+| Current Reddit | `content-rd.js` |
+
+The Reddit adapter recognizes Home, News, Popular, All, and community feed routes on the current interface and hides a single detected `shreddit-feed` element. On initial load it fails open if that container is absent or ambiguous. During a blocked listing transition, overlapping feed nodes stay hidden until one current feed is identifiable. Its notice is placed beside the hidden feed, leaving navigation and search outside the feed usable. On excluded routes it holds the old feed briefly while Reddit replaces it, then restores a reused node after a bounded delay. Post, comment, search, and legacy Reddit routes are excluded. The selector was observed on current Home, News, Popular, and community pages in Brave; fixture coverage does not establish compatibility with every live Reddit route or browser.
+
+YouTube Playables route blocking and visual hiding are separate controls. The `hide_yt_playables` setting participates in visual hiding only when global visual hiding and the platform visibility rules allow it; it does not change route policy. `FocusState.shouldBlock` is false when the extension is disabled and otherwise true for a work timer or focus mode outside a break. Thus `/playables` redirects in Strict/work, shows the Warn interstitial in Warn mode, and remains accessible in Passive/break while eligible Playables navigation and shelves can still be hidden.
 
 The shared script defines site detection, configuration, focus and timer state, DOM utilities, media locking and recovery, overlays, local statistics messages, settings synchronization, and timer-completion handling. The adapter owns route rules and selectors for its site. Adapters add platform classes, apply blocking or Warn overlays, hide configured visual surfaces, and restore page state when disabled.
 

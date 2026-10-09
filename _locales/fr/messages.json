@@ -569,5 +569,12 @@
     "message": "Session de concentration terminée."
   },
   "catalogLanguage": { "message": "fr" },
+  "platformReddit": { "message": "Reddit" },
+  "modeRedditStrictDescription": { "message": "Masquer les fils sans affichage" },
+  "modeRedditWarnDescription": { "message": "Masquer les fils avec Voir quand même" },
+  "modeRedditPassiveDescription": { "message": "Afficher les fils Reddit" },
+  "redditFeedHidden": { "message": "Votre fil est en pause" },
+  "redditFeedGuidance": { "message": "La recherche, les publications et les commentaires restent accessibles." },
+  "redditSearch": { "message": "Rechercher sur Reddit" },
   "catalogDirection": { "message": "ltr" }
 }
