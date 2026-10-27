@@ -61,8 +61,7 @@ function assertPerPlatformContentScripts(manifest, label) {
     ["*://*.tiktok.com/*", "content-tt.js"],
     ["*://*.facebook.com/*", "content-fb.js"],
     ["*://*.linkedin.com/*", "content-li.js"],
-    ["*://reddit.com/*", "content-rd.js"],
-  ];
+    ];
 
   assert.equal(
     manifest.content_scripts.length,
@@ -76,7 +75,7 @@ function assertPerPlatformContentScripts(manifest, label) {
     );
 
     assert.ok(entry, `${label} missing content script entry for ${match}`);
-    assert.deepEqual(entry.matches, platformScript === "content-rd.js" ? ["*://reddit.com/*", "*://www.reddit.com/*"] : [match], `${label} ${match} matches`);
+    assert.deepEqual(entry.matches, [match], `${label} ${match} matches`);
     assert.deepEqual(entry.css, ["content.css"], `${label} ${match} css`);
     assert.deepEqual(
       entry.js,
@@ -95,21 +94,19 @@ function verifyManifests() {
   assert.ok(fs.existsSync(buildManifestPath), `${buildManifestPath} is missing`);
   const buildManifest = JSON.parse(fs.readFileSync(buildManifestPath, "utf8"));
 
-  const expectedApiPermissions = ["storage", "alarms", "notifications"];
+  const expectedApiPermissions = ["storage", "alarms", "notifications", "scripting"];
   const expectedHosts = [
     "*://*.youtube.com/*",
     "*://*.instagram.com/*",
     "*://*.tiktok.com/*",
     "*://*.facebook.com/*",
     "*://*.linkedin.com/*",
-    "*://reddit.com/*",
-    "*://www.reddit.com/*",
   ];
 
   assert.equal(chromeManifest.manifest_version, 3);
-  assert.equal(chromeManifest.version, "2.5.0");
-  assert.equal(buildManifest.version, "2.5.0");
-  assert.equal(firefoxManifest.version, "2.5.0");
+  assert.equal(chromeManifest.version, "2.5.1");
+  assert.equal(buildManifest.version, "2.5.1");
+  assert.equal(firefoxManifest.version, "2.5.1");
   assert.equal(buildManifest.manifest_version, 3);
   assert.equal(firefoxManifest.manifest_version, 2);
   assert.deepEqual(chromeManifest.content_security_policy, {
@@ -132,11 +129,16 @@ function verifyManifests() {
     expectedHosts,
     "Unexpected Chromium host permissions",
   );
+  // Firefox registers the Reddit script through browser.contentScripts, so it
+  // needs no scripting permission.
   assertSameMembers(
     firefoxManifest.permissions,
-    [...expectedApiPermissions, ...expectedHosts],
+    [...expectedApiPermissions.filter((permission) => permission !== "scripting"), ...expectedHosts],
     "Unexpected Firefox permissions",
   );
+  const redditOrigins = ["*://reddit.com/*", "*://www.reddit.com/*"];
+  assertSameMembers(chromeManifest.optional_host_permissions, redditOrigins, "Chromium Reddit access is optional");
+  assertSameMembers(firefoxManifest.optional_permissions, redditOrigins, "Firefox Reddit access is optional");
   assertPerPlatformContentScripts(chromeManifest, "Chromium manifest");
   assertPerPlatformContentScripts(buildManifest, "Chromium test build manifest");
   assertPerPlatformContentScripts(firefoxManifest, "Firefox manifest");
@@ -478,6 +480,9 @@ async function verifyRatingPrompt(context, extensionId) {
   }));
 
   await setStorage(page, { ft_stats_blocked: 5 });
+  await page.waitForTimeout(200);
+  assert.equal(await page.locator("#review-prompt").isVisible(), false, "review prompt waits until the popup opens again");
+  await page.reload();
   await page.locator("#review-prompt").waitFor({ state: "visible" });
   await page.waitForTimeout(350);
   if (ratingOnly) await page.screenshot({ path: path.join(root, ".tmp", "review-dialog.png") });
@@ -589,6 +594,9 @@ async function verifyRatingPrompt(context, extensionId) {
   assert.equal(await page.locator("#popupControls").evaluate((controls) => controls.inert), false,
     "dismissing the review dialog restores the main controls");
   await setStorage(page, { ft_stats_blocked: 13 });
+  await page.waitForTimeout(200);
+  assert.equal(await page.locator("#review-prompt").isVisible(), false, "a new review prompt waits until the popup opens again");
+  await page.reload();
   await page.locator("#review-prompt").waitFor({ state: "visible" });
   assert.equal(await page.locator("#reviewBlockedCount").innerText(),
     await page.evaluate(() => globalThis.FT_I18N?.message("reviewPrompt", ["13"])),
@@ -678,6 +686,7 @@ async function verifyRatingPrompt(context, extensionId) {
   await page.reload();
   assert.equal(await page.locator("#review-prompt").isVisible(), false, "Later defers by twenty blocked items");
   await setStorage(page, { ft_stats_blocked: 37 });
+  await page.reload();
   await page.locator("#review-prompt").waitFor({ state: "visible" });
 
   const rateUrl = await page.evaluate(() => {
@@ -711,7 +720,7 @@ async function verifyOptions(context, extensionId) {
 
   const renderedVersion = page.locator(".about-version");
   await renderedVersion.waitFor({ state: "visible" });
-  assert.equal(await renderedVersion.innerText(), "Version 2.5.0");
+  assert.equal(await renderedVersion.innerText(), "Version 2.5.1");
   assertNoText(bodyText, /1 minute \(testing only\)/, "Options still show temporary one-minute test option");
   assertNoText(bodyText, /play\s*sound/i, "Options still show sound option text");
   assert.equal(await page.locator("#playSound").count(), 0);
@@ -2060,33 +2069,19 @@ async function verifyRedditRuntime(context, extensionId) {
       ft_timer_end: null,
       ft_timer_type: null,
     });
+    const granted = await settingsPage.evaluate(() => new Promise((resolve) =>
+      chrome.permissions.contains({ origins: ["*://reddit.com/*", "*://www.reddit.com/*"] }, resolve)));
+    assert.equal(granted, false, "Reddit access starts ungranted");
     await page.goto("https://www.reddit.com/r/test/", { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => document.querySelector("shreddit-feed")?.style.display === "none");
-    assert.equal(await page.locator(".ft-reddit-feed-notice button").count(), 0);
-    assert.equal(await page.locator("nav a").isVisible(), true);
-
-    await setStorage(settingsPage, { platformSettings: { rd: "warn" } });
-    await page.locator(".ft-reddit-feed-notice button").waitFor({ state: "visible" });
-    await page.locator(".ft-reddit-feed-notice button").click();
-    await page.waitForFunction(() => document.querySelector("shreddit-feed")?.style.display !== "none");
+    await page.waitForTimeout(750);
+    assert.equal(await page.locator("shreddit-feed").evaluate((feed) => feed.style.display), "", "no Reddit script without access");
     assert.equal(await page.locator(".ft-reddit-feed-notice").count(), 0);
 
-    await page.reload({ waitUntil: "domcontentloaded" });
-    await page.locator(".ft-reddit-feed-notice button").waitFor({ state: "visible" });
-    assert.equal(await page.locator("shreddit-feed").evaluate((feed) => feed.style.display), "none", "Warn reveal resets on reload");
-
-    await setStorage(settingsPage, { platformSettings: { rd: "allow" } });
-    await page.waitForFunction(() => document.querySelector("shreddit-feed")?.style.display !== "none");
-    await setStorage(settingsPage, { ft_timer_end: Date.now() + 60000, ft_timer_type: "work" });
-    await page.waitForFunction(() => document.querySelector("shreddit-feed")?.style.display === "none");
-    assert.equal(await page.locator(".ft-reddit-feed-notice button").count(), 0, "work timer forces Strict");
-
-    await page.goto("https://reddit.com/r/test/", { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => document.querySelector("shreddit-feed")?.style.display === "none");
-    await page.goto("https://www.reddit.com/r/test/comments/abc/post/", { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => Boolean(document.querySelector("shreddit-feed")));
-    assert.equal(await page.locator("shreddit-feed").evaluate((feed) => feed.style.display), "", "direct post remains available during work timer");
-    assert.deepEqual(errors, [], "packaged Reddit content script has no page errors");
+    await settingsPage.reload({ waitUntil: "domcontentloaded" });
+    await settingsPage.locator('.platform-icon[data-platform="rd"].needs-access').waitFor();
+    await settingsPage.locator('.platform-icon[data-platform="rd"]').click();
+    await settingsPage.locator(".reddit-access-btn").waitFor({ state: "visible" });
+    assert.deepEqual(errors, [], "ungranted Reddit route has no page errors");
   } finally {
     await page.close();
     await settingsPage.evaluate(async ({ previous, keys }) => {
@@ -2097,7 +2092,7 @@ async function verifyRedditRuntime(context, extensionId) {
     await settingsPage.close();
     await context.unroute(routePattern, routeHandler);
   }
-  pass("packaged Reddit content script honors modes, timers, reload, and exact hosts");
+  pass("packaged Reddit script stays off until optional access is granted, and the popup offers the grant");
 }
 
 async function verifyYouTubeShortsRedirectFixture(context, extensionId) {

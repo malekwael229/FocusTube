@@ -12,7 +12,6 @@ const expectedPlatformScripts = [
   ["*://*.tiktok.com/*", "content-tt.js"],
   ["*://*.facebook.com/*", "content-fb.js"],
   ["*://*.linkedin.com/*", "content-li.js"],
-  ["*://reddit.com/*", "content-rd.js"],
 ];
 
 function assertPerPlatformContentScripts(manifest) {
@@ -24,7 +23,7 @@ function assertPerPlatformContentScripts(manifest) {
     );
 
     assert.ok(entry, `Missing content script entry for ${match}`);
-    assert.deepEqual(entry.matches, platformScript === "content-rd.js" ? ["*://reddit.com/*", "*://www.reddit.com/*"] : [match]);
+    assert.deepEqual(entry.matches, [match]);
     assert.deepEqual(entry.css, ["content.css"]);
     assert.deepEqual(entry.js, ["i18n.js", "content-common.js", platformScript]);
     assert.equal(entry.run_at, "document_start");
@@ -109,6 +108,123 @@ const checks = [
         read(".github/workflows/codeql.yml"),
         read(".github/workflows/scorecard.yml"),
       );
+    },
+  ],
+  [
+    "Reddit route classifier covers multireddits and custom feeds",
+    () => {
+      const Reddit = vm.runInNewContext(`${read("content-rd.js")}\nReddit;`, {
+        Site: { isRD: () => false },
+      });
+      const scope = (pathname) => Reddit.classifyRoute(pathname)?.scope || null;
+      assert.equal(scope("/r/pics"), "r/pics");
+      assert.equal(scope("/r/pics+funny/top"), "r/pics+funny");
+      assert.equal(scope("/user/some-name/m/news_feed"), "m/some-name/news_feed");
+      assert.equal(scope("/u/someone/m/feed/new"), "m/someone/feed");
+      assert.equal(scope("/user/someone/m/feed/comments"), null);
+      assert.equal(scope("/user/someone"), null);
+      assert.equal(scope("/r/pics+"), null);
+      assert.equal(scope("/r/pics/comments/abc/title"), null);
+    },
+  ],
+  [
+    "Facebook Reels shelves are found by feed item, not by heading text",
+    () => {
+      let links = [];
+      const Facebook = vm.runInNewContext(`${read("content-fb.js")}\nFacebook;`, {
+        Site: { isFB: () => false },
+        location: { href: "https://www.facebook.com/" },
+        URL,
+        document: { querySelectorAll: () => links },
+        Utils: {
+          pruneDetachedElements: () => {},
+          setInlineStyle: (el, prop, value) => { el.style[prop] = value; },
+          restoreInlineStyle: (el, prop) => { delete el.style[prop]; },
+        },
+      });
+      const item = () => ({ style: {}, querySelectorAll: () => [] });
+      const link = (href, owner) => ({ href, closest: () => owner });
+      const shelf = item();
+      const post = item();
+      const nav = item();
+      const shelfLinks = [1, 2, 3, 4].map((n) => link(`/reel/10${n}/?s=ifu`, shelf));
+      links = [
+        ...shelfLinks,
+        link("/reel/200/", post), link("/reel/200/?s=again", post), link("https://www.facebook.com/reel/200", post),
+        link("/reel/?s=tab", nav), link("/reel/?s=tab", nav), link("/reel/?s=tab", nav),
+        link("/reel/300/", null), link("/reel/301/", null), link("/reel/302/", null),
+      ];
+      Facebook.applyReelShelfHiding(true);
+      assert.equal(shelf.style.display, "none", "an item linking four Reels is hidden");
+      assert.equal(post.style.display, undefined, "one Reel linked three times is a post");
+      assert.equal(nav.style.display, undefined, "the Reels tab link is not a Reel");
+
+      links = links.filter((el) => !shelfLinks.slice(1).includes(el));
+      Facebook.applyReelShelfHiding(true);
+      assert.equal(shelf.style.display, undefined, "an item that stops being a shelf is restored");
+
+      links.push(...shelfLinks.slice(1));
+      Facebook.applyReelShelfHiding(true);
+      assert.equal(shelf.style.display, "none");
+      Facebook.applyReelShelfHiding(false);
+      assert.equal(shelf.style.display, undefined, "turning the setting off restores shelves");
+
+      const facebook = read("content-fb.js");
+      const disable = facebook.slice(facebook.indexOf("disable: function"), facebook.indexOf("scheduleMutationCheck: function"));
+      assert.match(disable, /restoreHiddenReelShelves\(\)/);
+    },
+  ],
+  [
+    "Instagram reads the Ad label as sponsored and LinkedIn feed visits are not counted",
+    () => {
+      const IGFeed = vm.runInNewContext(`${read("content-ig.js")}\nIGFeed;`, {
+        Site: { isIG: () => false },
+      });
+      assert.ok(IGFeed.SPONSORED_LABELS.includes("ad"));
+      assert.ok(IGFeed.SPONSORED_LABELS.includes("sponsored"));
+      const linkedin = read("content-li.js");
+      const overlay = linkedin.slice(
+        linkedin.indexOf("showFeedOverlay: function"),
+        linkedin.indexOf("findSidebarCard: function"),
+      );
+      assert.doesNotMatch(overlay, /logStat/);
+    },
+  ],
+  [
+    "content script event bus works without EventTarget (Firefox sandbox)",
+    () => {
+      const common = read("content-common.js");
+      assert.doesNotMatch(common, /new EventTarget\(/, "Firefox content scripts never call EventTarget listeners");
+      const bus = common.slice(common.indexOf("const FTEvents = {"), common.indexOf("// The options page labels modes"));
+      const errors = [];
+      const FTEvents = vm.runInNewContext(`${bus}\nFTEvents;`, { console: { error: (...args) => errors.push(args) } });
+      const calls = [];
+      FTEvents.addEventListener("ft-settings-ready", () => calls.push("once"), { once: true });
+      FTEvents.addEventListener("ft-settings-ready", () => { throw new Error("boom"); });
+      FTEvents.addEventListener("ft-settings-ready", () => calls.push("always"));
+      FTEvents.addEventListener("ft-settings-changed", () => calls.push("changed"));
+      FTEvents.dispatchEvent({ type: "ft-settings-ready" });
+      FTEvents.dispatchEvent({ type: "ft-settings-ready" });
+      FTEvents.dispatchEvent({ type: "ft-settings-changed" });
+      assert.deepEqual(calls, ["once", "always", "always", "changed"]);
+      assert.equal(errors.length, 2, "a failing listener is reported and the rest still run");
+    },
+  ],
+  [
+    "hidden platforms are allowed synchronously when restriction is off",
+    () => {
+      const common = read("content-common.js");
+      const prelude = common.slice(0, common.indexOf("function currentSitePlatform()"));
+      const context = { location: { hostname: "example.test" }, globalThis: {}, EventTarget };
+      vm.runInNewContext(
+        `${prelude}\nCONFIG.restrictHidden = false; CONFIG.popupVisibility = { yt: false };\n` +
+          "globalThis.result = withHiddenPlatformOverrides({ yt: 'strict', ig: 'warn' });\n" +
+          "CONFIG.restrictHidden = true; globalThis.restricted = withHiddenPlatformOverrides({ yt: 'strict' });",
+        context,
+      );
+      assert.equal(context.globalThis.result.yt, "allow");
+      assert.equal(context.globalThis.result.ig, "warn");
+      assert.equal(context.globalThis.restricted.yt, "strict");
     },
   ],
   [
@@ -1024,7 +1140,7 @@ const checks = [
       );
       assert.match(
         timerChange,
-        /CONFIG\.timer\.type\s*=\s*res\.ft_timer_type[\s\S]*document\.dispatchEvent\(/,
+        /CONFIG\.timer\.type\s*=\s*res\.ft_timer_type[\s\S]*FTEvents\.dispatchEvent\(/,
         "Timer state must dispatch only after both fields are reconciled",
       );
       assert.doesNotMatch(
@@ -1102,7 +1218,7 @@ const checks = [
     },
   ],
   [
-    "settings replacement and displayed version remain release-gated at 2.5.0",
+    "settings replacement and displayed version remain release-gated at 2.5.1",
     () => {
       const options = read("options.html");
       const changelog = read("CHANGELOG.md");
@@ -1110,10 +1226,10 @@ const checks = [
       const firefoxManifest = readJson("firefox-manifest.json");
 
       assert.match(read("options.js"), /action:\s*["']replaceSettings["']/);
-      assert.match(options, /Version\s+2\.5\.0/);
-      assert.match(options, /data-i18n-args='\["2\.5\.0"\]'/);
-      assert.equal(chromeManifest.version, "2.5.0");
-      assert.equal(firefoxManifest.version, "2.5.0");
+      assert.match(options, /Version\s+2\.5\.1/);
+      assert.match(options, /data-i18n-args='\["2\.5\.1"\]'/);
+      assert.equal(chromeManifest.version, "2.5.1");
+      assert.equal(firefoxManifest.version, "2.5.1");
       assert.match(
         changelog,
         /^##[ \t]+\[Unreleased\][ \t]*\r?$/m,
@@ -1135,8 +1251,8 @@ const checks = [
 
       assert.equal(chromeManifest.manifest_version, 3);
       assert.equal(firefoxManifest.manifest_version, 2);
-      assert.equal(chromeManifest.version, "2.5.0");
-      assert.equal(firefoxManifest.version, "2.5.0");
+      assert.equal(chromeManifest.version, "2.5.1");
+      assert.equal(firefoxManifest.version, "2.5.1");
       assert.deepEqual(chromeManifest.content_security_policy, {
         extension_pages: "script-src 'self'; object-src 'self';",
       });
@@ -1149,6 +1265,7 @@ const checks = [
         "storage",
         "alarms",
         "notifications",
+        "scripting",
       ]);
       const geckoSettings = firefoxManifest.browser_specific_settings.gecko;
       if (geckoSettings.data_collection_permissions) {
@@ -1159,12 +1276,117 @@ const checks = [
       }
       assertPerPlatformContentScripts(chromeManifest);
       assertPerPlatformContentScripts(firefoxManifest);
+      const redditOrigins = ["*://reddit.com/*", "*://www.reddit.com/*"];
+      assert.deepEqual(chromeManifest.optional_host_permissions, redditOrigins);
+      assert.deepEqual(firefoxManifest.optional_permissions, redditOrigins);
       for (const manifest of [chromeManifest, firefoxManifest]) {
-        const reddit = manifest.content_scripts.find((script) => script.js.includes("content-rd.js"));
-        assert.deepEqual(reddit.matches, ["*://reddit.com/*", "*://www.reddit.com/*"]);
+        assert.ok(!manifest.content_scripts.some((script) => script.js.includes("content-rd.js")));
+        const required = [...(manifest.host_permissions || []), ...manifest.permissions];
+        assert.ok(!required.some((entry) => /reddit/.test(entry)), "Reddit access must stay optional");
+        assert.equal(manifest.web_accessible_resources, undefined, "No extension files are exposed to web pages");
+        const youtube = manifest.content_scripts.find((script) => script.js.includes("content-yt.js"));
+        const facebook = manifest.content_scripts.find((script) => script.js.includes("content-fb.js"));
+        assert.deepEqual(youtube.exclude_matches, ["*://music.youtube.com/*", "*://studio.youtube.com/*"]);
+        assert.deepEqual(facebook.exclude_matches, ["*://business.facebook.com/*", "*://developers.facebook.com/*"]);
       }
+      assert.equal(chromeManifest.incognito, "not_allowed");
+      assert.equal(firefoxManifest.incognito, "not_allowed");
+      assert.doesNotMatch(
+        read("content-common.js"),
+        /sessionStorage|document\.dispatchEvent/,
+        "Content scripts keep their state and events off the page",
+      );
       assert.doesNotMatch(JSON.stringify(chromeManifest), /hide_ig_feed_reels/);
       assert.doesNotMatch(JSON.stringify(firefoxManifest), /hide_ig_feed_reels/);
+    },
+  ],
+  [
+    "background registers the Reddit script only while optional access is granted",
+    () => {
+      const source = read("background.js");
+      const load = ({ granted, firefox = false }) => {
+        const state = { granted, registered: [], calls: [], listeners: {} };
+        const noop = () => {};
+        const event = (name) => ({ addListener: (fn) => { state.listeners[name] = fn; } });
+        const chrome = {
+          runtime: {
+            id: "ft", lastError: null, onMessage: event("message"), onStartup: event("startup"),
+            getURL: (file) => "chrome-extension://ft/" + file, sendMessage: noop,
+          },
+          storage: {
+            local: { get: (keys, cb) => cb({}), set: (values, cb) => cb && cb(), remove: (keys, cb) => cb && cb() },
+            onChanged: event("storage"),
+          },
+          alarms: {
+            onAlarm: event("alarm"), create: (name, info, cb) => cb && cb(),
+            get: (name, cb) => cb(undefined), clear: (name, cb) => cb && cb(true),
+          },
+          tabs: { query: (query, cb) => cb([{ id: 7 }]) },
+          permissions: {
+            contains: (request, cb) => cb(state.granted),
+            onAdded: event("added"), onRemoved: event("removed"),
+          },
+          scripting: {
+            getRegisteredContentScripts: (filter, cb) =>
+              cb(state.registered.filter((script) => filter.ids.includes(script.id))),
+            registerContentScripts: (scripts, cb) => {
+              state.registered.push(...scripts);
+              state.calls.push(["register", scripts]);
+              cb();
+            },
+            unregisterContentScripts: (filter, cb) => {
+              state.registered = [];
+              state.calls.push(["unregister", filter.ids]);
+              cb();
+            },
+            insertCSS: (options, cb) => { state.calls.push(["css", options.target.tabId]); cb(); },
+            executeScript: (options, cb) => { state.calls.push(["exec", options.files]); cb(); },
+          },
+        };
+        const sandbox = { chrome, console: { error: noop, log: noop } };
+        if (firefox) {
+          sandbox.browser = {
+            contentScripts: {
+              register: (options) => {
+                state.calls.push(["firefox-register", options]);
+                return Promise.resolve({ unregister: () => state.calls.push(["firefox-unregister"]) });
+              },
+            },
+          };
+        }
+        vm.runInContext(source, vm.createContext(sandbox));
+        return state;
+      };
+      const files = ["i18n.js", "content-common.js", "content-rd.js"];
+
+      const denied = load({ granted: false });
+      assert.deepEqual(denied.calls.filter(([kind]) => kind === "register"), []);
+
+      const chromeGranted = load({ granted: true });
+      const registrations = chromeGranted.calls.filter(([kind]) => kind === "register");
+      assert.equal(registrations.length, 1);
+      const [script] = JSON.parse(JSON.stringify(registrations[0][1]));
+      assert.equal(script.id, "focustube-reddit");
+      assert.deepEqual(script.matches, ["*://reddit.com/*", "*://www.reddit.com/*"]);
+      assert.deepEqual(script.js, files);
+      assert.deepEqual(script.css, ["content.css"]);
+      assert.equal(script.runAt, "document_start");
+
+      chromeGranted.listeners.added({ origins: ["*://www.reddit.com/*"] });
+      assert.equal(chromeGranted.calls.filter(([kind]) => kind === "register").length, 1, "no duplicate registration");
+      assert.ok(chromeGranted.calls.some(([kind, value]) => kind === "exec" && JSON.stringify(value) === JSON.stringify(files)));
+      chromeGranted.listeners.added({ origins: ["*://*.youtube.com/*"] });
+      assert.equal(chromeGranted.calls.filter(([kind]) => kind === "exec").length, 1, "other origins are ignored");
+
+      chromeGranted.granted = false;
+      chromeGranted.listeners.removed({ origins: ["*://reddit.com/*"] });
+      assert.ok(chromeGranted.calls.some(([kind]) => kind === "unregister"));
+
+      const firefoxGranted = load({ granted: true, firefox: true });
+      const firefoxRegistrations = firefoxGranted.calls.filter(([kind]) => kind === "firefox-register");
+      assert.equal(firefoxRegistrations.length, 1);
+      assert.deepEqual(JSON.parse(JSON.stringify(firefoxRegistrations[0][1].js)), files.map((file) => ({ file })));
+      assert.ok(!firefoxGranted.calls.some(([kind]) => kind === "register"));
     },
   ],
 ];

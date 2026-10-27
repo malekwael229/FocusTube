@@ -3,7 +3,7 @@
     "message": "FocusTube - مانع المقاطع القصيرة والريلز وموجز المنشورات"
   },
   "extensionDescription": {
-    "message": "احجب YouTube Shorts وInstagram Reels وTikTok وFacebook Reels وموجز LinkedIn دون حجب المواقع."
+    "message": "احجب YouTube Shorts وInstagram Reels وTikTok وFacebook Reels وموجزات LinkedIn وReddit دون حجب المواقع."
   },
   "appName": {
     "message": "FocusTube"
@@ -91,9 +91,6 @@
   "platformConfigurationHint": {
     "message": "انقر على منصة لضبط وضع الحظر"
   },
-  "timerActiveModesLocked": {
-    "message": "المؤقت نشط: الأوضاع مقفلة"
-  },
   "focus": {
     "message": "تركيز"
   },
@@ -117,33 +114,6 @@
     "placeholders": {
       "count": {
         "content": "$1"
-      }
-    }
-  },
-  "timeSavedCompact": {
-    "message": "تم توفير $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
-  },
-  "minutesCompact": {
-    "message": "$COUNT$ د",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
-  },
-  "hoursMinutesCompact": {
-    "message": "$HOURS$ س $MINUTES$ د",
-    "placeholders": {
-      "hours": {
-        "content": "$1"
-      },
-      "minutes": {
-        "content": "$2"
       }
     }
   },
@@ -193,79 +163,8 @@
   "rateUs": {
     "message": "قيّمنا"
   },
-  "rateUsStar": {
-    "message": "⭐ قيّمنا"
-  },
-  "tutorialSkip": {
-    "message": "تخطي"
-  },
-  "tutorialNext": {
-    "message": "التالي"
-  },
-  "tutorialStart": {
-    "message": "بدء الجولة"
-  },
-  "tutorialFinish": {
-    "message": "إنهاء"
-  },
-  "tutorialProgress": {
-    "message": "$CURRENT$ من $TOTAL$",
-    "placeholders": {
-      "current": {
-        "content": "$1"
-      },
-      "total": {
-        "content": "$2"
-      }
-    }
-  },
-  "tutorialWelcomeTitle": {
-    "message": "مرحبًا بك في FocusTube!"
-  },
-  "tutorialWelcomeDescription": {
-    "message": "قم بجولة سريعة لتتعلم كيف تحافظ على تركيزك وتحظر المشتتات."
-  },
-  "tutorialPlatformsTitle": {
-    "message": "عناصر التحكم بالمنصات"
-  },
-  "tutorialPlatformsDescription": {
-    "message": "انقر على أيقونة أي منصة لتغيير وضع الحظر. يمكنك إدارة YouTube وFacebook وInstagram وTikTok وLinkedIn."
-  },
-  "tutorialModesTitle": {
-    "message": "أوضاع الحظر"
-  },
-  "tutorialModesDescription": {
-    "message": "تعرض كل منصة شارة: S (صارم) يحظر دائمًا، وW (تحذير) يسأل قبل العرض، وP (سلبي) يسمح بالوصول."
-  },
-  "tutorialFocusTitle": {
-    "message": "مفتاح التركيز"
-  },
-  "tutorialFocusDescription": {
-    "message": "شغّل وضع التركيز أو أوقفه بهذا المفتاح. عند تفعيله، تُطبّق قواعد الحظر التي اخترتها."
-  },
-  "tutorialTimerTitle": {
-    "message": "زر المؤقت"
-  },
-  "tutorialTimerDescription": {
-    "message": "ابدأ مؤقت تركيز أو استراحة. تفرض جلسات العمل الحظر الصارم، بينما تسمح الاستراحات بالتصفح الحر."
-  },
-  "tutorialSettingsTitle": {
-    "message": "الإعدادات"
-  },
-  "tutorialSettingsDescription": {
-    "message": "افتح الخيارات المتقدمة، وأدر العناصر المخفية، وخصّص تجربة التركيز."
-  },
-  "tutorialCompleteTitle": {
-    "message": "أصبحت جاهزًا!"
-  },
-  "tutorialCompleteDescription": {
-    "message": "أصبحت تعرف الأساسيات. حافظ على تركيزك وإنتاجيتك!"
-  },
   "totalBlocked": {
     "message": "إجمالي المحظور"
-  },
-  "timeSaved": {
-    "message": "الوقت الموفر"
   },
   "focusTimer": {
     "message": "مؤقت التركيز"
@@ -379,14 +278,6 @@
   "select": {
     "message": "اختيار"
   },
-  "importError": {
-    "message": "خطأ في استيراد البيانات: $ERROR$",
-    "placeholders": {
-      "error": {
-        "content": "$1"
-      }
-    }
-  },
   "importObjectRequired": {
     "message": "يجب أن يحتوي ملف الاستيراد على كائن JSON."
   },
@@ -441,7 +332,7 @@
     "message": "إخفاء \"الأكثر صلة\""
   },
   "hideMostRelevantShelfDescription": {
-    "message": "إخفاء قسم \"الأكثر صلة\" في الاشتراكات"
+    "message": "إخفاء قسم \"الأكثر صلة\" في الاشتراكات. يعمل عندما يكون الموقع باللغة الإنجليزية."
   },
   "hidePlayables": {
     "message": "إخفاء ألعاب Playables"
@@ -453,10 +344,10 @@
     "message": "إخفاء القصص"
   },
   "hideInstagramStoriesDescription": {
-    "message": "إخفاء شريط القصص في الأعلى"
+    "message": "إخفاء شريط القصص في الأعلى. يعمل عندما يكون الموقع باللغة الإنجليزية."
   },
   "hideFacebookStoriesDescription": {
-    "message": "إخفاء قسم القصص"
+    "message": "إخفاء قسم القصص. يعمل عندما يكون الموقع باللغة الإنجليزية."
   },
   "hideReelsButton": {
     "message": "إخفاء زر Reels"
@@ -465,18 +356,18 @@
     "message": "إخفاء تبويب Reels في التنقل"
   },
   "hideFacebookReelsDescription": {
-    "message": "إخفاء رابط Reels في الشريط الجانبي"
+    "message": "إخفاء رابط Reels ورفوف Reels في الخلاصة"
   },
   "hidePeopleYouMightKnow": {
     "message": "إخفاء أشخاص قد تعرفهم"
   },
   "hidePeopleYouMightKnowDescription": {
-    "message": "إخفاء اقتراحات الأشخاص في الموجز"
+    "message": "إخفاء اقتراحات الأشخاص في الموجز. يعمل بشكل أفضل عندما يكون الموقع باللغة الإنجليزية."
   },
   "hideSuggestedPosts": { "message": "إخفاء المنشورات المقترحة" },
-  "hideSuggestedPostsDescription": { "message": "إخفاء المنشورات المقترحة والمموّلة عند اكتشافها" },
+  "hideSuggestedPostsDescription": { "message": "إخفاء المنشورات المقترحة والمموّلة عند اكتشافها. يعمل عندما يكون الموقع باللغة الإنجليزية." },
   "hideNetworkActivity": { "message": "إخفاء نشاط شبكتك" },
-  "hideNetworkActivityDescription": { "message": "إخفاء المنشورات التي تظهر بسبب تفاعلات شبكتك" },
+  "hideNetworkActivityDescription": { "message": "إخفاء المنشورات التي تظهر بسبب تفاعلات شبكتك. يعمل عندما يكون الموقع باللغة الإنجليزية." },
   "hideFeed": {
     "message": "إخفاء الموجز"
   },
@@ -490,7 +381,7 @@
     "message": "إخفاء \"إضافة إلى موجزك\""
   },
   "hideAddToFeedDescription": {
-    "message": "إخفاء اقتراحات المتابعة"
+    "message": "إخفاء اقتراحات المتابعة. يعمل عندما يكون الموقع باللغة الإنجليزية."
   },
   "overlayStrictModeActive": {
     "message": "الوضع الصارم نشط"
@@ -568,6 +459,9 @@
   "notificationFocusComplete": {
     "message": "اكتملت جلسة التركيز."
   },
+  "redditAccessTitle": { "message": "مطلوب إذن الوصول إلى Reddit" },
+  "redditAccessDescription": { "message": "يحتاج FocusTube إلى إذن لقراءة reddit.com وتعديله قبل أن يتمكن من إخفاء خلاصات Reddit." },
+  "redditAccessGrant": { "message": "السماح بالوصول إلى Reddit" },
   "catalogLanguage": { "message": "ar" },
   "platformReddit": { "message": "ريديت" },
   "modeRedditStrictDescription": { "message": "إخفاء الموجز دون إظهار" },

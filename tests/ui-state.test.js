@@ -62,6 +62,9 @@ async function main() {
         assert.equal(await options.locator("#focusDuration").isDisabled(), disabled);
         assert.equal(await toggle().isDisabled(), disabled);
         assert.equal(await options.locator("#exportData").isDisabled(), false);
+        for (const id of ["#importData", "#resetSettings", "#clearData"]) {
+          assert.equal(await options.locator(id).isDisabled(), lock && enabled, `${id} follows the timer lock`);
+        }
         assert.equal(await options.locator(".mode-btn").first().isDisabled(), true);
         const before = await options.evaluate(() => chrome.storage.local.get("hide_yt_shorts_nav"));
         if (disabled) { await toggle().evaluate(input => input.click()); assert.deepEqual(await options.evaluate(() => chrome.storage.local.get("hide_yt_shorts_nav")), before); }
@@ -225,8 +228,14 @@ async function main() {
       for (const value of [60, 61, 0]) {
         await set({ ft_stats_blocked: value });
         assert.equal(await popup.locator("#statShorts").textContent(), `${value} blocked`);
-        assert.equal(await popup.locator("#statTime").textContent(), value === 60 ? "1h 0m saved" : value === 61 ? "1h 1m saved" : "0m saved");
+        assert.equal(await popup.locator("#statTime").count(), 0);
       }
+    });
+    for (const lock of [false, true]) await check(`popup work timer lock=${lock} covers the enable switch and Stop Timer`, async () => {
+      await fresh(); await set({ ft_timer_end: Date.now() + 600000, ft_timer_type: "work", ft_enabled: true, lockSettings: lock });
+      await popup.goto(`${base}/popup.html`); await popup.waitForTimeout(300);
+      assert.equal(await popup.locator("#enabledToggle").isDisabled(), lock);
+      assert.equal(await popup.locator("#timerBtn").isDisabled(), lock);
     });
     const dialogs = [];
     options.on("dialog", async dialog => { dialogs.push(dialog.message()); await dialog.accept(); });

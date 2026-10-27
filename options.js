@@ -279,18 +279,6 @@ document.addEventListener("DOMContentLoaded", function () {
       if (document.getElementById("totalBlocked"))
         document.getElementById("totalBlocked").textContent =
           items.ft_stats_blocked;
-      if (document.getElementById("timeSaved")) {
-        const minutes = items.ft_stats_blocked || 0;
-        let timeSavedText = msg("minutesCompact", ["0"]);
-        if (minutes < 60)
-          timeSavedText = msg("minutesCompact", [String(minutes)]);
-        else {
-          const h = Math.floor(minutes / 60);
-          const m = minutes % 60;
-          timeSavedText = msg("hoursMinutesCompact", [String(h), String(m)]);
-        }
-        document.getElementById("timeSaved").textContent = timeSavedText;
-      }
       const accentColor = items.accentColor || "#4facfe";
       applyAccentColor(accentColor);
       document.querySelectorAll(".color-preset").forEach((btn) => {
@@ -536,16 +524,22 @@ document.addEventListener("DOMContentLoaded", function () {
   const resetBtn = document.getElementById("resetSettings");
   if (resetBtn) {
     resetBtn.addEventListener("click", function () {
-      if (confirm(msg("resetConfirm"))) {
+      if (!confirm(msg("resetConfirm"))) return;
+      // Reset restores settings; the blocked count and review choices are kept.
+      chrome.storage.local.get(["ft_stats_blocked", "reviewDismissed", "reviewNextBlock"], (res) => {
+        const kept = chrome.runtime.lastError ? {} : res;
+        const settings = { ...defaultSettings, ft_stats_blocked: Number(kept.ft_stats_blocked) || 0 };
+        if (kept.reviewDismissed === true) settings.reviewDismissed = true;
+        if (typeof kept.reviewNextBlock === "number") settings.reviewNextBlock = kept.reviewNextBlock;
         chrome.runtime.sendMessage(
-          { action: "replaceSettings", settings: defaultSettings },
+          { action: "replaceSettings", settings },
           function (response) {
             if (!response || response.replaced !== true) return;
             loadSettings();
             location.reload();
           },
         );
-      }
+      });
     });
   }
   const clearBtn = document.getElementById("clearData");
@@ -642,7 +636,16 @@ document.addEventListener("DOMContentLoaded", function () {
       chrome.tabs.create({ url: "https://github.com/malekwael229/FocusTube" });
     });
   }
-  function disableToggles(disabled) {
+  // These stay usable while the extension is off, but each of them would end
+  // a running timer, so "Lock Settings During Timer" disables them too.
+  const timerEndingControls = new Set([
+    "ft_enabled",
+    "importData",
+    "importFile",
+    "resetSettings",
+    "clearData",
+  ]);
+  function disableToggles(disabled, locked = false) {
     const alwaysEnabled = new Set([
       "backBtn",
       "supportProject",
@@ -657,13 +660,20 @@ document.addEventListener("DOMContentLoaded", function () {
       "resetSettings",
       "clearData",
       "importFile",
+      "grantRedditAccess",
     ]);
     document
       .querySelectorAll(
         "input, select, button:not(.mode-btn):not(.platform-btn)",
       )
       .forEach((el) => {
-        if (alwaysEnabled.has(el.id)) return;
+        if (alwaysEnabled.has(el.id) && !(locked && timerEndingControls.has(el.id))) {
+          if (timerEndingControls.has(el.id)) {
+            el.disabled = false;
+            el.parentElement?.classList.remove("disabled-look");
+          }
+          return;
+        }
         el.disabled = disabled;
         if (el.parentElement) {
           if (disabled) el.parentElement.classList.add("disabled-look");
@@ -682,6 +692,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
   let disabledStateRevision = 0;
+  let timerEndRecheck = null;
   function updateDisabledState() {
     const revision = ++disabledStateRevision;
     chrome.storage.local.get(
@@ -691,19 +702,22 @@ document.addEventListener("DOMContentLoaded", function () {
         timerActive = Boolean(
           res.ft_timer_end && res.ft_timer_end > Date.now(),
         );
-        const settingsLocked = timerActive && res.lockSettings;
         const isEnabled = res.ft_enabled !== false;
+        const settingsLocked = Boolean(timerActive && res.lockSettings === true && isEnabled);
         const enabledToggle = document.getElementById("ft_enabled");
         if (enabledToggle) enabledToggle.checked = isEnabled;
         applyExtensionEnabledState(isEnabled);
         disableModeButtons(timerActive || !isEnabled);
-        disableToggles(settingsLocked || !isEnabled);
+        disableToggles(settingsLocked || !isEnabled, settingsLocked);
         document.body.classList.toggle("timer-active-locked", timerActive);
+        clearTimeout(timerEndRecheck);
+        if (timerActive) {
+          timerEndRecheck = setTimeout(updateDisabledState, res.ft_timer_end - Date.now() + 50);
+        }
       },
     );
   }
   updateDisabledState();
-  setInterval(updateDisabledState, 1000);
   document.addEventListener("ft-settings-detail-rendered", updateDisabledState);
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local") return;
@@ -725,17 +739,6 @@ document.addEventListener("DOMContentLoaded", function () {
       const blocked = changes.ft_stats_blocked.newValue || 0;
       if (document.getElementById("totalBlocked")) {
         document.getElementById("totalBlocked").textContent = blocked;
-      }
-      if (document.getElementById("timeSaved")) {
-        let timeSavedText = msg("minutesCompact", ["0"]);
-        if (blocked < 60)
-          timeSavedText = msg("minutesCompact", [String(blocked)]);
-        else {
-          const h = Math.floor(blocked / 60);
-          const m = blocked % 60;
-          timeSavedText = msg("hoursMinutesCompact", [String(h), String(m)]);
-        }
-        document.getElementById("timeSaved").textContent = timeSavedText;
       }
     }
     for (const [key, { newValue }] of Object.entries(changes)) {
@@ -1118,6 +1121,7 @@ function showPlatformDetail(id) {
       });
     });
   }
+  updateRedditAccessSection(id);
   const settingsSection = document.getElementById("visualHidingSection");
   const settingsContainer = document.getElementById("settingsToggles");
   if (platform.settings.length > 0 && settingsSection && settingsContainer) {
@@ -1185,6 +1189,25 @@ function showPlatformDetail(id) {
   }
   document.dispatchEvent(new Event("ft-settings-detail-rendered"));
 }
+const REDDIT_ORIGINS = ["*://reddit.com/*", "*://www.reddit.com/*"];
+function updateRedditAccessSection(id) {
+  const section = document.getElementById("redditAccessSection");
+  if (!section) return;
+  if (id !== "rd" || !chrome.permissions?.contains) {
+    section.hidden = true;
+    return;
+  }
+  chrome.permissions.contains({ origins: REDDIT_ORIGINS }, (granted) => {
+    void chrome.runtime.lastError;
+    section.hidden = Boolean(granted) || currentPlatform !== "rd";
+  });
+}
+document.getElementById("grantRedditAccess")?.addEventListener("click", () => {
+  chrome.permissions.request({ origins: REDDIT_ORIGINS }, () => {
+    void chrome.runtime.lastError;
+    updateRedditAccessSection(currentPlatform);
+  });
+});
 function updateBadge(id, isWorkTimer = false) {
   const badge = document.getElementById(`badge-${id}`);
   const btn = document.querySelector(`.platform-btn[data-platform="${id}"]`);

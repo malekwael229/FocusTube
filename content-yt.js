@@ -68,7 +68,7 @@ const YouTube = {
         this.applyInlineHiding();
       }
     });
-    document.addEventListener("ft-settings-changed", () => {
+    FTEvents.addEventListener("ft-settings-changed", () => {
       this.lastUrl = "";
       this.lastBlockState = null;
       this.runChecks();
@@ -181,14 +181,12 @@ const YouTube = {
         reason = "work timer";
         this.handleRouteBlocking(true, scope);
       } else if (
-        CONFIG.platformSettings.yt === "S" ||
         CONFIG.platformSettings.yt === "strict"
       ) {
         action = "strict";
         reason = "strict mode";
         this.handleRouteBlocking(true, scope);
       } else if (
-        CONFIG.platformSettings.yt === "W" ||
         CONFIG.platformSettings.yt === "warn"
       ) {
         action = "warn";
@@ -232,7 +230,7 @@ const YouTube = {
           this.runChecks();
         }, 1000);
       });
-    } else if (mode === "warn" || mode === "W") {
+    } else if (mode === "warn") {
       UI.create(
         "warn",
         "yt",
@@ -532,7 +530,7 @@ const YouTube = {
 };
 if (Site.isYT()) {
   if (window.__ftSettingsReady) YouTube.init();
-  else document.addEventListener("ft-settings-ready", () => YouTube.init());
+  else FTEvents.addEventListener("ft-settings-ready", () => YouTube.init());
   Utils.registerLifecycle({
     onDisable: () => YouTube.disable(),
     onEnable: () => {

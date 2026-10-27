@@ -3,7 +3,7 @@
     "message": "FocusTube - Pemblokir Shorts, Reels & Feed"
   },
   "extensionDescription": {
-    "message": "Blokir YouTube Shorts, Instagram Reels, TikTok, Facebook Reels, dan feed LinkedIn tanpa memblokir situsnya."
+    "message": "Blokir YouTube Shorts, Instagram Reels, TikTok, Facebook Reels, serta feed LinkedIn dan Reddit tanpa memblokir situsnya."
   },
   "appName": {
     "message": "FocusTube"
@@ -91,9 +91,6 @@
   "platformConfigurationHint": {
     "message": "Klik platform untuk mengatur mode pemblokiran"
   },
-  "timerActiveModesLocked": {
-    "message": "Pengatur waktu aktif: mode terkunci"
-  },
   "focus": {
     "message": "Fokus"
   },
@@ -117,33 +114,6 @@
     "placeholders": {
       "count": {
         "content": "$1"
-      }
-    }
-  },
-  "timeSavedCompact": {
-    "message": "$TIME$ dihemat",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
-  },
-  "minutesCompact": {
-    "message": "$COUNT$ mnt",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
-  },
-  "hoursMinutesCompact": {
-    "message": "$HOURS$ j $MINUTES$ mnt",
-    "placeholders": {
-      "hours": {
-        "content": "$1"
-      },
-      "minutes": {
-        "content": "$2"
       }
     }
   },
@@ -193,79 +163,8 @@
   "rateUs": {
     "message": "Beri Nilai"
   },
-  "rateUsStar": {
-    "message": "⭐ Beri Nilai"
-  },
-  "tutorialSkip": {
-    "message": "Lewati"
-  },
-  "tutorialNext": {
-    "message": "Berikutnya"
-  },
-  "tutorialStart": {
-    "message": "Mulai Tur"
-  },
-  "tutorialFinish": {
-    "message": "Selesai"
-  },
-  "tutorialProgress": {
-    "message": "$CURRENT$ dari $TOTAL$",
-    "placeholders": {
-      "current": {
-        "content": "$1"
-      },
-      "total": {
-        "content": "$2"
-      }
-    }
-  },
-  "tutorialWelcomeTitle": {
-    "message": "Selamat Datang di FocusTube!"
-  },
-  "tutorialWelcomeDescription": {
-    "message": "Ikuti tur singkat untuk mempelajari cara tetap fokus dan memblokir gangguan."
-  },
-  "tutorialPlatformsTitle": {
-    "message": "Kontrol Platform"
-  },
-  "tutorialPlatformsDescription": {
-    "message": "Klik ikon platform untuk mengubah mode pemblokirannya. Kelola YouTube, Facebook, Instagram, TikTok, dan LinkedIn."
-  },
-  "tutorialModesTitle": {
-    "message": "Mode Pemblokiran"
-  },
-  "tutorialModesDescription": {
-    "message": "Setiap platform menampilkan lencana: S (Ketat) selalu memblokir, W (Peringatan) bertanya sebelum menampilkan, dan P (Pasif) mengizinkan akses."
-  },
-  "tutorialFocusTitle": {
-    "message": "Tombol Fokus"
-  },
-  "tutorialFocusDescription": {
-    "message": "Aktifkan atau nonaktifkan Mode Fokus dengan tombol ini. Saat aktif, aturan pemblokiran yang Anda pilih akan berlaku."
-  },
-  "tutorialTimerTitle": {
-    "message": "Tombol Pengatur Waktu"
-  },
-  "tutorialTimerDescription": {
-    "message": "Mulai pengatur waktu fokus atau istirahat. Sesi kerja menerapkan pemblokiran ketat, sedangkan waktu istirahat memungkinkan penjelajahan bebas."
-  },
-  "tutorialSettingsTitle": {
-    "message": "Pengaturan"
-  },
-  "tutorialSettingsDescription": {
-    "message": "Akses opsi lanjutan, kelola elemen tersembunyi, dan sesuaikan pengalaman fokus Anda."
-  },
-  "tutorialCompleteTitle": {
-    "message": "Semua Siap!"
-  },
-  "tutorialCompleteDescription": {
-    "message": "Anda sudah memahami dasarnya. Tetap fokus dan produktif!"
-  },
   "totalBlocked": {
     "message": "Total Diblokir"
-  },
-  "timeSaved": {
-    "message": "Waktu Dihemat"
   },
   "focusTimer": {
     "message": "Pengatur Waktu Fokus"
@@ -379,14 +278,6 @@
   "select": {
     "message": "Pilih"
   },
-  "importError": {
-    "message": "Terjadi kesalahan saat mengimpor data: $ERROR$",
-    "placeholders": {
-      "error": {
-        "content": "$1"
-      }
-    }
-  },
   "importObjectRequired": {
     "message": "File impor harus berisi objek JSON."
   },
@@ -441,7 +332,7 @@
     "message": "Sembunyikan \"Paling Relevan\""
   },
   "hideMostRelevantShelfDescription": {
-    "message": "Sembunyikan bagian \"Paling relevan\" di Langganan"
+    "message": "Sembunyikan bagian \"Paling relevan\" di Langganan. Berfungsi saat situs menggunakan bahasa Inggris."
   },
   "hidePlayables": {
     "message": "Sembunyikan Playables"
@@ -453,10 +344,10 @@
     "message": "Sembunyikan Stories"
   },
   "hideInstagramStoriesDescription": {
-    "message": "Sembunyikan baki Stories di bagian atas"
+    "message": "Sembunyikan baki Stories di bagian atas. Berfungsi saat situs menggunakan bahasa Inggris."
   },
   "hideFacebookStoriesDescription": {
-    "message": "Sembunyikan bagian Stories"
+    "message": "Sembunyikan bagian Stories. Berfungsi saat situs menggunakan bahasa Inggris."
   },
   "hideReelsButton": {
     "message": "Sembunyikan Tombol Reels"
@@ -465,18 +356,18 @@
     "message": "Sembunyikan tab Reels di navigasi"
   },
   "hideFacebookReelsDescription": {
-    "message": "Sembunyikan tautan Reels di bilah samping"
+    "message": "Sembunyikan tautan Reels dan deretan Reels di feed"
   },
   "hidePeopleYouMightKnow": {
     "message": "Sembunyikan Orang yang Mungkin Anda Kenal"
   },
   "hidePeopleYouMightKnowDescription": {
-    "message": "Sembunyikan saran orang di beranda"
+    "message": "Sembunyikan saran orang di beranda. Berfungsi paling baik saat situs menggunakan bahasa Inggris."
   },
   "hideSuggestedPosts": { "message": "Sembunyikan postingan yang disarankan" },
-  "hideSuggestedPostsDescription": { "message": "Sembunyikan postingan yang disarankan dan bersponsor saat terdeteksi" },
+  "hideSuggestedPostsDescription": { "message": "Sembunyikan postingan yang disarankan dan bersponsor saat terdeteksi. Berfungsi saat situs menggunakan bahasa Inggris." },
   "hideNetworkActivity": { "message": "Sembunyikan aktivitas jaringan" },
-  "hideNetworkActivityDescription": { "message": "Sembunyikan postingan yang ditampilkan dari reaksi jaringan Anda" },
+  "hideNetworkActivityDescription": { "message": "Sembunyikan postingan yang ditampilkan dari reaksi jaringan Anda. Berfungsi saat situs menggunakan bahasa Inggris." },
   "hideFeed": {
     "message": "Sembunyikan Beranda"
   },
@@ -490,7 +381,7 @@
     "message": "Sembunyikan \"Tambahkan ke Beranda Anda\""
   },
   "hideAddToFeedDescription": {
-    "message": "Sembunyikan saran akun untuk diikuti"
+    "message": "Sembunyikan saran akun untuk diikuti. Berfungsi saat situs menggunakan bahasa Inggris."
   },
   "overlayStrictModeActive": {
     "message": "Mode Ketat Aktif"
@@ -568,6 +459,9 @@
   "notificationFocusComplete": {
     "message": "Sesi fokus selesai."
   },
+  "redditAccessTitle": { "message": "Akses Reddit diperlukan" },
+  "redditAccessDescription": { "message": "FocusTube memerlukan izin untuk membaca dan mengubah reddit.com sebelum dapat menyembunyikan feed Reddit." },
+  "redditAccessGrant": { "message": "Izinkan akses Reddit" },
   "catalogLanguage": { "message": "id" },
   "platformReddit": { "message": "Reddit" },
   "modeRedditStrictDescription": { "message": "Sembunyikan feed tanpa tampilkan" },
