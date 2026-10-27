@@ -68,7 +68,13 @@ async function main() {
    assert.equal(await article(), true, 'visible modal primary Reel timestamp resolves to its article'); checks++;
    await reject(() => { document.querySelector('#primary-time').closest('a').href = '/author/p/code/'; }, 'photo permalink is not treated as a Reel');
    await reject(() => { document.querySelector('#primary-time').closest('a').href = '/author/p/code/'; document.querySelector('nav').innerHTML = '<a href="/author/reel/code/"><time datetime="2026-01-01">nav</time></a>'; }, 'navigation timestamp links do not identify the modal post');
-   await reject(() => { document.querySelector('#modal').remove(); document.querySelector('main').insertAdjacentHTML('beforeend', '<article><a href="/author/reel/code/"><time datetime="2026-01-01">background</time></a></article>'); }, 'background articles are ignored');
+   await reset();
+   await page.evaluate(() => { document.querySelector('#modal').remove(); document.querySelector('main').insertAdjacentHTML('beforeend', '<article><a href="/author/reel/code/"><time datetime="2026-01-01">full page</time></a><video muted></video></article>'); });
+   assert.equal(await article(), true, 'full-page Reel opened directly at its /p/ permalink is detected'); checks++;
+   await reject(() => { document.querySelector('#modal').remove(); document.querySelector('main').insertAdjacentHTML('beforeend', '<article><a href="/author/p/code/"><time datetime="2026-01-01">full page photo</time></a></article>'); }, 'full-page photo permalink is not treated as a Reel');
+   await reject(() => { document.querySelector('#modal').remove(); document.querySelector('main').insertAdjacentHTML('beforeend', '<article><a href="/author/reel/other/"><time datetime="2026-01-01">other</time></a></article>'); }, 'full-page article for a different Reel is ignored');
+   await reject(() => { document.querySelector('#modal').remove(); document.querySelector('main').insertAdjacentHTML('beforeend', '<article><a href="/author/reel/code/"><time datetime="2026-01-01">one</time></a></article><article><a href="/author/reel/code/"><time datetime="2026-01-02">two</time></a></article>'); }, 'several full-page articles are ambiguous');
+   await reject(() => { document.querySelector('main').insertAdjacentHTML('beforeend', '<article><a href="/author/reel/code/"><time datetime="2026-01-01">background</time></a></article>'); document.querySelector('#primary-time').closest('a').href = '/author/p/code/'; }, 'with a modal open, background articles are ignored');
    await reject(() => { document.querySelector('#primary-time').closest('a').href = 'https://example.org/author/reel/code/'; }, 'off-origin timestamp permalink is ignored');
    await reject(() => { document.querySelector('#primary-time').closest('a').href = '/author/reel/other/'; }, 'different Reel identity is ignored');
    await reject(() => { document.querySelector('#primary-time').remove(); }, 'anchor without timestamp is ignored');
@@ -221,7 +227,7 @@ async function main() {
     const { page, change, close } = env;
     const waitBlocked = () => page.waitForFunction(() =>
      document.getElementById(UI.overlayId) && UI.persistenceObserver &&
-     UI.videoLockInterval && Utils.videoLockInterval);
+     Utils.videoLockInterval);
     await waitBlocked();
     // Exercise the shared teardown even if a stale scroll lock survives SPA entry.
     await page.evaluate(() => {
@@ -241,7 +247,7 @@ async function main() {
      return {
       exit, overlay: Boolean(document.getElementById(UI.overlayId)),
       persistence: Boolean(UI.persistenceObserver), needed: UI.isOverlayNeeded,
-      uiInterval: Boolean(UI.videoLockInterval), mediaInterval: Boolean(Utils.videoLockInterval),
+      mediaInterval: Boolean(Utils.videoLockInterval),
       bodyLock: document.body.classList.contains('ft-scroll-lock'),
       rootLock: document.documentElement.classList.contains('ft-scroll-lock'),
       trackedMedia: Utils._mediaElements.size,
@@ -267,7 +273,7 @@ async function main() {
    }
    assert.deepEqual(exits, ['break', '/', '/direct/inbox/'].map(exit => ({
     exit, overlay: false, persistence: false, needed: false,
-    uiInterval: false, mediaInterval: false, bodyLock: false, rootLock: false,
+    mediaInterval: false, bodyLock: false, rootLock: false,
     trackedMedia: 0, paused: true, muted: true, volume: 0.35, playCalls: 0,
    })), 'break and safe SPA exits remove warning state and restore paused media without play or unmute');
    checks += exits.length;
@@ -277,7 +283,7 @@ async function main() {
   // Captured markup plus explicit adversarial derivatives; no authenticated-site claim.
   const cases = [
    ['ig-followed', 'ig-followed-post', false], ['ig-control-only', 'ig-suggested-post', false],
-   ['ig-label', 'ig-suggested-post', true], ['ig-sponsored', 'ig-followed-post', true],
+   ['ig-label', 'ig-suggested-post', true], ['ig-sponsored', 'ig-followed-post', true], ['ig-ad', 'ig-followed-post', true],
    ['ig-unknown', 'ig-followed-post', false], ['ig-caption', 'ig-followed-post', false],
    ['ig-buttons', 'ig-followed-post', false], ['ig-linkshim', 'ig-followed-post', false],
    ['ig-ambiguous', 'ig-suggested-post', false],
@@ -299,6 +305,7 @@ async function main() {
      const insertLabel = text => { const span = document.createElement('span'); span.textContent = text; const section = post.querySelector('section'); section.before(span); };
      if (id === 'ig-label') insertLabel('Suggested for you');
      if (id === 'ig-sponsored') insertLabel('Sponsored');
+    if (id === 'ig-ad') insertLabel('Ad');
      if (id === 'ig-unknown') insertLabel('Unrecognized translated label');
      if (id === 'ig-caption') post.insertAdjacentHTML('beforeend', '<p>Suggested for you Sponsored</p>');
      if (id === 'ig-buttons') post.querySelector('section').insertAdjacentHTML('beforebegin', '<button>Sponsored</button><div role="button">Suggested for you</div>');
@@ -545,10 +552,7 @@ async function main() {
     await page.evaluate(() => history.replaceState({}, '', '/'));
 
     await change({ ft_enabled: true, ft_timer_end: Date.now() + 60000, ft_timer_type: 'work' });
-    await page.evaluate(() => {
-      sessionStorage.setItem('ft_kicked', 'true');
-      sessionStorage.setItem('ft_kicked_time', String(Date.now()));
-    });
+    await change({ ft_ig_kicked_at: Date.now() });
     await page.evaluate(() => history.replaceState({}, '', '/reels/work-without-popstate'));
     await page.waitForURL(url => url.pathname === '/', { timeout: 3000 });
     assert.equal(await page.evaluate(() => location.pathname), '/', 'IG redirects a naturally reached reels route during work even after a recent kick');

@@ -3,7 +3,7 @@
     "message": "FocusTube - Shorts, Reels ve Akış Engelleyici"
   },
   "extensionDescription": {
-    "message": "YouTube Shorts, Instagram Reels, TikTok, Facebook Reels ve LinkedIn akışlarını siteleri engellemeden engelleyin."
+    "message": "YouTube Shorts, Instagram Reels, TikTok, Facebook Reels, LinkedIn ve Reddit akışlarını siteleri engellemeden engelleyin."
   },
   "appName": {
     "message": "FocusTube"
@@ -91,9 +91,6 @@
   "platformConfigurationHint": {
     "message": "Engelleme modunu ayarlamak için bir platforma tıklayın"
   },
-  "timerActiveModesLocked": {
-    "message": "Zamanlayıcı Etkin: Modlar Kilitli"
-  },
   "focus": {
     "message": "Odaklanma"
   },
@@ -117,33 +114,6 @@
     "placeholders": {
       "count": {
         "content": "$1"
-      }
-    }
-  },
-  "timeSavedCompact": {
-    "message": "$TIME$ kazanıldı",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
-  },
-  "minutesCompact": {
-    "message": "$COUNT$ dk",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
-  },
-  "hoursMinutesCompact": {
-    "message": "$HOURS$ sa $MINUTES$ dk",
-    "placeholders": {
-      "hours": {
-        "content": "$1"
-      },
-      "minutes": {
-        "content": "$2"
       }
     }
   },
@@ -193,79 +163,8 @@
   "rateUs": {
     "message": "Bizi Değerlendirin"
   },
-  "rateUsStar": {
-    "message": "⭐ Bizi Değerlendirin"
-  },
-  "tutorialSkip": {
-    "message": "Atla"
-  },
-  "tutorialNext": {
-    "message": "İleri"
-  },
-  "tutorialStart": {
-    "message": "Turu Başlat"
-  },
-  "tutorialFinish": {
-    "message": "Bitir"
-  },
-  "tutorialProgress": {
-    "message": "$CURRENT$ / $TOTAL$",
-    "placeholders": {
-      "current": {
-        "content": "$1"
-      },
-      "total": {
-        "content": "$2"
-      }
-    }
-  },
-  "tutorialWelcomeTitle": {
-    "message": "FocusTube'a Hoş Geldiniz!"
-  },
-  "tutorialWelcomeDescription": {
-    "message": "Odaklanmayı sürdürmeyi ve dikkat dağıtıcıları engellemeyi öğrenmek için kısa bir tura çıkın."
-  },
-  "tutorialPlatformsTitle": {
-    "message": "Platform Denetimleri"
-  },
-  "tutorialPlatformsDescription": {
-    "message": "Engelleme modunu değiştirmek için herhangi bir platform simgesine tıklayın. YouTube, Facebook, Instagram, TikTok ve LinkedIn'i yönetin."
-  },
-  "tutorialModesTitle": {
-    "message": "Engelleme Modları"
-  },
-  "tutorialModesDescription": {
-    "message": "Her platform bir rozet gösterir: S (Katı) her zaman engeller, W (Uyarı) göstermeden önce sorar ve P (Pasif) erişime izin verir."
-  },
-  "tutorialFocusTitle": {
-    "message": "Odaklanma Düğmesi"
-  },
-  "tutorialFocusDescription": {
-    "message": "Bu düğmeyle Odaklanma Modunu açın veya kapatın. Etkinleştirildiğinde seçtiğiniz engelleme kuralları uygulanır."
-  },
-  "tutorialTimerTitle": {
-    "message": "Zamanlayıcı Düğmesi"
-  },
-  "tutorialTimerDescription": {
-    "message": "Odaklanma veya mola zamanlayıcısı başlatın. Çalışma oturumları katı engelleme uygular, molalar serbest gezinmeye izin verir."
-  },
-  "tutorialSettingsTitle": {
-    "message": "Ayarlar"
-  },
-  "tutorialSettingsDescription": {
-    "message": "Gelişmiş seçeneklere erişin, gizli öğeleri yönetin ve odaklanma deneyiminizi özelleştirin."
-  },
-  "tutorialCompleteTitle": {
-    "message": "Her Şey Hazır!"
-  },
-  "tutorialCompleteDescription": {
-    "message": "Artık temel bilgileri biliyorsunuz. Odaklanın ve üretken kalın!"
-  },
   "totalBlocked": {
     "message": "Toplam Engellenen"
-  },
-  "timeSaved": {
-    "message": "Kazanılan Süre"
   },
   "focusTimer": {
     "message": "Odaklanma Zamanlayıcısı"
@@ -379,14 +278,6 @@
   "select": {
     "message": "Seç"
   },
-  "importError": {
-    "message": "Veriler içe aktarılırken hata oluştu: $ERROR$",
-    "placeholders": {
-      "error": {
-        "content": "$1"
-      }
-    }
-  },
   "importObjectRequired": {
     "message": "İçe aktarma dosyası bir JSON nesnesi içermelidir."
   },
@@ -441,7 +332,7 @@
     "message": "\"En Alakalı\" Öğesini Gizle"
   },
   "hideMostRelevantShelfDescription": {
-    "message": "Abonelikler'deki \"En alakalı\" rafını gizle"
+    "message": "Abonelikler'deki \"En alakalı\" rafını gizle. Site İngilizce olduğunda çalışır."
   },
   "hidePlayables": {
     "message": "Playables’ı gizle"
@@ -453,10 +344,10 @@
     "message": "Hikâyeleri Gizle"
   },
   "hideInstagramStoriesDescription": {
-    "message": "Üstteki Hikâyeler tepsisini gizle"
+    "message": "Üstteki Hikâyeler tepsisini gizle. Site İngilizce olduğunda çalışır."
   },
   "hideFacebookStoriesDescription": {
-    "message": "Hikâyeler bölümünü gizle"
+    "message": "Hikâyeler bölümünü gizle. Site İngilizce olduğunda çalışır."
   },
   "hideReelsButton": {
     "message": "Reels Düğmesini Gizle"
@@ -465,18 +356,18 @@
     "message": "Gezinmedeki Reels sekmesini gizle"
   },
   "hideFacebookReelsDescription": {
-    "message": "Kenar çubuğundaki Reels bağlantısını gizle"
+    "message": "Reels bağlantısını ve akıştaki Reels raflarını gizle"
   },
   "hidePeopleYouMightKnow": {
     "message": "Tanıyor Olabileceğiniz Kişileri Gizle"
   },
   "hidePeopleYouMightKnowDescription": {
-    "message": "Akıştaki kişi önerilerini gizle"
+    "message": "Akıştaki kişi önerilerini gizle. Site İngilizce olduğunda en iyi şekilde çalışır."
   },
   "hideSuggestedPosts": { "message": "Önerilen gönderileri gizle" },
-  "hideSuggestedPostsDescription": { "message": "Algılandığında önerilen ve sponsorlu gönderileri gizle" },
+  "hideSuggestedPostsDescription": { "message": "Algılandığında önerilen ve sponsorlu gönderileri gizle. Site İngilizce olduğunda çalışır." },
   "hideNetworkActivity": { "message": "Ağ etkinliğini gizle" },
-  "hideNetworkActivityDescription": { "message": "Ağınızın etkileşimleriyle gösterilen gönderileri gizle" },
+  "hideNetworkActivityDescription": { "message": "Ağınızın etkileşimleriyle gösterilen gönderileri gizle. Site İngilizce olduğunda çalışır." },
   "hideFeed": {
     "message": "Akışı Gizle"
   },
@@ -490,7 +381,7 @@
     "message": "\"Akışına Ekle\" Seçeneğini Gizle"
   },
   "hideAddToFeedDescription": {
-    "message": "Takip önerilerini gizle"
+    "message": "Takip önerilerini gizle. Site İngilizce olduğunda çalışır."
   },
   "overlayStrictModeActive": {
     "message": "Katı Mod Etkin"
@@ -568,6 +459,9 @@
   "notificationFocusComplete": {
     "message": "Odaklanma oturumu tamamlandı."
   },
+  "redditAccessTitle": { "message": "Reddit erişimi gerekli" },
+  "redditAccessDescription": { "message": "FocusTube, Reddit akışlarını gizleyebilmek için reddit.com sitesini okuma ve değiştirme iznine ihtiyaç duyar." },
+  "redditAccessGrant": { "message": "Reddit erişimine izin ver" },
   "catalogLanguage": { "message": "tr" },
   "platformReddit": { "message": "Reddit" },
   "modeRedditStrictDescription": { "message": "Akışları açma olmadan gizle" },

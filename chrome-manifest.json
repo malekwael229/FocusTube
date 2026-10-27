@@ -1,22 +1,22 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extensionName__",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
+  "incognito": "not_allowed",
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self';"
   },
-  "permissions": ["storage", "alarms", "notifications"],
+  "permissions": ["storage", "alarms", "notifications", "scripting"],
   "host_permissions": [
     "*://*.youtube.com/*",
     "*://*.instagram.com/*",
     "*://*.tiktok.com/*",
     "*://*.facebook.com/*",
-    "*://*.linkedin.com/*",
-    "*://reddit.com/*",
-    "*://www.reddit.com/*"
+    "*://*.linkedin.com/*"
   ],
+  "optional_host_permissions": ["*://reddit.com/*", "*://www.reddit.com/*"],
   "action": {
     "default_popup": "popup.html"
   },
@@ -30,6 +30,7 @@
   "content_scripts": [
     {
       "matches": ["*://*.youtube.com/*"],
+      "exclude_matches": ["*://music.youtube.com/*", "*://studio.youtube.com/*"],
       "css": ["content.css"],
       "js": ["i18n.js", "content-common.js", "content-yt.js"],
       "run_at": "document_start"
@@ -48,6 +49,7 @@
     },
     {
       "matches": ["*://*.facebook.com/*"],
+      "exclude_matches": ["*://business.facebook.com/*", "*://developers.facebook.com/*"],
       "css": ["content.css"],
       "js": ["i18n.js", "content-common.js", "content-fb.js"],
       "run_at": "document_start"
@@ -57,26 +59,6 @@
       "css": ["content.css"],
       "js": ["i18n.js", "content-common.js", "content-li.js"],
       "run_at": "document_start"
-    },
-    {
-      "matches": ["*://reddit.com/*", "*://www.reddit.com/*"],
-      "css": ["content.css"],
-      "js": ["i18n.js", "content-common.js", "content-rd.js"],
-      "run_at": "document_start"
-    }
-  ],
-  "web_accessible_resources": [
-    {
-      "resources": ["icons/*.png"],
-      "matches": [
-        "*://*.youtube.com/*",
-        "*://*.instagram.com/*",
-        "*://*.tiktok.com/*",
-        "*://*.facebook.com/*",
-        "*://*.linkedin.com/*",
-        "*://reddit.com/*",
-        "*://www.reddit.com/*"
-      ]
     }
   ],
   "icons": {

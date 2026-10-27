@@ -27,7 +27,7 @@ const TikTok = {
         this.runChecks();
       }
     });
-    document.addEventListener("ft-settings-changed", () => this.runChecks());
+    FTEvents.addEventListener("ft-settings-changed", () => this.runChecks());
     this.runChecks();
   },
   ensureObservers: function () {
@@ -97,14 +97,12 @@ const TikTok = {
         reason = "work timer";
         this.block(true);
       } else if (
-        CONFIG.platformSettings.tt === "S" ||
         CONFIG.platformSettings.tt === "strict"
       ) {
         action = "strict";
         reason = "strict mode";
         this.block(true);
       } else if (
-        CONFIG.platformSettings.tt === "W" ||
         CONFIG.platformSettings.tt === "warn"
       ) {
         action = "warn";
@@ -189,7 +187,7 @@ const TikTok = {
 };
 if (Site.isTT()) {
   if (window.__ftSettingsReady) TikTok.init();
-  else document.addEventListener("ft-settings-ready", () => TikTok.init());
+  else FTEvents.addEventListener("ft-settings-ready", () => TikTok.init());
   Utils.registerLifecycle({
     onDisable: () => TikTok.disable(),
     onEnable: () => {

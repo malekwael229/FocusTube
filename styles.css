@@ -1144,9 +1144,6 @@ body.ft-hide-fb-reels-nav.ft-platform-fb a[href*="/reel/"],
 body.ft-hide-fb-reels-nav.ft-platform-fb a[aria-label*="Reel"] {
   display: none !important;
 }
-.tutorial-overlay {
-  display: none !important;
-}
 
 html[dir="rtl"] body {
   direction: rtl;
@@ -1180,50 +1177,9 @@ html[dir="rtl"] .platform-badge {
 .setting-info,
 .mode-info,
 .platform-setting-label,
-.tutorial-tooltip-content,
 .review-prompt p {
   min-width: 0;
   overflow-wrap: anywhere;
-}
-.tutorial-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: transparent;
-  transition: background var(--duration) var(--ease-out);
-  pointer-events: auto;
-}
-.tutorial-spotlight {
-  position: fixed;
-  border-radius: 14px;
-  background: transparent;
-  box-shadow:
-    0 0 0 4px var(--accent),
-    0 0 0 6px rgba(79, 172, 254, 0.3),
-    0 0 20px 4px rgba(79, 172, 254, 0.4),
-    0 0 0 9999px rgba(5, 8, 12, 0.85);
-  z-index: 10001;
-  pointer-events: none;
-  transition:
-    top var(--duration) var(--ease-out),
-    left var(--duration) var(--ease-out),
-    width var(--duration) var(--ease-out),
-    height var(--duration) var(--ease-out),
-    border-radius var(--duration) var(--ease-out),
-    opacity var(--duration) var(--ease-out);
-  animation: spotlightPulse 2s ease-in-out infinite;
-}
-body:not(.dark-mode) .tutorial-spotlight {
-  box-shadow:
-    0 0 0 4px var(--accent),
-    0 0 0 6px rgba(79, 172, 254, 0.3),
-    0 0 20px 4px rgba(79, 172, 254, 0.4),
-    0 0 0 9999px rgba(0, 0, 0, 0.7);
-}
-.tutorial-spotlight.hidden {
-  opacity: 0;
 }
 @keyframes spotlightPulse {
   0%,
@@ -1242,9 +1198,6 @@ body:not(.dark-mode) .tutorial-spotlight {
       0 0 0 9999px rgba(5, 8, 12, 0.85);
   }
 }
-body:not(.dark-mode) .tutorial-spotlight {
-  animation: spotlightPulseLight 2s ease-in-out infinite;
-}
 @keyframes spotlightPulseLight {
   0%,
   100% {
@@ -1261,160 +1214,6 @@ body:not(.dark-mode) .tutorial-spotlight {
       0 0 30px 8px rgba(79, 172, 254, 0.3),
       0 0 0 9999px rgba(0, 0, 0, 0.7);
   }
-}
-.tutorial-highlight {
-  position: relative;
-  z-index: 10001 !important;
-  pointer-events: auto !important;
-}
-.tutorial-tooltip {
-  --arrow-x: 50%;
-  --arrow-y: 50%;
-  position: absolute;
-  background: var(--panel);
-  border-radius: 16px;
-  padding: 20px;
-  max-width: 240px;
-  min-width: 200px;
-  box-shadow:
-    0 20px 40px rgba(0, 0, 0, 0.3),
-    0 0 0 1px var(--border);
-  z-index: 10002;
-  pointer-events: auto;
-  opacity: 0;
-  transform: translateY(10px);
-  transition:
-    opacity var(--duration) var(--ease-out),
-    transform var(--duration) var(--ease-out);
-}
-.tutorial-tooltip.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-.tutorial-tooltip::before {
-  content: "";
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-right: none;
-  border-bottom: none;
-  z-index: -1;
-}
-.tutorial-tooltip.arrow-top::before {
-  top: -7px;
-  left: var(--arrow-x);
-  transform: translateX(-50%) rotate(45deg);
-}
-.tutorial-tooltip.arrow-bottom::before {
-  bottom: -7px;
-  left: var(--arrow-x);
-  transform: translateX(-50%) rotate(-135deg);
-}
-.tutorial-tooltip.arrow-left::before {
-  left: -7px;
-  top: var(--arrow-y);
-  transform: translateY(-50%) rotate(-45deg);
-}
-.tutorial-tooltip.arrow-right::before {
-  right: -7px;
-  top: var(--arrow-y);
-  transform: translateY(-50%) rotate(135deg);
-}
-.tutorial-tooltip.no-arrow::before {
-  display: none;
-}
-.tutorial-tooltip.modal-style {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.95);
-  max-width: 260px;
-  text-align: center;
-  opacity: 0;
-}
-.tutorial-tooltip.modal-style.visible {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
-}
-.tutorial-tooltip.modal-style::before {
-  display: none;
-}
-.tutorial-tooltip-content {
-  margin-bottom: 16px;
-}
-.tutorial-tooltip .tutorial-icon {
-  font-size: 48px;
-  margin-bottom: 12px;
-  color: var(--accent);
-  line-height: 1;
-}
-.tutorial-tooltip .tutorial-icon img {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-}
-.tutorial-tooltip .tutorial-icon.success {
-  color: #22c55e;
-}
-.tutorial-tooltip .tutorial-checkmark {
-  width: 56px;
-  height: 56px;
-  stroke: #22c55e;
-  stroke-width: 2.5;
-}
-.tutorial-tooltip h4 {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0 0 8px 0;
-  font-family: var(--font-display);
-}
-.tutorial-tooltip p {
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--muted);
-  margin: 0;
-}
-.tutorial-tooltip-actions {
-  display: flex;
-  gap: 10px;
-}
-.tutorial-tooltip .tutorial-btn-skip,
-.tutorial-tooltip .tutorial-btn-next {
-  flex: 1;
-  padding: 10px 14px;
-  font-size: 13px;
-  font-weight: 700;
-  border: none;
-  border-radius: 99px;
-  cursor: pointer;
-  transition: transform var(--duration-fast) var(--ease-out);
-}
-.tutorial-tooltip .tutorial-btn-skip {
-  background: var(--panel-2);
-  color: var(--text);
-  border: 1px solid var(--border);
-}
-.tutorial-tooltip .tutorial-btn-skip:hover {
-  transform: translateY(-1px);
-}
-.tutorial-tooltip .tutorial-btn-next {
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
-  color: #111;
-}
-.tutorial-tooltip .tutorial-btn-next:hover {
-  transform: translateY(-1px) scale(1.02);
-}
-.tutorial-tooltip-progress {
-  margin-top: 12px;
-  text-align: center;
-}
-.tutorial-tooltip-progress span {
-  font-size: 11px;
-  color: var(--muted);
-  font-weight: 600;
 }
 .platform-grid {
   display: flex;
@@ -1508,6 +1307,43 @@ body:not(.dark-mode) .tutorial-spotlight {
 }
 .platform-icon.mode-allow .platform-mode-badge {
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+}
+.platform-icon.needs-access .platform-mode-badge {
+  background: var(--muted);
+}
+.reddit-access {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--accent-soft);
+}
+.reddit-access-title {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.reddit-access-desc {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+.reddit-access-btn {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: #ffffff;
+  cursor: pointer;
+}
+.reddit-access-btn:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
 }
 .platform-icon svg {
   width: 26px;
@@ -1619,6 +1455,10 @@ body:not(.dark-mode) .reddit-mark img {
   50% {
     box-shadow: 0 0 0 8px rgba(255, 107, 107, 0);
   }
+}
+.timer-btn-compact:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 .timer-btn-compact.break-btn {
   background: linear-gradient(135deg, var(--warn) 0%, #fda085 100%);

@@ -3,7 +3,7 @@
     "message": "FocusTube - Bloqueur de Shorts, Reels et fils"
   },
   "extensionDescription": {
-    "message": "Bloquez YouTube Shorts, Instagram Reels, TikTok, Facebook Reels et les fils LinkedIn sans bloquer les sites."
+    "message": "Bloquez YouTube Shorts, Instagram Reels, TikTok, Facebook Reels et les fils LinkedIn et Reddit sans bloquer les sites."
   },
   "appName": {
     "message": "FocusTube"
@@ -91,9 +91,6 @@
   "platformConfigurationHint": {
     "message": "Cliquez sur une plateforme pour configurer le mode de blocage"
   },
-  "timerActiveModesLocked": {
-    "message": "Minuteur actif : modes verrouillés"
-  },
   "focus": {
     "message": "Concentration"
   },
@@ -117,33 +114,6 @@
     "placeholders": {
       "count": {
         "content": "$1"
-      }
-    }
-  },
-  "timeSavedCompact": {
-    "message": "$TIME$ économisé",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
-  },
-  "minutesCompact": {
-    "message": "$COUNT$ min",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
-  },
-  "hoursMinutesCompact": {
-    "message": "$HOURS$ h $MINUTES$ min",
-    "placeholders": {
-      "hours": {
-        "content": "$1"
-      },
-      "minutes": {
-        "content": "$2"
       }
     }
   },
@@ -193,79 +163,8 @@
   "rateUs": {
     "message": "Évaluez-nous"
   },
-  "rateUsStar": {
-    "message": "⭐ Évaluez-nous"
-  },
-  "tutorialSkip": {
-    "message": "Ignorer"
-  },
-  "tutorialNext": {
-    "message": "Suivant"
-  },
-  "tutorialStart": {
-    "message": "Commencer la visite"
-  },
-  "tutorialFinish": {
-    "message": "Terminer"
-  },
-  "tutorialProgress": {
-    "message": "$CURRENT$ sur $TOTAL$",
-    "placeholders": {
-      "current": {
-        "content": "$1"
-      },
-      "total": {
-        "content": "$2"
-      }
-    }
-  },
-  "tutorialWelcomeTitle": {
-    "message": "Bienvenue dans FocusTube !"
-  },
-  "tutorialWelcomeDescription": {
-    "message": "Faites une visite rapide pour apprendre à rester concentré et à bloquer les distractions."
-  },
-  "tutorialPlatformsTitle": {
-    "message": "Contrôles des plateformes"
-  },
-  "tutorialPlatformsDescription": {
-    "message": "Cliquez sur l’icône d’une plateforme pour changer son mode de blocage. Gérez YouTube, Facebook, Instagram, TikTok et LinkedIn."
-  },
-  "tutorialModesTitle": {
-    "message": "Modes de blocage"
-  },
-  "tutorialModesDescription": {
-    "message": "Chaque plateforme affiche un badge : S (Strict) bloque toujours, W (Avertissement) demande avant d’afficher et P (Passif) autorise l’accès."
-  },
-  "tutorialFocusTitle": {
-    "message": "Interrupteur de concentration"
-  },
-  "tutorialFocusDescription": {
-    "message": "Activez ou désactivez le mode concentration avec cet interrupteur. Lorsqu’il est activé, les règles de blocage sélectionnées s’appliquent."
-  },
-  "tutorialTimerTitle": {
-    "message": "Bouton du minuteur"
-  },
-  "tutorialTimerDescription": {
-    "message": "Démarrez un minuteur de concentration ou de pause. Les sessions de travail imposent le blocage strict, tandis que les pauses permettent de naviguer librement."
-  },
-  "tutorialSettingsTitle": {
-    "message": "Paramètres"
-  },
-  "tutorialSettingsDescription": {
-    "message": "Accédez aux options avancées, gérez les éléments masqués et personnalisez votre expérience de concentration."
-  },
-  "tutorialCompleteTitle": {
-    "message": "Tout est prêt !"
-  },
-  "tutorialCompleteDescription": {
-    "message": "Vous connaissez les bases. Restez concentré et productif !"
-  },
   "totalBlocked": {
     "message": "Total bloqué"
-  },
-  "timeSaved": {
-    "message": "Temps économisé"
   },
   "focusTimer": {
     "message": "Minuteur de concentration"
@@ -379,14 +278,6 @@
   "select": {
     "message": "Sélectionner"
   },
-  "importError": {
-    "message": "Erreur lors de l’importation des données : $ERROR$",
-    "placeholders": {
-      "error": {
-        "content": "$1"
-      }
-    }
-  },
   "importObjectRequired": {
     "message": "Le fichier d’importation doit contenir un objet JSON."
   },
@@ -441,7 +332,7 @@
     "message": "Masquer « Les plus pertinentes »"
   },
   "hideMostRelevantShelfDescription": {
-    "message": "Masquer la section « Les plus pertinentes » dans Abonnements"
+    "message": "Masquer la section « Les plus pertinentes » dans Abonnements. Fonctionne lorsque le site est en anglais."
   },
   "hidePlayables": {
     "message": "Masquer les Playables"
@@ -453,10 +344,10 @@
     "message": "Masquer les Stories"
   },
   "hideInstagramStoriesDescription": {
-    "message": "Masquer le bandeau Stories en haut"
+    "message": "Masquer le bandeau Stories en haut. Fonctionne lorsque le site est en anglais."
   },
   "hideFacebookStoriesDescription": {
-    "message": "Masquer la section Stories"
+    "message": "Masquer la section Stories. Fonctionne lorsque le site est en anglais."
   },
   "hideReelsButton": {
     "message": "Masquer le bouton Reels"
@@ -465,18 +356,18 @@
     "message": "Masquer l’onglet Reels dans la navigation"
   },
   "hideFacebookReelsDescription": {
-    "message": "Masquer le lien Reels dans la barre latérale"
+    "message": "Masquer le lien Reels et les rangées de Reels du fil"
   },
   "hidePeopleYouMightKnow": {
     "message": "Masquer les personnes que vous connaissez peut-être"
   },
   "hidePeopleYouMightKnowDescription": {
-    "message": "Masquer les suggestions de personnes dans le fil"
+    "message": "Masquer les suggestions de personnes dans le fil. Fonctionne mieux lorsque le site est en anglais."
   },
   "hideSuggestedPosts": { "message": "Masquer les publications suggérées" },
-  "hideSuggestedPostsDescription": { "message": "Masquer les publications suggérées et sponsorisées lorsqu’elles sont détectées" },
+  "hideSuggestedPostsDescription": { "message": "Masquer les publications suggérées et sponsorisées lorsqu’elles sont détectées. Fonctionne lorsque le site est en anglais." },
   "hideNetworkActivity": { "message": "Masquer l’activité de votre réseau" },
-  "hideNetworkActivityDescription": { "message": "Masquer les publications affichées par les réactions de votre réseau" },
+  "hideNetworkActivityDescription": { "message": "Masquer les publications affichées par les réactions de votre réseau. Fonctionne lorsque le site est en anglais." },
   "hideFeed": {
     "message": "Masquer le fil"
   },
@@ -490,7 +381,7 @@
     "message": "Masquer « Ajouter à votre fil »"
   },
   "hideAddToFeedDescription": {
-    "message": "Masquer les suggestions de comptes à suivre"
+    "message": "Masquer les suggestions de comptes à suivre. Fonctionne lorsque le site est en anglais."
   },
   "overlayStrictModeActive": {
     "message": "Mode strict actif"
@@ -568,6 +459,9 @@
   "notificationFocusComplete": {
     "message": "Session de concentration terminée."
   },
+  "redditAccessTitle": { "message": "Accès à Reddit requis" },
+  "redditAccessDescription": { "message": "FocusTube a besoin de l’autorisation de lire et de modifier reddit.com pour pouvoir masquer les fils Reddit." },
+  "redditAccessGrant": { "message": "Autoriser l’accès à Reddit" },
   "catalogLanguage": { "message": "fr" },
   "platformReddit": { "message": "Reddit" },
   "modeRedditStrictDescription": { "message": "Masquer les fils sans affichage" },

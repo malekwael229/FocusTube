@@ -4,6 +4,31 @@ All notable project-facing changes are documented here.
 
 ## [Unreleased]
 
+Prepared as 2.5.1. Not released yet.
+
+- Made Reddit access optional. Updating no longer asks for new permissions, so Chrome and Edge stop disabling FocusTube and Firefox stops holding the update.
+- Reddit feed controls start after you choose **Allow Reddit access** in the Reddit settings of the popup or options page. Open Reddit tabs pick up the change without a reload.
+- Added the `scripting` permission on Chromium to load the Reddit script after access is granted. It shows no install warning.
+- Added the Reddit access strings to all eight languages.
+- **Lock Settings During Timer** now holds while a timer runs: Stop Timer, turning FocusTube off, Import, Reset and Clear All are refused, and the popup's mode and hiding switches are disabled. The background enforces the stop, disable and replace actions too, not just the UI.
+- Instagram Reels opened directly at a `/p/` link, not only from a DM, are now blocked in Strict mode and during work timers. Photo and carousel posts stay available.
+- Hiding a platform from the popup with **Restrict hidden platforms** off now takes effect right away on open tabs. Before, a mode change could briefly apply the stored mode first.
+- Removed the "time saved" figure. It showed the blocked count as minutes, which was not a real measurement. The blocked count stays.
+- **Reset** now keeps the blocked count and your answer to the review prompt. **Clear All** still removes everything.
+- The review prompt now appears when you open the popup, not while you are using it.
+- Instagram's suggested-posts filter now hides ads labeled "Ad". Before, it only caught "Sponsored" and "Paid partnership", which Instagram's web feed no longer shows.
+- **Hide Reels Button** on Facebook now also hides the Reels shelf in the home feed and pauses its previews. The shelf is found by its Reel links, so it works in any language.
+- Opening the LinkedIn home page no longer counts as a block. The hidden-feed overlay shows on every visit, so the count went up each time you opened LinkedIn.
+- Reddit multireddits (`/r/a+b`) and custom feeds (`/user/<name>/m/<feed>`) are now covered. Instagram search under `/explore/search/` is no longer blocked.
+- Settings that detect English page text now say so: the YouTube "Most relevant" shelf, Instagram and Facebook Stories, suggested posts, LinkedIn network activity and suggested follows. People You May Know notes it works best in English.
+- Lighter page work: Facebook and Instagram batch their DOM checks, LinkedIn searches the sidebar at most once a second, and the options page no longer polls storage every second.
+- Content scripts no longer write to the site's `sessionStorage` or send events on the page's `document`. Extension icons are no longer exposed to web pages.
+- FocusTube no longer runs on YouTube Music, YouTube Studio, Meta Business Suite or Facebook for Developers. On Chromium it can no longer be enabled in incognito windows, matching Firefox private windows.
+- Timer notifications replace each other instead of piling up. Timer start requests are clamped to valid durations and types, and a failed stats read is retried.
+- Removed the unused onboarding tutorial and 26 unused strings from each language.
+- CI now runs on Node 22.
+- The extension description and website now mention Reddit.
+
 ## [2.5.0] - 2026-10-01
 
 - Added current Reddit feed controls for Home, News, Popular, All, and community listings while preserving individual posts, comments, and search. Strict and work timers hide supported feeds; Warn permits a page-local reveal; Passive and breaks leave them visible. Feed navigation keeps the old listing hidden until Reddit replaces it. Legacy Reddit is outside this change. The new host access is limited to `reddit.com` and `www.reddit.com` relative to 2.4.1.

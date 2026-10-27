@@ -35,8 +35,13 @@ const Reddit = {
     if (parts.length === 1 && lower[0] === "news") {
       return { scope: "news", path: "/news" };
     }
+    if ((lower[0] === "user" || lower[0] === "u") && lower[2] === "m" && (parts.length === 4 || parts.length === 5)) {
+      if (!/^[A-Za-z0-9_-]+$/.test(parts[1]) || !/^[A-Za-z0-9_]+$/.test(parts[3])) return null;
+      if (parts.length === 5 && !this.sorts.has(lower[4])) return null;
+      return { scope: `m/${lower[1]}/${lower[3]}`, path: `/${lower.join("/")}` };
+    }
     if (lower[0] !== "r" || parts.length < 2 || parts.length > 3) return null;
-    if (!/^[A-Za-z0-9_]+$/.test(parts[1])) return null;
+    if (!/^[A-Za-z0-9_]+(?:\+[A-Za-z0-9_]+)*$/.test(parts[1])) return null;
     if (parts.length === 3 && !this.sorts.has(lower[2])) return null;
     return {
       scope: `r/${lower[1]}`,
@@ -348,8 +353,8 @@ if (Site.isRD()) {
     onDisable: () => Reddit.stop(),
     onEnable: () => Utils.ensureBody(() => Reddit.start()),
   });
-  document.addEventListener("ft-settings-changed", () => Reddit.apply());
+  FTEvents.addEventListener("ft-settings-changed", () => Reddit.apply());
   window.addEventListener("popstate", () => Reddit.apply());
   if (window.__ftSettingsReady) Utils.ensureBody(() => Reddit.start());
-  else document.addEventListener("ft-settings-ready", () => Utils.ensureBody(() => Reddit.start()), { once: true });
+  else FTEvents.addEventListener("ft-settings-ready", () => Utils.ensureBody(() => Reddit.start()), { once: true });
 }

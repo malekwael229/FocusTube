@@ -46,7 +46,7 @@ const LinkedIn = {
         this.runChecks();
       }
     });
-    document.addEventListener("ft-settings-changed", () => this.runChecks());
+    FTEvents.addEventListener("ft-settings-changed", () => this.runChecks());
     this.runChecks();
   },
   ensureObservers: function () {
@@ -59,6 +59,8 @@ const LinkedIn = {
     }
   },
   disable: function () {
+    clearTimeout(this.sidebarRetry);
+    this.sidebarRetry = null;
     if (this.pendingTimeout !== null) {
       clearTimeout(this.pendingTimeout);
       this.pendingTimeout = null;
@@ -249,7 +251,8 @@ const LinkedIn = {
     );
     overlay.dataset.ftMode = mode;
     feedColumn.appendChild(overlay);
-    Utils.logStat();
+    // Not counted as a block: the overlay shows on every visit to the home
+    // page, so counting it would turn the stat into a visit counter.
   },
   findSidebarCard: function (headerText) {
     const normalizeText = (str) =>
@@ -330,7 +333,18 @@ const LinkedIn = {
       ) {
         this.removeOverlayAndRestore(existing);
       }
-      if (!document.getElementById(this.addFeedOverlayId)) {
+      const now = Date.now();
+      const sinceSearch = now - (this.lastSidebarSearch || 0);
+      if (!document.getElementById(this.addFeedOverlayId) && sinceSearch < 1000) {
+        // Throttled: look once more after the window so a late card still gets hidden.
+        if (!this.sidebarRetry) {
+          this.sidebarRetry = setTimeout(() => {
+            this.sidebarRetry = null;
+            this.runChecks();
+          }, 1000 - sinceSearch);
+        }
+      } else if (!document.getElementById(this.addFeedOverlayId)) {
+        this.lastSidebarSearch = now;
         const addFeedCard = this.findSidebarCard("Add to your feed");
         if (addFeedCard && !addFeedCard.dataset.ftDismissed) {
           Utils.setInlineStyle(addFeedCard, "position", "relative");
@@ -1065,7 +1079,7 @@ const LIFeed = {
 };
 if (Site.isLI()) {
   if (window.__ftSettingsReady) LinkedIn.init();
-  else document.addEventListener("ft-settings-ready", () => LinkedIn.init());
+  else FTEvents.addEventListener("ft-settings-ready", () => LinkedIn.init());
   Utils.registerLifecycle({
     onDisable: () => LinkedIn.disable(),
     onEnable: () => {

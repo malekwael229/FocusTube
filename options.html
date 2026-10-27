@@ -372,7 +372,7 @@
 
       .stats-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
         gap: 0.75rem;
         margin-bottom: 1.5rem;
       }
@@ -1269,6 +1269,17 @@
           </div>
           <div class="section-label" data-i18n="blockingMode">Blocking Mode</div>
           <div id="modeButtons"></div>
+          <div id="redditAccessSection" hidden style="margin-top: 1.25rem">
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-label" data-i18n="redditAccessTitle">Reddit access needed</div>
+                <div class="setting-desc" data-i18n="redditAccessDescription">
+                  FocusTube needs permission to read and change reddit.com before it can hide Reddit feeds.
+                </div>
+              </div>
+              <button class="action-btn" id="grantRedditAccess" type="button" data-i18n="redditAccessGrant">Allow Reddit access</button>
+            </div>
+          </div>
           <div
             id="visualHidingSection"
             style="display: none; margin-top: 1.25rem"
@@ -1297,25 +1308,6 @@
             <div>
               <div class="stat-value" id="totalBlocked">0</div>
               <div class="stat-label" data-i18n="totalBlocked">Total Blocked</div>
-            </div>
-          </div>
-          <div class="card stat-card">
-            <div class="stat-icon">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-            </div>
-            <div>
-              <div class="stat-value" id="timeSaved">0m</div>
-              <div class="stat-label" data-i18n="timeSaved">Time Saved</div>
             </div>
           </div>
         </div>
@@ -1635,7 +1627,7 @@
 
         <section class="card about-section">
           <h2 class="about-title" data-i18n="appName">FocusTube</h2>
-          <p class="about-version" data-i18n="aboutVersion" data-i18n-args='["2.5.0"]'>Version 2.5.0</p>
+          <p class="about-version" data-i18n="aboutVersion" data-i18n-args='["2.5.1"]'>Version 2.5.1</p>
           <div class="about-btns">
             <button class="action-btn" id="starRepo">
               <svg

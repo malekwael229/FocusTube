@@ -6,6 +6,9 @@ const Facebook = {
   storiesOverlayId: "ft-fb-stories-overlay",
   hiddenNavContainers: new Set(),
   hiddenPeopleContainers: new Set(),
+  hiddenReelShelves: new Set(),
+  // A feed item linking to this many different Reels is a Reels shelf, not a post.
+  MIN_SHELF_REELS: 3,
   init: function () {
     if (this.initialized) return;
     Utils.ensureBody(() => this._start());
@@ -33,7 +36,7 @@ const Facebook = {
         this.runChecks();
       }
     });
-    document.addEventListener("ft-settings-changed", () => this.runChecks());
+    FTEvents.addEventListener("ft-settings-changed", () => this.runChecks());
     this.runChecks();
   },
   ensureObservers: function () {
@@ -57,6 +60,7 @@ const Facebook = {
     this.applyReelsHiding(false);
     this.applyPeopleYouMightKnowHiding(false);
     this.restoreHiddenNavContainers();
+    this.restoreHiddenReelShelves();
     if (this.observer) this.observer.disconnect();
     this.observer = null;
   },
@@ -65,7 +69,7 @@ const Facebook = {
     this.pendingMutationTask = setTimeout(() => {
       this.pendingMutationTask = null;
       this.runChecks();
-    }, 0);
+    }, 250);
   },
   enable: function () {
     if (!document.body) return;
@@ -223,6 +227,7 @@ const Facebook = {
   },
   applyReelsHiding: function (shouldHide) {
     Utils.pruneDetachedElements(this.hiddenNavContainers);
+    this.applyReelShelfHiding(shouldHide);
     if (!shouldHide) {
       this.restoreHiddenNavContainers();
       return;
@@ -239,6 +244,62 @@ const Facebook = {
         this.hiddenNavContainers.add(container);
       });
     });
+  },
+  reelId: function (link) {
+    try {
+      const match = /^\/reel\/(\d+)/.exec(new URL(link.href, location.href).pathname);
+      return match ? match[1] : null;
+    } catch {
+      return null;
+    }
+  },
+  findReelShelves: function () {
+    // Feed items carry aria-posinset. Grouping Reel links by that item finds
+    // the in-feed Reels carousel without reading its localized heading.
+    const reelsByItem = new Map();
+    document.querySelectorAll('a[href*="/reel/"]').forEach((link) => {
+      const id = this.reelId(link);
+      if (!id) return;
+      const item = link.closest("[aria-posinset]");
+      if (!item) return;
+      if (!reelsByItem.has(item)) reelsByItem.set(item, new Set());
+      reelsByItem.get(item).add(id);
+    });
+    return [...reelsByItem]
+      .filter(([, ids]) => ids.size >= this.MIN_SHELF_REELS)
+      .map(([item]) => item);
+  },
+  applyReelShelfHiding: function (shouldHide) {
+    Utils.pruneDetachedElements(this.hiddenReelShelves);
+    if (!shouldHide) {
+      this.restoreHiddenReelShelves();
+      return;
+    }
+    const shelves = new Set(this.findReelShelves());
+    // A hidden item that no longer holds a shelf gets its display back.
+    this.hiddenReelShelves.forEach((el) => {
+      if (shelves.has(el)) return;
+      Utils.restoreInlineStyle(el, "display");
+      this.hiddenReelShelves.delete(el);
+    });
+    shelves.forEach((shelf) => {
+      if (this.hiddenReelShelves.has(shelf)) return;
+      shelf.querySelectorAll("video").forEach((video) => {
+        try {
+          video.pause();
+        } catch {
+          // A player being torn down cannot be paused; it is hidden anyway.
+        }
+      });
+      Utils.setInlineStyle(shelf, "display", "none", "important");
+      this.hiddenReelShelves.add(shelf);
+    });
+  },
+  restoreHiddenReelShelves: function () {
+    this.hiddenReelShelves.forEach((el) =>
+      Utils.restoreInlineStyle(el, "display"),
+    );
+    this.hiddenReelShelves.clear();
   },
   findReelsNavContainer: function (target) {
     if (!target) return null;
@@ -397,7 +458,7 @@ const Facebook = {
 };
 if (Site.isFB()) {
   if (window.__ftSettingsReady) Facebook.init();
-  else document.addEventListener("ft-settings-ready", () => Facebook.init());
+  else FTEvents.addEventListener("ft-settings-ready", () => Facebook.init());
   Utils.registerLifecycle({
     onDisable: () => Facebook.disable(),
     onEnable: () => {

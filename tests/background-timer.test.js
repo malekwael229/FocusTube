@@ -878,6 +878,7 @@ test("stopTimer reports timer_changed when the timer changes during validation",
   );
 
   const responses = fake.sendRuntimeMessage({ action: "stopTimer" });
+  deferred.shift()(); // settings-lock read
   deferred.shift()();
   fake.externalStorage({ ft_timer_end: 2_000_000, ft_timer_type: "break" });
   while (deferred.length) deferred.shift()();
@@ -891,6 +892,52 @@ const extensionPageSender = {
   id: "test-extension",
   url: "chrome-extension://test-extension/options.html",
 };
+
+test("settings lock refuses stop, disable, and replacement while a timer runs", () => {
+  const fake = loadBackground(
+    { lockSettings: true, ft_timer_end: 1_000_500, ft_timer_type: "work" },
+    { now: 1_000_000 },
+  );
+  const json = (value) => JSON.stringify(value);
+
+  assert.equal(json(fake.sendRuntimeMessage({ action: "stopTimer" })), json([{ stopped: false, error: "settings_locked" }]));
+  assert.equal(
+    json(fake.sendRuntimeMessage({ action: "setExtensionEnabled", enabled: false })),
+    json([{ enabled: true, error: "settings_locked" }]),
+  );
+  assert.equal(
+    json(fake.sendRuntimeMessage({ action: "replaceSettings", settings: { next: true } }, extensionPageSender)),
+    json([{ replaced: false, error: "settings_locked" }]),
+  );
+  assert.equal(fake.state.ft_timer_end, 1_000_500);
+  assert.equal(fake.state.ft_enabled, undefined);
+  assert.equal(fake.state.next, undefined);
+  assert.equal(fake.activeAlarms.has("focusTubeTimer"), true);
+});
+
+test("settings lock stays out of the way when it is off or no timer runs", () => {
+  const json = (value) => JSON.stringify(value);
+  const lockOff = loadBackground(
+    { lockSettings: false, ft_timer_end: 1_000_500, ft_timer_type: "work" },
+    { now: 1_000_000 },
+  );
+  assert.equal(json(lockOff.sendRuntimeMessage({ action: "stopTimer" })), json([{ stopped: true }]));
+
+  const idle = loadBackground({ lockSettings: true }, { now: 1_000_000 });
+  assert.equal(
+    json(idle.sendRuntimeMessage({ action: "setExtensionEnabled", enabled: false })),
+    json([{ enabled: false }]),
+  );
+
+  const enabling = loadBackground(
+    { lockSettings: true, ft_enabled: false, ft_timer_end: 1_000_500, ft_timer_type: "work" },
+    { now: 1_000_000 },
+  );
+  assert.equal(
+    json(enabling.sendRuntimeMessage({ action: "setExtensionEnabled", enabled: true })),
+    json([{ enabled: true }]),
+  );
+});
 
 test("disabling settings removes timer state and ended marker before clearing the primary alarm", () => {
   const fake = loadBackground({
@@ -1286,7 +1333,10 @@ test("replacement rollback with no prior alarm clears the current alarm after st
     failSets: 1,
     failAlarmClear: true,
     onGet(keys, api) {
-      if (Array.isArray(keys) && keys.includes("ft_timer_end") && ++timerReads > 1) {
+      if (
+        Array.isArray(keys) && keys.includes("ft_timer_end") &&
+        !keys.includes("lockSettings") && ++timerReads > 1
+      ) {
         api.result.ft_timer_end = 999_000;
         api.result.ft_timer_type = "work";
         api.activeAlarms.set("focusTubeTimer", { when: 1_001_000 });
@@ -1384,6 +1434,7 @@ function loadPlatform(platform) {
   const context = {
     console,
     document,
+    FTEvents: { addEventListener: (name, listener) => listeners.push({ name, listener }) },
     window: { __ftSettingsReady: false, location: { pathname: "/" }, addEventListener() {} },
     location: { hostname: `${platform}.example.test` },
     MutationObserver: FakeMutationObserver,
@@ -1572,10 +1623,12 @@ test("manifest and package allowlists remain narrow and internally consistent", 
   const chrome = readJson("chrome-manifest.json");
   const firefox = readJson("firefox-manifest.json");
   const { runtimeFiles } = require(path.join(root, "scripts", "prepare-test-builds.js"));
-  assert.deepEqual(chrome.permissions.sort(), ["alarms", "notifications", "storage"]);
+  assert.deepEqual(chrome.permissions.sort(), ["alarms", "notifications", "scripting", "storage"]);
+  assert.deepEqual(chrome.optional_host_permissions, ["*://reddit.com/*", "*://www.reddit.com/*"]);
+  assert.deepEqual(firefox.optional_permissions, ["*://reddit.com/*", "*://www.reddit.com/*"]);
   assert.deepEqual(firefox.permissions.sort(), [
     "*://*.facebook.com/*", "*://*.instagram.com/*", "*://*.linkedin.com/*",
-    "*://*.tiktok.com/*", "*://*.youtube.com/*", "*://reddit.com/*", "*://www.reddit.com/*", "alarms", "notifications", "storage",
+    "*://*.tiktok.com/*", "*://*.youtube.com/*", "alarms", "notifications", "storage",
   ]);
   assert.deepEqual(runtimeFiles, [
     "background.js", "i18n.js", "content-common.js", "content-fb.js", "content-ig.js", "content-li.js", "content-rd.js",

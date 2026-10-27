@@ -103,6 +103,28 @@ function timerIsEnabled(snapshot) {
   return snapshot && snapshot.enabled !== false;
 }
 
+function isSettingsLocked(values) {
+  return Boolean(
+    values &&
+      values.lockSettings === true &&
+      values.ft_enabled !== false &&
+      Number(values.ft_timer_end) > Date.now(),
+  );
+}
+
+// Lets an operation through only when "Lock Settings During Timer" is not
+// holding a running timer. A failed read counts as locked.
+function unlessSettingsLocked(onLocked, proceed) {
+  chrome.storage.local.get(["lockSettings", "ft_enabled", "ft_timer_end"], (values) => {
+    if (chrome.runtime.lastError) {
+      consumeRuntimeError();
+      return onLocked("storage_read_failed");
+    }
+    if (isSettingsLocked(values)) return onLocked("settings_locked");
+    proceed();
+  });
+}
+
 function isPlainSafeObject(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const prototype = Object.getPrototypeOf(value);
@@ -571,8 +593,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return false;
   }
   if (request.action === "startTimer") {
-    const duration = parseInt(request.duration) || 25;
-    const type = request.type || "work";
+    const duration = Math.min(180, Math.max(1, parseInt(request.duration) || 25));
+    const type = request.type === "break" ? "break" : "work";
     const endTime = Date.now() + duration * 60 * 1000;
     enqueueTimerOperation((done) => {
       readTimerTransactionSnapshot((snapshot) => {
@@ -612,7 +634,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "setExtensionEnabled") {
     const enabled = request.enabled !== false;
     enqueueTimerOperation((done) => {
-      chrome.storage.local.get(["ft_enabled"], (before) => {
+      const run = () => chrome.storage.local.get(["ft_enabled"], (before) => {
         if (chrome.runtime.lastError) {
           consumeRuntimeError();
           sendResponse({ enabled: false, error: "storage_read_failed" });
@@ -668,6 +690,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           });
         });
       });
+      if (enabled) return run();
+      unlessSettingsLocked((error) => {
+        sendResponse({ enabled: true, error });
+        done();
+      }, run);
     });
     return true;
   }
@@ -687,7 +714,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "replaceSettings") {
     if (!(request.settings && typeof request.settings === "object")) return false;
     if (!isExtensionPageSender(sender) || !isPlainSafeObject(request.settings)) return false;
-    enqueueTimerOperation((done) => {
+    enqueueTimerOperation((done) => unlessSettingsLocked((error) => {
+      sendResponse({ replaced: false, error });
+      done();
+    }, () => {
       settingsReplacementActive = true;
       if (request.settings.ft_enabled === false) {
         request.settings = { ...request.settings };
@@ -716,11 +746,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           replaceSettingsTransaction(existing, alarmResult.alarm, request.settings, sendResponse, done);
         });
       });
-    });
+    }));
     return true;
   }
   if (request.action === "stopTimer") {
-    enqueueTimerOperation((done) => {
+    enqueueTimerOperation((done) => unlessSettingsLocked((error) => {
+      sendResponse({ stopped: false, error });
+      done();
+    }, () => {
       readTimerTransactionSnapshot((transaction) => {
         if (!transaction.ok) {
           sendResponse({ stopped: false, error: "storage_read_failed" });
@@ -766,11 +799,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           });
         });
       });
-    });
+    }));
     return true;
   }
   if (request.action === "startBreak") {
-    const duration = parseInt(request.duration) || 5;
+    const duration = Math.min(60, Math.max(1, parseInt(request.duration) || 5));
     const endTime = Date.now() + duration * 60 * 1000;
     enqueueTimerOperation((done) => {
       readTimerTransactionSnapshot((snapshot) => {
@@ -816,8 +849,10 @@ function flushStatIncrements() {
   statIncrementPending = 0;
   chrome.storage.local.get(["ft_stats_blocked"], (res) => {
     if (chrome.runtime.lastError) {
+      consumeRuntimeError();
       statIncrementPending += delta;
       statIncrementActive = false;
+      setTimeout(flushStatIncrements, 1000);
       return;
     }
     const current = Number(res.ft_stats_blocked) || 0;
@@ -853,7 +888,7 @@ function notifyIfCurrent(expected, title, msg, callback, suppress = false) {
         if (!stillCurrent.ok) return callback(false, "storage");
         if (!stillCurrent.matches) return callback(false, "changed");
         chrome.notifications.create(
-          "focustube-" + Date.now(),
+          "focustube-timer",
           {
             type: "basic",
             iconUrl: chrome.runtime.getURL("icons/icon128.png"),
@@ -1101,6 +1136,125 @@ const onAlarmHandler = (alarm) => {
   });
 };
 chrome.alarms.onAlarm.addListener(onAlarmHandler);
+
+const REDDIT_ORIGINS = ["*://reddit.com/*", "*://www.reddit.com/*"];
+const REDDIT_SCRIPT_ID = "focustube-reddit";
+const REDDIT_SCRIPT_FILES = ["i18n.js", "content-common.js", "content-rd.js"];
+let firefoxRedditRegistration = null;
+
+function firefoxContentScripts() {
+  return globalThis.browser?.contentScripts?.register ? globalThis.browser.contentScripts : null;
+}
+
+function hasRedditAccess(callback) {
+  if (!chrome.permissions?.contains) return callback(false);
+  chrome.permissions.contains({ origins: REDDIT_ORIGINS }, (granted) => {
+    consumeRuntimeError();
+    callback(Boolean(granted));
+  });
+}
+
+function registerChromeRedditScript() {
+  const scripting = chrome.scripting;
+  if (!scripting?.getRegisteredContentScripts) return;
+  scripting.getRegisteredContentScripts({ ids: [REDDIT_SCRIPT_ID] }, (scripts) => {
+    consumeRuntimeError();
+    if (Array.isArray(scripts) && scripts.length) return;
+    scripting.registerContentScripts([{
+      id: REDDIT_SCRIPT_ID,
+      matches: REDDIT_ORIGINS,
+      css: ["content.css"],
+      js: REDDIT_SCRIPT_FILES,
+      runAt: "document_start",
+    }], () => {
+      if (chrome.runtime.lastError) console.error("FocusTube Reddit script registration failed");
+      consumeRuntimeError();
+    });
+  });
+}
+
+function unregisterChromeRedditScript() {
+  const scripting = chrome.scripting;
+  if (!scripting?.getRegisteredContentScripts) return;
+  scripting.getRegisteredContentScripts({ ids: [REDDIT_SCRIPT_ID] }, (scripts) => {
+    consumeRuntimeError();
+    if (!Array.isArray(scripts) || !scripts.length) return;
+    scripting.unregisterContentScripts({ ids: [REDDIT_SCRIPT_ID] }, () => consumeRuntimeError());
+  });
+}
+
+function registerFirefoxRedditScript(api) {
+  if (firefoxRedditRegistration) return;
+  firefoxRedditRegistration = api.register({
+    matches: REDDIT_ORIGINS,
+    css: [{ file: "content.css" }],
+    js: REDDIT_SCRIPT_FILES.map((file) => ({ file })),
+    runAt: "document_start",
+  }).catch(() => {
+    console.error("FocusTube Reddit script registration failed");
+    firefoxRedditRegistration = null;
+    return null;
+  });
+}
+
+function unregisterFirefoxRedditScript() {
+  const pending = firefoxRedditRegistration;
+  firefoxRedditRegistration = null;
+  if (!pending) return;
+  pending.then((registration) => registration?.unregister()).catch(() => {});
+}
+
+function syncRedditContentScript() {
+  hasRedditAccess((granted) => {
+    const firefoxApi = firefoxContentScripts();
+    if (firefoxApi) {
+      if (granted) registerFirefoxRedditScript(firefoxApi);
+      else unregisterFirefoxRedditScript();
+      return;
+    }
+    if (granted) registerChromeRedditScript();
+    else unregisterChromeRedditScript();
+  });
+}
+
+function injectIntoOpenRedditTabs() {
+  chrome.tabs.query({ url: REDDIT_ORIGINS }, (tabs) => {
+    consumeRuntimeError();
+    (Array.isArray(tabs) ? tabs : []).forEach((tab) => {
+      if (tab?.id === undefined) return;
+      if (!firefoxContentScripts() && chrome.scripting?.executeScript) {
+        const target = { tabId: tab.id };
+        chrome.scripting.insertCSS({ target, files: ["content.css"] }, () => consumeRuntimeError());
+        chrome.scripting.executeScript({ target, files: REDDIT_SCRIPT_FILES }, () => consumeRuntimeError());
+        return;
+      }
+      if (!chrome.tabs.executeScript) return;
+      chrome.tabs.insertCSS(tab.id, { file: "content.css" }, () => consumeRuntimeError());
+      const runFile = (index) => {
+        if (index >= REDDIT_SCRIPT_FILES.length) return;
+        chrome.tabs.executeScript(tab.id, { file: REDDIT_SCRIPT_FILES[index] }, () => {
+          if (chrome.runtime.lastError) return consumeRuntimeError();
+          runFile(index + 1);
+        });
+      };
+      runFile(0);
+    });
+  });
+}
+
+const touchesReddit = (permissions) =>
+  Array.isArray(permissions?.origins) &&
+  permissions.origins.some((origin) => /(^|\.|\/)reddit\.com\//.test(origin));
+
+chrome.permissions?.onAdded?.addListener((permissions) => {
+  if (!touchesReddit(permissions)) return;
+  syncRedditContentScript();
+  injectIntoOpenRedditTabs();
+});
+chrome.permissions?.onRemoved?.addListener((permissions) => {
+  if (touchesReddit(permissions)) syncRedditContentScript();
+});
+syncRedditContentScript();
 chrome.runtime.onStartup.addListener(() => {
   enqueueTimerOperation((done) => reconcilePersistedTimer(true, done));
 });

@@ -8,7 +8,6 @@ const toggleLockedLabel = document.getElementById("toggleLockedLabel");
 const githubBtn = document.getElementById("githubBtn");
 const settingsBtn = document.getElementById("settingsBtn");
 const statShorts = document.getElementById("statShorts");
-const statTime = document.getElementById("statTime");
 const mainView = document.getElementById("main-view");
 const platformDetail = document.getElementById("platform-detail");
 const backBtn = document.getElementById("backBtn");
@@ -27,6 +26,7 @@ let settings = { ...defaultPlatformSettings };
 let currentPlatform = null;
 let timerInterval = null;
 let timerEndTime = null;
+let settingsLocked = false;
 const PLATFORM_NAMES = {
   yt: msg("platformYoutube"),
   ig: msg("platformInstagram"),
@@ -55,7 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
       "popup_visible_fb",
       "popup_visible_li",
       "popup_visible_rd",
-      "tutorialCompleted",
       "showBreakButton",
       "autoStartBreaks",
       "ft_work_session_ended",
@@ -83,8 +82,12 @@ document.addEventListener("DOMContentLoaded", () => {
         startTimerDisplay(result.ft_timer_end, result.ft_timer_type);
       }
       setupEventListeners();
+      refreshSettingsLock();
       chrome.storage.onChanged.addListener((changes, area) => {
         if (area === "local") {
+          if (changes.lockSettings || changes.ft_timer_end || changes.ft_enabled) {
+            refreshSettingsLock();
+          }
           if (changes.platformSettings) {
             settings = {
               ...defaultPlatformSettings,
@@ -132,13 +135,44 @@ document.addEventListener("DOMContentLoaded", () => {
           if (changes.ft_stats_blocked) {
             const blocked = changes.ft_stats_blocked.newValue || 0;
             updateStats(blocked);
-            checkReviewPrompt(blocked);
+            // A prompt that is already open keeps its count current or hides;
+            // a new prompt waits until the popup is opened again.
+            if (document.getElementById("review-prompt")?.classList.contains("show")) {
+              checkReviewPrompt(blocked);
+            }
           }
         }
       });
     },
   );
 });
+function refreshSettingsLock() {
+  chrome.storage.local.get(["lockSettings", "ft_enabled", "ft_timer_end"], (res) => {
+    if (chrome.runtime.lastError) {
+      void chrome.runtime.lastError;
+      return;
+    }
+    settingsLocked =
+      res.lockSettings === true &&
+      res.ft_enabled !== false &&
+      Number(res.ft_timer_end) > Date.now();
+    applySettingsLock();
+  });
+}
+function applySettingsLock() {
+  document.body.classList.toggle("settings-locked", settingsLocked);
+  timerBtn.disabled = settingsLocked && timerBtn.classList.contains("active");
+  timerBtn.title = timerBtn.disabled ? msg("lockSettingsDuringTimerDescription") : "";
+  if (enabledToggle) enabledToggle.disabled = settingsLocked;
+  document.querySelectorAll(".mini-switch input").forEach((input) => {
+    input.disabled = settingsLocked;
+  });
+  if (settingsLocked) {
+    document.querySelectorAll(".mode-option-detail").forEach((option) => {
+      option.classList.add("disabled");
+    });
+  }
+}
 function applyExtensionEnabledState(isEnabled) {
   document.body.classList.toggle("ft-disabled", !isEnabled);
   if (extensionStatusLabel)
@@ -149,16 +183,6 @@ function applyExtensionEnabledState(isEnabled) {
 function updateStats(blocked) {
   if (statShorts)
     statShorts.textContent = msg("blockedCount", [String(blocked)]);
-  if (statTime) {
-    const mins = blocked || 0;
-    const time = mins < 60
-      ? msg("minutesCompact", [String(mins)])
-      : msg(
-          "hoursMinutesCompact",
-          [String(Math.floor(mins / 60)), String(mins % 60)],
-        );
-    statTime.textContent = msg("timeSavedCompact", [time]);
-  }
 }
 function applyTheme(isDark) {
   document.body.classList.toggle("dark-mode", Boolean(isDark));
@@ -205,6 +229,14 @@ function updateAllPlatformIcons() {
       const mode = isWorkTimer ? "strict" : settings[platform] || "strict";
       updatePlatformIcon(icon, mode);
     });
+    const redditIcon = document.querySelector('.platform-icon[data-platform="rd"]');
+    if (redditIcon) {
+      hasRedditAccess((granted) => {
+        redditIcon.classList.toggle("needs-access", !granted);
+        const badge = redditIcon.querySelector(".platform-mode-badge");
+        if (badge && !granted) badge.textContent = "!";
+      });
+    }
     if (currentPlatform) {
       const mode = isWorkTimer ? "strict" : settings[currentPlatform];
       document.querySelectorAll(".mode-option-detail").forEach((option) => {
@@ -357,7 +389,7 @@ function showPlatformDetail(platform) {
       opt.classList.remove("disabled");
       opt.style.pointerEvents = "";
       opt.style.opacity = "";
-      if (isWorkTimer && opt.dataset.value !== "strict") {
+      if ((isWorkTimer && opt.dataset.value !== "strict") || settingsLocked) {
         opt.classList.add("disabled");
       }
       const desc = opt.querySelector(".mode-desc");
@@ -413,7 +445,9 @@ function showPlatformDetail(platform) {
       });
     }
   };
-  if (platformToggles.length > 0) {
+  if (platform === "rd") {
+    renderRedditAccess(settingsContainer, performTransition);
+  } else if (platformToggles.length > 0) {
     chrome.storage.local.get(
       platformToggles.map((t) => t.key),
       (result) => {
@@ -433,6 +467,7 @@ function showPlatformDetail(platform) {
           input.type = "checkbox";
           input.dataset.key = toggle.key;
           input.checked = isChecked;
+          input.disabled = settingsLocked;
           input.setAttribute("aria-label", msg(toggle.labelKey));
           const slider = document.createElement("span");
           slider.className = "mini-slider";
@@ -446,6 +481,45 @@ function showPlatformDetail(platform) {
   } else {
     performTransition();
   }
+}
+const REDDIT_ORIGINS = ["*://reddit.com/*", "*://www.reddit.com/*"];
+function hasRedditAccess(callback) {
+  if (!chrome.permissions?.contains) return callback(false);
+  chrome.permissions.contains({ origins: REDDIT_ORIGINS }, (granted) => {
+    void chrome.runtime.lastError;
+    callback(Boolean(granted));
+  });
+}
+function renderRedditAccess(container, onRendered) {
+  hasRedditAccess((granted) => {
+    container.replaceChildren();
+    if (!granted) {
+      const notice = document.createElement("div");
+      notice.className = "reddit-access";
+      const title = document.createElement("p");
+      title.className = "reddit-access-title";
+      title.textContent = msg("redditAccessTitle");
+      const description = document.createElement("p");
+      description.className = "reddit-access-desc";
+      description.textContent = msg("redditAccessDescription");
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "reddit-access-btn";
+      button.textContent = msg("redditAccessGrant");
+      button.addEventListener("click", () => {
+        chrome.permissions.request({ origins: REDDIT_ORIGINS }, (allowed) => {
+          void chrome.runtime.lastError;
+          if (allowed) {
+            renderRedditAccess(container);
+            updateAllPlatformIcons();
+          }
+        });
+      });
+      notice.append(title, description, button);
+      container.appendChild(notice);
+    }
+    if (typeof onRendered === "function") onRendered();
+  });
 }
 function hidePlatformDetail() {
   if (platformDetail.classList.contains("hidden")) return;
@@ -641,6 +715,10 @@ function handleDocumentClick(e) {
 }
 function handleCheckboxChange(e) {
   if (e.target.matches(".mini-switch input")) {
+    if (settingsLocked) {
+      e.target.checked = !e.target.checked;
+      return;
+    }
     chrome.storage.local.set({ [e.target.dataset.key]: e.target.checked });
   }
 }
@@ -691,6 +769,7 @@ function startTimerDisplay(endTime, type) {
     const secs = Math.floor((remaining % 60000) / 1000);
     timerDisplay.textContent = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
   }, 1000);
+  applySettingsLock();
 }
 function resetTimerUI() {
   if (timerInterval) clearInterval(timerInterval);
@@ -715,324 +794,8 @@ function resetTimerUI() {
     toggle.disabled = false;
     if (toggleLockedLabel) toggleLockedLabel.classList.add("hidden");
     updateAllPlatformIcons();
+    refreshSettingsLock();
   });
-}
-const TUTORIAL_STEPS = [
-  {
-    type: "modal",
-    title: msg("tutorialWelcomeTitle"),
-    description: msg(
-      "tutorialWelcomeDescription",
-    ),
-    icon: "icons/icon128.png",
-    buttonText: msg("tutorialStart"),
-  },
-  {
-    type: "spotlight",
-    target: ".platform-grid",
-    title: msg("tutorialPlatformsTitle"),
-    description: msg(
-      "tutorialPlatformsDescription",
-    ),
-    position: "bottom",
-    buttonText: msg("tutorialNext"),
-  },
-  {
-    type: "spotlight",
-    target: ".platform-icon",
-    title: msg("tutorialModesTitle"),
-    description: msg(
-      "tutorialModesDescription",
-    ),
-    position: "bottom",
-    buttonText: msg("tutorialNext"),
-  },
-  {
-    type: "spotlight",
-    target: ".control-row",
-    title: msg("tutorialFocusTitle"),
-    description: msg(
-      "tutorialFocusDescription",
-    ),
-    position: "top",
-    buttonText: msg("tutorialNext"),
-  },
-  {
-    type: "spotlight",
-    target: "#timerBtn",
-    title: msg("tutorialTimerTitle"),
-    description: msg(
-      "tutorialTimerDescription",
-    ),
-    position: "top",
-    buttonText: msg("tutorialNext"),
-  },
-  {
-    type: "spotlight",
-    target: "#settingsBtn",
-    title: msg("tutorialSettingsTitle"),
-    description: msg(
-      "tutorialSettingsDescription",
-    ),
-    position: "left",
-    buttonText: msg("tutorialNext"),
-  },
-  {
-    type: "modal",
-    title: msg("tutorialCompleteTitle"),
-    description: msg(
-      "tutorialCompleteDescription",
-    ),
-    icon: "checkmark",
-    buttonText: msg("tutorialFinish"),
-  },
-];
-const TutorialController = {
-  currentStep: 0,
-  overlay: null,
-  spotlight: null,
-  tooltip: null,
-  highlightedElement: null,
-  init: function () {
-    this.overlay = document.getElementById("tutorial-overlay");
-    this.spotlight = document.getElementById("tutorial-spotlight");
-    this.tooltip = document.getElementById("tutorial-tooltip");
-    const nextBtn = document.getElementById("tutorialNext");
-    const skipBtn = document.getElementById("tutorialSkip");
-    if (nextBtn) {
-      nextBtn.addEventListener("click", () => this.nextStep());
-    }
-    if (skipBtn) {
-      skipBtn.addEventListener("click", () => this.complete());
-    }
-  },
-  start: function () {
-    this.currentStep = 0;
-    if (this.overlay) {
-      this.overlay.classList.remove("hidden");
-      requestAnimationFrame(() => {
-        this.overlay.classList.add("active");
-        if (this.tooltip) {
-          this.tooltip.classList.add("visible");
-        }
-      });
-    }
-    this.showStep(0);
-  },
-  showStep: function (index) {
-    const step = TUTORIAL_STEPS[index];
-    if (!step) return;
-    this.currentStep = index;
-    if (this.highlightedElement) {
-      this.highlightedElement.classList.remove("tutorial-highlight");
-      this.highlightedElement = null;
-    }
-    const indicator = document.getElementById("tutorial-step-indicator");
-    if (indicator) {
-      indicator.textContent = msg(
-        "tutorialProgress",
-        [String(index + 1), String(TUTORIAL_STEPS.length)],
-      );
-    }
-    const nextBtn = document.getElementById("tutorialNext");
-    if (nextBtn) {
-      nextBtn.textContent = step.buttonText || msg("tutorialNext");
-    }
-    const title = document.getElementById("tutorial-title");
-    const description = document.getElementById("tutorial-description");
-    const iconContainer = document.getElementById("tutorial-icon-container");
-    if (title) title.textContent = step.title;
-    if (description) description.textContent = step.description;
-    if (step.type === "modal") {
-      this.showModalStep(step, iconContainer);
-    } else {
-      this.showSpotlightStep(step, iconContainer);
-    }
-  },
-  showModalStep: function (step, iconContainer) {
-    if (this.spotlight) {
-      this.spotlight.style.display = "none";
-    }
-    if (this.tooltip) {
-      this.tooltip.classList.add("modal-style");
-      this.tooltip.classList.remove(
-        "arrow-top",
-        "arrow-bottom",
-        "arrow-left",
-        "arrow-right",
-      );
-      this.tooltip.style.left = "";
-      this.tooltip.style.top = "";
-      this.tooltip.style.transform = "";
-    }
-    if (iconContainer) {
-      iconContainer.replaceChildren();
-      if (step.icon === "checkmark") {
-        const svg = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "svg",
-        );
-        svg.setAttribute("class", "tutorial-checkmark");
-        svg.setAttribute("viewBox", "0 0 24 24");
-        svg.setAttribute("fill", "none");
-        svg.setAttribute("stroke", "currentColor");
-        svg.setAttribute("stroke-width", "2");
-        const polyline = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "polyline",
-        );
-        polyline.setAttribute("points", "20 6 9 17 4 12");
-        svg.appendChild(polyline);
-        iconContainer.appendChild(svg);
-      } else if (step.icon) {
-        const img = document.createElement("img");
-        img.src = chrome.runtime.getURL(step.icon);
-        img.alt = "FocusTube";
-        iconContainer.appendChild(img);
-      }
-      iconContainer.classList.remove("hidden");
-    }
-  },
-  showSpotlightStep: function (step, iconContainer) {
-    if (iconContainer) {
-      iconContainer.classList.add("hidden");
-    }
-    if (this.tooltip) {
-      this.tooltip.classList.remove("modal-style");
-    }
-    const target = document.querySelector(step.target);
-    if (!target) {
-      this.showModalStep(step, iconContainer);
-      return;
-    }
-    target.classList.add("tutorial-highlight");
-    this.highlightedElement = target;
-    const rect = target.getBoundingClientRect();
-    const padding = 8;
-    if (this.spotlight) {
-      this.spotlight.style.display = "block";
-      this.spotlight.style.left = rect.left - padding + "px";
-      this.spotlight.style.top = rect.top - padding + "px";
-      this.spotlight.style.width = rect.width + padding * 2 + "px";
-      this.spotlight.style.height = rect.height + padding * 2 + "px";
-    }
-    this.positionTooltip(rect, step.position);
-  },
-  positionTooltip: function (targetRect, preferredPosition) {
-    if (!this.tooltip) return;
-    const tooltipRect = this.tooltip.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    const margin = 12;
-    const arrowOffset = 16;
-    const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
-    this.tooltip.classList.remove(
-      "arrow-top",
-      "arrow-bottom",
-      "arrow-left",
-      "arrow-right",
-    );
-    let left, top;
-    let position = preferredPosition;
-    const spaceAbove = targetRect.top;
-    const spaceBelow = viewportHeight - targetRect.bottom;
-    const spaceLeft = targetRect.left;
-    const spaceRight = viewportWidth - targetRect.right;
-    const tooltipWidth = Math.min(
-      tooltipRect.width || this.tooltip.offsetWidth || 240,
-      viewportWidth - margin * 2,
-    );
-    const tooltipHeight = Math.min(
-      tooltipRect.height || this.tooltip.offsetHeight || 160,
-      viewportHeight - margin * 2,
-    );
-    this.tooltip.style.maxWidth = `${viewportWidth - margin * 2}px`;
-    if (position === "top" && spaceAbove < tooltipHeight + margin) {
-      position = spaceBelow > spaceAbove ? "bottom" : "top";
-    } else if (position === "bottom" && spaceBelow < tooltipHeight + margin) {
-      position = spaceAbove > spaceBelow ? "top" : "bottom";
-    } else if (position === "left" && spaceLeft < tooltipWidth + margin) {
-      position = spaceRight > spaceLeft ? "right" : "left";
-    } else if (position === "right" && spaceRight < tooltipWidth + margin) {
-      position = spaceLeft > spaceRight ? "left" : "right";
-    }
-    const targetCenterX = targetRect.left + targetRect.width / 2;
-    const targetCenterY = targetRect.top + targetRect.height / 2;
-    switch (position) {
-      case "top":
-        left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
-        top = targetRect.top - tooltipHeight - arrowOffset;
-        this.tooltip.classList.add("arrow-bottom");
-        break;
-      case "bottom":
-        left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
-        top = targetRect.bottom + arrowOffset;
-        this.tooltip.classList.add("arrow-top");
-        break;
-      case "left":
-        left = targetRect.left - tooltipWidth - arrowOffset;
-        top = targetRect.top + targetRect.height / 2 - tooltipHeight / 2;
-        this.tooltip.classList.add("arrow-right");
-        break;
-      case "right":
-        left = targetRect.right + arrowOffset;
-        top = targetRect.top + targetRect.height / 2 - tooltipHeight / 2;
-        this.tooltip.classList.add("arrow-left");
-        break;
-    }
-    left = Math.max(
-      margin,
-      Math.min(left, viewportWidth - tooltipWidth - margin),
-    );
-    top = Math.max(
-      margin,
-      Math.min(top, viewportHeight - tooltipHeight - margin),
-    );
-    if (position === "top" || position === "bottom") {
-      const arrowX = clamp(targetCenterX - left, 12, tooltipWidth - 12);
-      this.tooltip.style.setProperty("--arrow-x", `${arrowX}px`);
-      this.tooltip.style.setProperty("--arrow-y", "");
-    } else if (position === "left" || position === "right") {
-      const arrowY = clamp(targetCenterY - top, 12, tooltipHeight - 12);
-      this.tooltip.style.setProperty("--arrow-y", `${arrowY}px`);
-      this.tooltip.style.setProperty("--arrow-x", "");
-    }
-    this.tooltip.style.left = left + "px";
-    this.tooltip.style.top = top + "px";
-    this.tooltip.style.transform = "none";
-  },
-  nextStep: function () {
-    if (this.currentStep < TUTORIAL_STEPS.length - 1) {
-      this.showStep(this.currentStep + 1);
-    } else {
-      this.complete();
-    }
-  },
-  complete: function () {
-    if (this.highlightedElement) {
-      this.highlightedElement.classList.remove("tutorial-highlight");
-      this.highlightedElement = null;
-    }
-    if (this.tooltip) {
-      this.tooltip.classList.remove("visible");
-    }
-    if (this.overlay) {
-      this.overlay.classList.remove("active");
-      setTimeout(() => {
-        this.overlay.classList.add("hidden");
-      }, 200);
-    }
-    chrome.storage.local.set({ tutorialCompleted: true });
-  },
-};
-function initTutorial() {
-  TutorialController.init();
-}
-function showTutorial() {
-  TutorialController.start();
-}
-function completeTutorial() {
-  TutorialController.complete();
 }
 const STORE_URLS = {
   chrome:

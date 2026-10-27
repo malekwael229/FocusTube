@@ -3,7 +3,7 @@
     "message": "FocusTube - Bloqueador de Shorts, Reels e Feeds"
   },
   "extensionDescription": {
-    "message": "Bloqueie o YouTube Shorts, Instagram Reels, TikTok, Facebook Reels e os feeds do LinkedIn sem bloquear os sites."
+    "message": "Bloqueie o YouTube Shorts, Instagram Reels, TikTok, Facebook Reels e os feeds do LinkedIn e do Reddit sem bloquear os sites."
   },
   "appName": {
     "message": "FocusTube"
@@ -91,9 +91,6 @@
   "platformConfigurationHint": {
     "message": "Clique em uma plataforma para configurar o modo de bloqueio"
   },
-  "timerActiveModesLocked": {
-    "message": "Temporizador ativo: modos bloqueados"
-  },
   "focus": {
     "message": "Foco"
   },
@@ -117,33 +114,6 @@
     "placeholders": {
       "count": {
         "content": "$1"
-      }
-    }
-  },
-  "timeSavedCompact": {
-    "message": "$TIME$ economizado",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
-  },
-  "minutesCompact": {
-    "message": "$COUNT$ min",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
-  },
-  "hoursMinutesCompact": {
-    "message": "$HOURS$ h $MINUTES$ min",
-    "placeholders": {
-      "hours": {
-        "content": "$1"
-      },
-      "minutes": {
-        "content": "$2"
       }
     }
   },
@@ -193,79 +163,8 @@
   "rateUs": {
     "message": "Avalie-nos"
   },
-  "rateUsStar": {
-    "message": "⭐ Avalie-nos"
-  },
-  "tutorialSkip": {
-    "message": "Pular"
-  },
-  "tutorialNext": {
-    "message": "Próximo"
-  },
-  "tutorialStart": {
-    "message": "Iniciar tour"
-  },
-  "tutorialFinish": {
-    "message": "Concluir"
-  },
-  "tutorialProgress": {
-    "message": "$CURRENT$ de $TOTAL$",
-    "placeholders": {
-      "current": {
-        "content": "$1"
-      },
-      "total": {
-        "content": "$2"
-      }
-    }
-  },
-  "tutorialWelcomeTitle": {
-    "message": "Boas-vindas ao FocusTube!"
-  },
-  "tutorialWelcomeDescription": {
-    "message": "Faça um tour rápido para aprender a manter o foco e bloquear distrações."
-  },
-  "tutorialPlatformsTitle": {
-    "message": "Controles das plataformas"
-  },
-  "tutorialPlatformsDescription": {
-    "message": "Clique no ícone de uma plataforma para alterar o modo de bloqueio. Gerencie YouTube, Facebook, Instagram, TikTok e LinkedIn."
-  },
-  "tutorialModesTitle": {
-    "message": "Modos de bloqueio"
-  },
-  "tutorialModesDescription": {
-    "message": "Cada plataforma mostra um selo: S (Rigoroso) sempre bloqueia, W (Aviso) pergunta antes de mostrar e P (Passivo) permite o acesso."
-  },
-  "tutorialFocusTitle": {
-    "message": "Botão de foco"
-  },
-  "tutorialFocusDescription": {
-    "message": "Ative ou desative o Modo Foco com este botão. Quando ativado, as regras de bloqueio selecionadas entram em vigor."
-  },
-  "tutorialTimerTitle": {
-    "message": "Botão do temporizador"
-  },
-  "tutorialTimerDescription": {
-    "message": "Inicie um temporizador de foco ou pausa. As sessões de trabalho aplicam o bloqueio rigoroso, enquanto as pausas permitem navegar livremente."
-  },
-  "tutorialSettingsTitle": {
-    "message": "Configurações"
-  },
-  "tutorialSettingsDescription": {
-    "message": "Acesse opções avançadas, gerencie elementos ocultos e personalize sua experiência de foco."
-  },
-  "tutorialCompleteTitle": {
-    "message": "Tudo pronto!"
-  },
-  "tutorialCompleteDescription": {
-    "message": "Você já sabe o básico. Mantenha o foco e a produtividade!"
-  },
   "totalBlocked": {
     "message": "Total bloqueado"
-  },
-  "timeSaved": {
-    "message": "Tempo economizado"
   },
   "focusTimer": {
     "message": "Temporizador de foco"
@@ -379,14 +278,6 @@
   "select": {
     "message": "Selecionar"
   },
-  "importError": {
-    "message": "Erro ao importar dados: $ERROR$",
-    "placeholders": {
-      "error": {
-        "content": "$1"
-      }
-    }
-  },
   "importObjectRequired": {
     "message": "O arquivo de importação deve conter um objeto JSON."
   },
@@ -441,7 +332,7 @@
     "message": "Ocultar \"Mais relevantes\""
   },
   "hideMostRelevantShelfDescription": {
-    "message": "Ocultar a seção \"Mais relevantes\" em Inscrições"
+    "message": "Ocultar a seção \"Mais relevantes\" em Inscrições. Funciona quando o site está em inglês."
   },
   "hidePlayables": {
     "message": "Ocultar Playables"
@@ -453,10 +344,10 @@
     "message": "Ocultar Stories"
   },
   "hideInstagramStoriesDescription": {
-    "message": "Ocultar a bandeja de Stories na parte superior"
+    "message": "Ocultar a bandeja de Stories na parte superior. Funciona quando o site está em inglês."
   },
   "hideFacebookStoriesDescription": {
-    "message": "Ocultar a seção Stories"
+    "message": "Ocultar a seção Stories. Funciona quando o site está em inglês."
   },
   "hideReelsButton": {
     "message": "Ocultar botão Reels"
@@ -465,18 +356,18 @@
     "message": "Ocultar a guia Reels na navegação"
   },
   "hideFacebookReelsDescription": {
-    "message": "Ocultar o link Reels na barra lateral"
+    "message": "Ocultar o link Reels e as fileiras de Reels do feed"
   },
   "hidePeopleYouMightKnow": {
     "message": "Ocultar Pessoas que talvez você conheça"
   },
   "hidePeopleYouMightKnowDescription": {
-    "message": "Ocultar sugestões de pessoas no feed"
+    "message": "Ocultar sugestões de pessoas no feed. Funciona melhor quando o site está em inglês."
   },
   "hideSuggestedPosts": { "message": "Ocultar publicações sugeridas" },
-  "hideSuggestedPostsDescription": { "message": "Ocultar publicações sugeridas e patrocinadas quando detectadas" },
+  "hideSuggestedPostsDescription": { "message": "Ocultar publicações sugeridas e patrocinadas quando detectadas. Funciona quando o site está em inglês." },
   "hideNetworkActivity": { "message": "Ocultar atividades da sua rede" },
-  "hideNetworkActivityDescription": { "message": "Ocultar publicações exibidas pelas reações da sua rede" },
+  "hideNetworkActivityDescription": { "message": "Ocultar publicações exibidas pelas reações da sua rede. Funciona quando o site está em inglês." },
   "hideFeed": {
     "message": "Ocultar feed"
   },
@@ -490,7 +381,7 @@
     "message": "Ocultar \"Adicionar ao seu feed\""
   },
   "hideAddToFeedDescription": {
-    "message": "Ocultar sugestões de perfis para seguir"
+    "message": "Ocultar sugestões de perfis para seguir. Funciona quando o site está em inglês."
   },
   "overlayStrictModeActive": {
     "message": "Modo rigoroso ativo"
@@ -568,6 +459,9 @@
   "notificationFocusComplete": {
     "message": "Sessão de foco concluída."
   },
+  "redditAccessTitle": { "message": "Acesso ao Reddit necessário" },
+  "redditAccessDescription": { "message": "O FocusTube precisa de permissão para ler e alterar o reddit.com antes de poder ocultar os feeds do Reddit." },
+  "redditAccessGrant": { "message": "Permitir acesso ao Reddit" },
   "catalogLanguage": { "message": "pt-BR" },
   "platformReddit": { "message": "Reddit" },
   "modeRedditStrictDescription": { "message": "Ocultar feeds sem revelar" },

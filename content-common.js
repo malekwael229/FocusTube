@@ -46,6 +46,52 @@ const CONFIG = {
     liActivity: false,
   },
 };
+// Internal event bus shared by the content scripts. A plain object, not an
+// EventTarget: in Firefox content scripts an EventTarget's listeners are not
+// called for events dispatched from the same script.
+const FTEvents = {
+  listeners: {},
+  addEventListener: function (type, listener, options = {}) {
+    if (!this.listeners[type]) this.listeners[type] = [];
+    this.listeners[type].push({ listener, once: options.once === true });
+  },
+  dispatchEvent: function (event) {
+    const entries = this.listeners[event.type] || [];
+    this.listeners[event.type] = entries.filter((entry) => !entry.once);
+    entries.forEach(({ listener }) => {
+      try {
+        listener(event);
+      } catch (error) {
+        // One failing listener must not stop the others, as with EventTarget.
+        console.error("FocusTube listener failed", error);
+      }
+    });
+    return true;
+  },
+};
+// The options page labels modes S/W/P. Read those letters as their stored
+// names in case an old settings file carried them into storage.
+const LEGACY_MODE_NAMES = { S: "strict", W: "warn", P: "allow" };
+function withHiddenPlatformOverrides(stored) {
+  const settings = { ...DEFAULT_PLATFORM_SETTINGS, ...stored };
+  Object.keys(settings).forEach((platform) => {
+    if (LEGACY_MODE_NAMES[settings[platform]]) settings[platform] = LEGACY_MODE_NAMES[settings[platform]];
+  });
+  if (CONFIG.restrictHidden === false) {
+    Object.keys(DEFAULT_PLATFORM_SETTINGS).forEach((platform) => {
+      if (CONFIG.popupVisibility[platform] === false) settings[platform] = "allow";
+    });
+  }
+  return settings;
+}
+function currentSitePlatform() {
+  if (Site.isYT()) return "yt";
+  if (Site.isIG()) return "ig";
+  if (Site.isTT()) return "tt";
+  if (Site.isFB()) return "fb";
+  if (Site.isRD()) return "rd";
+  return null;
+}
 const FocusState = {
   get isWork() {
     return (
@@ -324,7 +370,6 @@ const Utils = {
     this.clearHiddenElements();
     this.clearBodyClasses();
     this.clearSession();
-    sessionStorage.removeItem("ft_kicked");
     if (typeof UI !== "undefined") UI.remove();
     this._disableHandlers.forEach((handler) => {
       try {
@@ -402,12 +447,6 @@ const Utils = {
   },
   markKick: function (platform, done) {
     const finish = typeof done === "function" ? done : () => {};
-    try {
-      sessionStorage.setItem("ft_kicked", "true");
-      sessionStorage.setItem("ft_kicked_time", Date.now().toString());
-    } catch (e) {
-      this.reportError("saving kick notice", e);
-    }
     if (!platform || !this.isRuntimeAlive()) {
       finish();
       return;
@@ -418,22 +457,8 @@ const Utils = {
   },
   consumeKick: function (platform, callback) {
     const showNotice = () => {
-      try {
-        sessionStorage.removeItem("ft_kicked");
-        sessionStorage.removeItem("ft_kicked_time");
-      } catch (e) {
-        this.reportError("clearing kick notice", e);
-      }
       if (typeof callback === "function") callback();
     };
-    try {
-      if (sessionStorage.getItem("ft_kicked")) {
-        showNotice();
-        return;
-      }
-    } catch (e) {
-      this.reportError("reading kick notice", e);
-    }
     if (!platform || !this.isRuntimeAlive()) return;
     const key = `ft_${platform}_kicked_at`;
     chrome.storage.local.get([key], (res) => {
@@ -736,7 +761,6 @@ const Utils = {
 const UI = {
   overlayId: "focus-tube-warning-overlay",
   persistenceObserver: null,
-  videoLockInterval: null,
   isOverlayNeeded: false,
   create: function (type, platform, onAllow, onBack, options = {}) {
     if (!Utils.isExtensionEnabled()) return;
@@ -863,26 +887,12 @@ const UI = {
       }
     });
     this.persistenceObserver.observe(target, { childList: true });
-    if (this.videoLockInterval) clearInterval(this.videoLockInterval);
-    if (Site.isTT() || Site.isFB() || type === "warn") {
-      Utils.lockVideo();
-      this.videoLockInterval = setInterval(() => {
-        if (!this.isOverlayNeeded) {
-          clearInterval(this.videoLockInterval);
-          return;
-        }
-        Utils.lockVideo();
-      }, 500);
-    }
+    if (Site.isTT() || Site.isFB() || type === "warn") Utils.lockVideo();
   },
   remove: function (options = {}) {
     if (this.persistenceObserver) {
       this.persistenceObserver.disconnect();
       this.persistenceObserver = null;
-    }
-    if (this.videoLockInterval) {
-      clearInterval(this.videoLockInterval);
-      this.videoLockInterval = null;
     }
     this.isOverlayNeeded = false;
     const overlay = document.getElementById(this.overlayId);
@@ -1006,21 +1016,7 @@ const UI = {
       if (chrome.runtime.lastError) return;
       CONFIG.extensionEnabled = res.ft_enabled !== false;
       CONFIG.isFocusMode = res.focusMode !== false;
-      CONFIG.platformSettings = { ...DEFAULT_PLATFORM_SETTINGS, ...res.platformSettings };
-      if (res.restrictHiddenPlatforms === false) {
-        if (res.popup_visible_yt === false)
-          CONFIG.platformSettings.yt = "allow";
-        if (res.popup_visible_ig === false)
-          CONFIG.platformSettings.ig = "allow";
-        if (res.popup_visible_tt === false)
-          CONFIG.platformSettings.tt = "allow";
-        if (res.popup_visible_fb === false)
-          CONFIG.platformSettings.fb = "allow";
-        if (res.popup_visible_li === false)
-          CONFIG.platformSettings.li = "allow";
-        if (res.popup_visible_rd === false)
-          CONFIG.platformSettings.rd = "allow";
-      }
+      CONFIG.storedPlatformSettings = res.platformSettings || {};
       CONFIG.isDarkMode = res.darkMode !== false;
       CONFIG.timer.end = res.ft_timer_end;
       CONFIG.timer.type = res.ft_timer_type;
@@ -1034,6 +1030,7 @@ const UI = {
         li: res.popup_visible_li !== false,
         rd: res.popup_visible_rd !== false,
       };
+      CONFIG.platformSettings = withHiddenPlatformOverrides(CONFIG.storedPlatformSettings);
       CONFIG.visualHiding = {
         igStories: res.hide_ig_stories !== false,
         fbStories: res.hide_fb_stories !== false,
@@ -1060,7 +1057,7 @@ const UI = {
         Utils.applyVisualHidingClasses();
       });
       window.__ftSettingsReady = true;
-      document.dispatchEvent(new CustomEvent("ft-settings-ready"));
+      FTEvents.dispatchEvent(new Event("ft-settings-ready"));
     },
   );
   chrome.storage.onChanged.addListener((changes, area) => {
@@ -1071,140 +1068,32 @@ const UI = {
       else Utils.enableExtension();
     }
     if (changes.focusMode) {
-      CONFIG.isFocusMode = changes.focusMode.newValue;
+      CONFIG.isFocusMode = changes.focusMode.newValue !== false;
       Utils.toggleFocusClass(CONFIG.isFocusMode);
       Utils.applyVisualHidingClasses();
     }
-    if (changes.platformSettings) {
-      CONFIG.platformSettings = {
-        ...DEFAULT_PLATFORM_SETTINGS,
-        ...changes.platformSettings.newValue,
-      };
-      chrome.storage.local.get(
-        [
-          "popup_visible_yt",
-          "popup_visible_ig",
-          "popup_visible_tt",
-          "popup_visible_fb",
-          "popup_visible_li",
-          "popup_visible_rd",
-          "restrictHiddenPlatforms",
-        ],
-        (res) => {
-          if (res.restrictHiddenPlatforms === false) {
-            if (res.popup_visible_yt === false)
-              CONFIG.platformSettings.yt = "allow";
-            if (res.popup_visible_ig === false)
-              CONFIG.platformSettings.ig = "allow";
-            if (res.popup_visible_tt === false)
-              CONFIG.platformSettings.tt = "allow";
-            if (res.popup_visible_fb === false)
-              CONFIG.platformSettings.fb = "allow";
-            if (res.popup_visible_li === false)
-              CONFIG.platformSettings.li = "allow";
-            if (res.popup_visible_rd === false)
-              CONFIG.platformSettings.rd = "allow";
-          }
-          if (Site.isYT() && CONFIG.platformSettings.yt === "strict") {
-            CONFIG.session.allowUntil = 0;
-            CONFIG.session.platform = null;
-            CONFIG.session.scope = null;
-          }
-          if (Site.isIG() && CONFIG.platformSettings.ig === "strict") {
-            CONFIG.session.allowUntil = 0;
-            CONFIG.session.platform = null;
-            CONFIG.session.scope = null;
-          }
-          if (Site.isTT() && CONFIG.platformSettings.tt === "strict") {
-            CONFIG.session.allowUntil = 0;
-            CONFIG.session.platform = null;
-            CONFIG.session.scope = null;
-          }
-          if (Site.isFB() && CONFIG.platformSettings.fb === "strict") {
-            CONFIG.session.allowUntil = 0;
-            CONFIG.session.platform = null;
-            CONFIG.session.scope = null;
-          }
-          if (Site.isRD() && CONFIG.platformSettings.rd === "strict") {
-            CONFIG.session.allowUntil = 0;
-            CONFIG.session.platform = null;
-            CONFIG.session.scope = null;
-          }
-        },
-      );
-    }
     if (changes.restrictHiddenPlatforms)
-      CONFIG.restrictHidden =
-        changes.restrictHiddenPlatforms.newValue !== false;
+      CONFIG.restrictHidden = changes.restrictHiddenPlatforms.newValue !== false;
     if (changes.visualHideHiddenPlatforms)
-      CONFIG.visualHideHidden =
-        changes.visualHideHiddenPlatforms.newValue !== false;
-    if (changes.popup_visible_yt)
-      CONFIG.popupVisibility.yt = changes.popup_visible_yt.newValue !== false;
-    if (changes.popup_visible_ig)
-      CONFIG.popupVisibility.ig = changes.popup_visible_ig.newValue !== false;
-    if (changes.popup_visible_tt)
-      CONFIG.popupVisibility.tt = changes.popup_visible_tt.newValue !== false;
-    if (changes.popup_visible_fb)
-      CONFIG.popupVisibility.fb = changes.popup_visible_fb.newValue !== false;
-    if (changes.popup_visible_li)
-      CONFIG.popupVisibility.li = changes.popup_visible_li.newValue !== false;
-    if (changes.popup_visible_rd)
-      CONFIG.popupVisibility.rd = changes.popup_visible_rd.newValue !== false;
-    if (
-      changes.restrictHiddenPlatforms ||
-      changes.visualHideHiddenPlatforms ||
-      changes.popup_visible_yt ||
-      changes.popup_visible_ig ||
-      changes.popup_visible_tt ||
-      changes.popup_visible_fb ||
-      changes.popup_visible_li
-      || changes.popup_visible_rd
-    ) {
-      if (CONFIG.restrictHidden === false) {
-        if (CONFIG.popupVisibility.yt === false && CONFIG.platformSettings)
-          CONFIG.platformSettings.yt = "allow";
-        if (CONFIG.popupVisibility.ig === false && CONFIG.platformSettings)
-          CONFIG.platformSettings.ig = "allow";
-        if (CONFIG.popupVisibility.tt === false && CONFIG.platformSettings)
-          CONFIG.platformSettings.tt = "allow";
-        if (CONFIG.popupVisibility.fb === false && CONFIG.platformSettings)
-          CONFIG.platformSettings.fb = "allow";
-        if (CONFIG.popupVisibility.li === false && CONFIG.platformSettings)
-          CONFIG.platformSettings.li = "allow";
-        if (CONFIG.popupVisibility.rd === false && CONFIG.platformSettings)
-          CONFIG.platformSettings.rd = "allow";
+      CONFIG.visualHideHidden = changes.visualHideHiddenPlatforms.newValue !== false;
+    const visibilityChanged = Object.keys(DEFAULT_PLATFORM_SETTINGS).some((platform) => {
+      const change = changes[`popup_visible_${platform}`];
+      if (change) CONFIG.popupVisibility[platform] = change.newValue !== false;
+      return Boolean(change);
+    });
+    if (changes.platformSettings) {
+      CONFIG.storedPlatformSettings = changes.platformSettings.newValue || {};
+    }
+    if (changes.platformSettings || changes.restrictHiddenPlatforms || visibilityChanged) {
+      CONFIG.platformSettings = withHiddenPlatformOverrides(CONFIG.storedPlatformSettings);
+      const platform = currentSitePlatform();
+      if (changes.platformSettings && platform && CONFIG.platformSettings[platform] === "strict") {
+        CONFIG.session.allowUntil = 0;
+        CONFIG.session.platform = null;
+        CONFIG.session.scope = null;
       }
-      chrome.storage.local.get(
-        [
-          "platformSettings",
-          "popup_visible_yt",
-          "popup_visible_ig",
-          "popup_visible_tt",
-          "popup_visible_fb",
-          "popup_visible_li",
-          "popup_visible_rd",
-          "restrictHiddenPlatforms",
-          "visualHideHiddenPlatforms",
-        ],
-        (res) => {
-          CONFIG.platformSettings = { ...DEFAULT_PLATFORM_SETTINGS, ...res.platformSettings };
-          if (res.restrictHiddenPlatforms === false) {
-            if (res.popup_visible_yt === false)
-              CONFIG.platformSettings.yt = "allow";
-            if (res.popup_visible_ig === false)
-              CONFIG.platformSettings.ig = "allow";
-            if (res.popup_visible_tt === false)
-              CONFIG.platformSettings.tt = "allow";
-            if (res.popup_visible_fb === false)
-              CONFIG.platformSettings.fb = "allow";
-            if (res.popup_visible_li === false)
-              CONFIG.platformSettings.li = "allow";
-            if (res.popup_visible_rd === false)
-              CONFIG.platformSettings.rd = "allow";
-          }
-        },
-      );
+    }
+    if (changes.restrictHiddenPlatforms || changes.visualHideHiddenPlatforms || visibilityChanged) {
       Utils.applyVisualHidingClasses();
     }
     if (changes.hide_ig_stories) {
@@ -1277,7 +1166,7 @@ const UI = {
       Utils.applyVisualHidingClasses();
     }
     if (changes.darkMode) {
-      CONFIG.isDarkMode = changes.darkMode.newValue;
+      CONFIG.isDarkMode = changes.darkMode.newValue !== false;
       UI.updateTheme();
     }
     if (changes.ft_timer_end || changes.ft_timer_type) {
@@ -1289,20 +1178,14 @@ const UI = {
         CONFIG.timer.end = res.ft_timer_end;
         CONFIG.timer.type = res.ft_timer_type;
         Utils.applyVisualHidingClasses();
-        document.dispatchEvent(
-          new CustomEvent("ft-settings-changed", {
-            detail: Object.keys(changes),
-          }),
-        );
+        FTEvents.dispatchEvent(new Event("ft-settings-changed"));
       });
       return;
     }
     if (changes.ft_debug) {
       Utils._debugEnabled = changes.ft_debug.newValue === true;
     }
-    document.dispatchEvent(
-      new CustomEvent("ft-settings-changed", { detail: Object.keys(changes) }),
-    );
+    FTEvents.dispatchEvent(new Event("ft-settings-changed"));
   });
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.action === "TIMER_COMPLETE") {

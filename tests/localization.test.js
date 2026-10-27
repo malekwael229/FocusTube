@@ -11,7 +11,7 @@ const catalog = JSON.parse(read("_locales/en/messages.json"));
 const arabicCatalog = JSON.parse(read("_locales/ar/messages.json"));
 const expectedEnglishName = "FocusTube - Shorts, Reels & Feed Blocker";
 const expectedEnglishDescription =
-  "Block YouTube Shorts, Instagram Reels, TikTok, Facebook Reels and LinkedIn feeds without blocking the sites.";
+  "Block YouTube Shorts, Instagram Reels, TikTok, Facebook Reels, LinkedIn and Reddit feeds without blocking the sites.";
 
 function renderCatalogMessage(sourceCatalog, key, substitutions) {
   const entry = sourceCatalog[key];
@@ -164,7 +164,7 @@ function run() {
   }
 
   const text = new FakeElement(
-    { "data-i18n": "tutorialProgress", "data-i18n-args": '[1,"7"]' },
+    { "data-i18n": "blockedCount", "data-i18n-args": "[7]" },
     "fallback",
   );
   const accessible = new FakeElement(
@@ -179,13 +179,13 @@ function run() {
     protocol: "chrome-extension:",
     document: extensionDocument,
   });
-  assert.equal(text.textContent, "1 of 7");
+  assert.equal(text.textContent, "7 blocked");
   assert.equal(accessible.getAttribute("aria-label"), "YouTube settings");
   assert.deepEqual(Array.from(helper.parseSubstitutions('[1,"two"]')), ["1", "two"]);
   assert.equal(helper.parseSubstitutions("plain"), "plain");
   assert.equal(extensionDocument.documentElement.getAttribute("dir"), "ltr");
   assert.equal(extensionDocument.documentElement.getAttribute("lang"), "en");
-  assert.ok(calls.some(([key, values]) => key === "tutorialProgress" && values[0] === "1"));
+  assert.ok(calls.some(([key, values]) => key === "blockedCount" && values[0] === "7"));
 
   const hostText = new FakeElement({ "data-i18n": "enabled" }, "Host label");
   const hostDocument = new FakeDocument([hostText]);

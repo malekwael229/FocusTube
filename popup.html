@@ -6,25 +6,6 @@
   </head>
 
   <body class="focustube-popup-body dark-mode preload">
-    <div id="tutorial-overlay" class="tutorial-overlay hidden">
-      <div class="tutorial-backdrop"></div>
-      <div id="tutorial-spotlight" class="tutorial-spotlight"></div>
-      <div id="tutorial-tooltip" class="tutorial-tooltip">
-        <div class="tutorial-tooltip-content">
-          <div id="tutorial-icon-container" class="tutorial-icon"></div>
-          <h4 id="tutorial-title"></h4>
-          <p id="tutorial-description"></p>
-        </div>
-        <div class="tutorial-tooltip-actions">
-          <button id="tutorialSkip" class="tutorial-btn-skip" data-i18n="tutorialSkip">Skip</button>
-          <button id="tutorialNext" class="tutorial-btn-next" data-i18n="tutorialNext">Next</button>
-        </div>
-        <div class="tutorial-tooltip-progress">
-          <span id="tutorial-step-indicator" data-i18n="tutorialProgress" data-i18n-args='["1","7"]'>1 of 7</span>
-        </div>
-      </div>
-    </div>
-
     <div id="review-prompt" class="review-prompt hidden" role="dialog" aria-modal="true" aria-labelledby="reviewBlockedCount">
       <div class="review-copy">
         <p id="reviewBlockedCount" data-i18n="reviewPrompt" data-i18n-args='["0"]'>
@@ -242,8 +223,7 @@
 
         <div class="footer-compact">
           <div class="stats-compact">
-            <span id="statShorts" data-i18n="blockedCount" data-i18n-args='["0"]'>0 blocked</span> ·
-            <span id="statTime" data-i18n="timeSavedCompact" data-i18n-args='["0m"]'>0m saved</span>
+            <span id="statShorts" data-i18n="blockedCount" data-i18n-args='["0"]'>0 blocked</span>
           </div>
           <div class="footer-actions">
             <button

@@ -52,7 +52,7 @@ const Instagram = {
         this.runChecks();
       }
     });
-    document.addEventListener("ft-settings-changed", () => this.runChecks());
+    FTEvents.addEventListener("ft-settings-changed", () => this.runChecks());
     this.runChecks();
     this.checkKick();
   },
@@ -101,11 +101,16 @@ const Instagram = {
     };
     const dialogs = [...document.querySelectorAll('[role="dialog"][aria-modal="true"]')]
       .filter(isVisible);
-    if (dialogs.length !== 1) return null;
-    const dialog = dialogs[0];
-    const articles = [...dialog.querySelectorAll("article")].filter((article) =>
+    if (dialogs.length > 1) return null;
+    // A Reel opened from DMs shows in a modal; a shared /p/ link opened
+    // directly renders the same post as the page itself.
+    const dialog = dialogs[0] || null;
+    const container = dialog || document.querySelector("main") || document.body;
+    if (!container) return null;
+    const owned = (element) => (element.closest('[role="dialog"]') || null) === dialog;
+    const articles = [...container.querySelectorAll("article")].filter((article) =>
       isVisible(article) &&
-      article.closest('[role="dialog"]') === dialog &&
+      owned(article) &&
       !article.parentElement?.closest("article"),
     );
     if (articles.length !== 1) return null;
@@ -115,7 +120,7 @@ const Instagram = {
       if (
         time.closest("ul, ol, li, [role='list'], [role='listitem']") ||
         time.closest("article") !== article ||
-        time.closest('[role="dialog"]') !== dialog
+        !owned(time)
       ) continue;
       if (!isVisible(time)) continue;
       const anchor = time.closest("a[href]");
@@ -136,14 +141,14 @@ const Instagram = {
   scheduleChecks: function () {
     if (this.checkScheduled) return;
     this.checkScheduled = true;
-    this.checkFrame = scheduleFrame(() => {
+    this.checkFrame = setTimeout(() => {
       this.checkFrame = null;
       this.checkScheduled = false;
       this.runChecks();
-    });
+    }, 150);
   },
   disable: function () {
-    if (this.checkFrame !== null) cancelFrame(this.checkFrame);
+    if (this.checkFrame !== null) clearTimeout(this.checkFrame);
     this.checkFrame = null;
     this.checkScheduled = false;
     if (this.routeCheckTimer !== null) {
@@ -298,7 +303,7 @@ const Instagram = {
     return (
       path.startsWith("/reels/") ||
       path.startsWith("/reel/") ||
-      path.startsWith("/explore/")
+      (path.startsWith("/explore/") && !path.startsWith("/explore/search/"))
     );
   },
   getWarnScope: function (path) {
@@ -448,7 +453,8 @@ const IGFeed = {
   TICK_INTERVAL_MS: 100,
   MAX_LABEL_NODES: 200,
   ZERO_WIDTH: /[\u200B-\u200F\u202A-\u202E\u2060-\u2064\uFEFF\u00AD]/g,
-  SPONSORED_LABELS: ["sponsored", "paid partnership"],
+  // Instagram's web feed labels ads "Ad" under the author name.
+  SPONSORED_LABELS: ["ad", "sponsored", "paid partnership"],
   SUGGESTED_LABELS: [
     "suggested for you", "suggested post", "suggested posts", "recommended for you",
   ],
@@ -806,7 +812,7 @@ const IGFeed = {
 
 if (Site.isIG()) {
   if (window.__ftSettingsReady) Instagram.init();
-  else document.addEventListener("ft-settings-ready", () => Instagram.init());
+  else FTEvents.addEventListener("ft-settings-ready", () => Instagram.init());
   Utils.registerLifecycle({
     onDisable: () => Instagram.disable(),
     onEnable: () => {
