@@ -1389,6 +1389,43 @@ const checks = [
       assert.ok(!firefoxGranted.calls.some(([kind]) => kind === "register"));
     },
   ],
+  [
+    "final-test polish: locked popup switches, break label, Strict wording, Reddit badge, spacing, opaque covers, Shorts chip",
+    () => {
+      const styles = read("styles.css");
+      assert.match(styles, /\.switch input:disabled \+ \.slider \{\s*opacity: 0\.5;/, "locked popup switches are dimmed");
+      assert.match(styles, /\.control-row \{[^}]*gap: 12px;/, "label and switch keep a gap");
+
+      const popup = read("popup.js");
+      assert.match(popup, /timerTypeLabel\.textContent = msg\(type === "break" \? "break" : "focus"\)/);
+      assert.match(popup, /timerTypeLabel\.classList\.remove\("hidden"\)/);
+      assert.match(popup, /if \(timerTypeLabel\) timerTypeLabel\.classList\.add\("hidden"\)/, "label hides when the timer stops");
+      assert.match(popup, /\(result = \{\}\) => \{/, "popup falls back to defaults when storage can't be read");
+
+      const options = read("options.js");
+      const badge = options.slice(options.indexOf("function updateBadge"), options.indexOf("function updateBadge") + 1400);
+      assert.match(badge, /id === "rd" && chrome\.permissions\?\.contains/);
+      assert.match(badge, /badge\.textContent = "!"/);
+      assert.doesNotMatch(read("options.html"), /\.badge-gray \{\s*background: #4facfe;/, "grey badge is grey");
+
+      const css = read("content.css");
+      for (const pattern of [/\.ft-stories-overlay \{\s*position: absolute;[^}]*\}/, /\.ft-stories-overlay\.dark \{[^}]*\}/]) {
+        const block = css.match(pattern)?.[0] || "";
+        assert.match(block, /background: linear-gradient/, `${pattern} sets a gradient`);
+        assert.doesNotMatch(block.match(/background:[^;]*;/)?.[0] || "", /rgba\(/, `${pattern} background is opaque`);
+      }
+
+      const yt = read("content-yt.js");
+      assert.match(yt, /ytd-search-header-renderer yt-chip-cloud-chip-renderer/);
+      assert.match(yt, /chip\.textContent\.trim\(\) === "Shorts"/);
+
+      assert.equal(readJson("_locales/en/messages.json").modeStrictDescription.message, "Block short-form videos completely");
+      for (const locale of fs.readdirSync(path.join(root, "_locales"))) {
+        const strict = readJson(`_locales/${locale}/messages.json`).modeStrictDescription.message;
+        assert.doesNotMatch(strict, /access|Zugriff|acceso|accès|akses|acesso|Erişim|الوصول/i, `${locale} Strict text no longer says the site is blocked`);
+      }
+    },
+  ],
 ];
 
 for (const [name, check] of checks) {

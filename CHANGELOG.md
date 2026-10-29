@@ -28,6 +28,14 @@ All notable project-facing changes are documented here.
 - Removed the unused onboarding tutorial and 26 unused strings from each language.
 - CI now runs on Node 22.
 - The extension description and website now mention Reddit.
+- Locked switches in the popup are dimmed, like on the options page, so it's clear they can't be changed during a locked timer.
+- The popup labels a running timer "Focus" or "Break".
+- The Strict mode description now reads "Block short-form videos completely" instead of "Block access completely", since Strict blocks Shorts and Reels, not the whole site.
+- The options page marks Reddit with "!" until Reddit access is granted, matching the popup.
+- **Hide Shorts Button** also hides the "Shorts" filter chip in YouTube search results.
+- The Stories and LinkedIn "Add to your feed" covers are fully opaque, so hidden content no longer shows through.
+- In long translations the "Hide UI distractions" label no longer touches its switch.
+- The popup falls back to defaults instead of stopping if a storage read fails.
 
 ## [2.5.0] - 2026-10-01
 

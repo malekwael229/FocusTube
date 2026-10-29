@@ -355,6 +355,12 @@ const YouTube = {
         );
         if (entry) matches.add(entry);
       });
+      // The search results "Shorts" filter chip has no link, only its label.
+      document
+        .querySelectorAll("ytd-search-header-renderer yt-chip-cloud-chip-renderer")
+        .forEach((chip) => {
+          if (chip.textContent.trim() === "Shorts") matches.add(chip);
+        });
       this.reconcileHidden(this.hiddenNavElements, matches);
     }
     if (!CONFIG.visualHiding.ytShortsShelves) {

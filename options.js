@@ -1228,4 +1228,14 @@ function updateBadge(id, isWorkTimer = false) {
     badge.classList.add("badge-blue");
     if (btn) btn.classList.add("mode-passive");
   }
+  // Like the popup, flag Reddit with "!" until access is granted.
+  if (id === "rd" && chrome.permissions?.contains) {
+    chrome.permissions.contains({ origins: REDDIT_ORIGINS }, (granted) => {
+      void chrome.runtime.lastError;
+      if (granted) return;
+      badge.textContent = "!";
+      badge.classList.remove("badge-red", "badge-amber", "badge-blue");
+      badge.classList.add("badge-gray");
+    });
+  }
 }
