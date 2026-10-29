@@ -4,7 +4,7 @@ All notable project-facing changes are documented here.
 
 ## [Unreleased]
 
-Prepared as 2.5.1. Not released yet.
+## [2.5.1] - 2026-10-29
 
 - Made Reddit access optional. Updating no longer asks for new permissions, so Chrome and Edge stop disabling FocusTube and Firefox stops holding the update.
 - Reddit feed controls start after you choose **Allow Reddit access** in the Reddit settings of the popup or options page. Open Reddit tabs pick up the change without a reload.
