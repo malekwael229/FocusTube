@@ -3,6 +3,7 @@ const enabledToggle = document.getElementById("enabledToggle");
 const extensionStatusLabel = document.getElementById("extensionStatusLabel");
 const timerBtn = document.getElementById("timerBtn");
 const timerDisplay = document.getElementById("timerDisplay");
+const timerTypeLabel = document.getElementById("timerTypeLabel");
 const breakBtn = document.getElementById("breakBtn");
 const toggleLockedLabel = document.getElementById("toggleLockedLabel");
 const githubBtn = document.getElementById("githubBtn");
@@ -59,7 +60,8 @@ document.addEventListener("DOMContentLoaded", () => {
       "autoStartBreaks",
       "ft_work_session_ended",
     ],
-    (result) => {
+    // A failed storage read passes undefined; fall back to defaults.
+    (result = {}) => {
       if (breakBtn) {
         const autoStartOn = result.autoStartBreaks !== false;
         const workSessionEnded = result.ft_work_session_ended === true;
@@ -739,6 +741,11 @@ function startTimerDisplay(endTime, type) {
   if (type === "break") {
     timerDisplay.classList.add("break");
   }
+  if (timerTypeLabel) {
+    timerTypeLabel.textContent = msg(type === "break" ? "break" : "focus");
+    timerTypeLabel.classList.toggle("break", type === "break");
+    timerTypeLabel.classList.remove("hidden");
+  }
   if (type === "work") {
     toggle.checked = true;
     toggle.disabled = true;
@@ -786,6 +793,7 @@ function resetTimerUI() {
       toggle.checked = res2.focusMode !== false;
     });
     timerDisplay.classList.add("fade-out");
+    if (timerTypeLabel) timerTypeLabel.classList.add("hidden");
     setTimeout(() => {
       timerDisplay.classList.add("hidden");
       timerDisplay.classList.remove("fade-out");

@@ -26,7 +26,7 @@
   "modeStrictLong": { "message": "Strict Mode" },
   "modeWarnLong": { "message": "Warn Mode" },
   "modePassiveLong": { "message": "Passive Mode" },
-  "modeStrictDescription": { "message": "Block access completely" },
+  "modeStrictDescription": { "message": "Block short-form videos completely" },
   "modeWarnDescription": { "message": "Show a warning before entering" },
   "modePassiveDescription": { "message": "Normal browsing" },
   "modeLinkedinStrictDescription": { "message": "Hides feed and distracting elements" },

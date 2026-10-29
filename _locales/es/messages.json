@@ -65,7 +65,7 @@
     "message": "Modo pasivo"
   },
   "modeStrictDescription": {
-    "message": "Bloquear el acceso por completo"
+    "message": "Bloquear por completo los vídeos cortos"
   },
   "modeWarnDescription": {
     "message": "Mostrar una advertencia antes de entrar"
