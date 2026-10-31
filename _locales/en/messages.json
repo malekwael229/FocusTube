@@ -1,6 +1,6 @@
 {
   "extensionName": { "message": "FocusTube - Shorts, Reels & Feed Blocker" },
-  "extensionDescription": { "message": "Block YouTube Shorts, Instagram Reels, TikTok, Facebook Reels, LinkedIn and Reddit feeds without blocking the sites." },
+  "extensionDescription": { "message": "Hide short-form videos and endless feeds without blocking the rest of the site." },
   "appName": { "message": "FocusTube" },
   "optionsPageTitle": { "message": "FocusTube Options" },
   "enabled": { "message": "Enabled" },
