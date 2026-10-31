@@ -150,6 +150,10 @@ FocusTube is designed to run locally in the browser.
 
 ---
 
+## How It's Built
+
+I develop FocusTube with the help of AI coding tools. I decide what it does, review the changes, and test every release before it goes to the stores.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidance and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community standards. [TESTING.md](TESTING.md) covers automated commands and the browser matrix; [ARCHITECTURE.md](ARCHITECTURE.md) describes the runtime boundaries.
