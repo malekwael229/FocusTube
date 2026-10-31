@@ -11,7 +11,7 @@ const catalog = JSON.parse(read("_locales/en/messages.json"));
 const arabicCatalog = JSON.parse(read("_locales/ar/messages.json"));
 const expectedEnglishName = "FocusTube - Shorts, Reels & Feed Blocker";
 const expectedEnglishDescription =
-  "Block YouTube Shorts, Instagram Reels, TikTok, Facebook Reels, LinkedIn and Reddit feeds without blocking the sites.";
+  "Hide short-form videos and endless feeds without blocking the rest of the site.";
 
 function renderCatalogMessage(sourceCatalog, key, substitutions) {
   const entry = sourceCatalog[key];
