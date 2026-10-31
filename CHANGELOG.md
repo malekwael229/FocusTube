@@ -4,6 +4,13 @@ All notable project-facing changes are documented here.
 
 ## [Unreleased]
 
+## [2.5.2] - 2026-10-31
+
+- The Reddit feed notice now looks like the other FocusTube screens: the FocusTube icon, "Feed Hidden", a short line on what still works, and the same buttons. **Search Reddit** comes first and **View Anyway** (Warn mode) second.
+- Shortened the extension description so it no longer lists every supported site. The Chrome Web Store flagged the old one as keyword spam.
+- Removed the unused "Your feed is paused" string from each language.
+- Added a short note to the README on how FocusTube is built.
+
 ## [2.5.1] - 2026-10-29
 
 - Made Reddit access optional. Updating no longer asks for new permissions, so Chrome and Edge stop disabling FocusTube and Firefox stops holding the update.

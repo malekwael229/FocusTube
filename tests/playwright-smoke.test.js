@@ -104,9 +104,9 @@ function verifyManifests() {
   ];
 
   assert.equal(chromeManifest.manifest_version, 3);
-  assert.equal(chromeManifest.version, "2.5.1");
-  assert.equal(buildManifest.version, "2.5.1");
-  assert.equal(firefoxManifest.version, "2.5.1");
+  assert.equal(chromeManifest.version, "2.5.2");
+  assert.equal(buildManifest.version, "2.5.2");
+  assert.equal(firefoxManifest.version, "2.5.2");
   assert.equal(buildManifest.manifest_version, 3);
   assert.equal(firefoxManifest.manifest_version, 2);
   assert.deepEqual(chromeManifest.content_security_policy, {
@@ -720,7 +720,7 @@ async function verifyOptions(context, extensionId) {
 
   const renderedVersion = page.locator(".about-version");
   await renderedVersion.waitFor({ state: "visible" });
-  assert.equal(await renderedVersion.innerText(), "Version 2.5.1");
+  assert.equal(await renderedVersion.innerText(), "Version 2.5.2");
   assertNoText(bodyText, /1 minute \(testing only\)/, "Options still show temporary one-minute test option");
   assertNoText(bodyText, /play\s*sound/i, "Options still show sound option text");
   assert.equal(await page.locator("#playSound").count(), 0);
