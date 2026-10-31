@@ -69,7 +69,7 @@ The project supports Chromium browsers with a Manifest V3 build and Firefox with
 
 The [FocusTube project website](https://malekwael229.github.io/FocusTube/) includes platform-specific guides and the same official store links used by the extension.
 
-The latest published GitHub release is 2.5.0. Browser-store updates are separate; check the version shown on each listing before treating a store listing as current.
+The latest published GitHub release is 2.5.2. Browser-store updates are separate; check the version shown on each listing before treating a store listing as current.
 
 ### Official Stores
 
