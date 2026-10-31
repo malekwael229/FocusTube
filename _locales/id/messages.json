@@ -467,7 +467,6 @@
   "modeRedditStrictDescription": { "message": "Sembunyikan feed tanpa tampilkan" },
   "modeRedditWarnDescription": { "message": "Sembunyikan feed dengan Lihat Saja" },
   "modeRedditPassiveDescription": { "message": "Tampilkan feed Reddit" },
-  "redditFeedHidden": { "message": "Feed Anda dijeda" },
   "redditFeedGuidance": { "message": "Pencarian, postingan, dan komentar tetap tersedia." },
   "redditSearch": { "message": "Cari di Reddit" },
   "catalogDirection": { "message": "ltr" }

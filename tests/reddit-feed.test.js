@@ -75,7 +75,7 @@ async function main() {
     assert.deepEqual(await state(), { path: "/r/test/", hidden: true, inert: true, notice: 1, reveal: false, mode: "strict", oldMode: "warn" });
     checks++;
     const notice = page.locator(".ft-reddit-feed-notice");
-    assert.equal(await notice.locator("h2").innerText(), catalog.redditFeedHidden.message);
+    assert.equal(await notice.locator("h2").innerText(), catalog.feedHidden.message);
     assert.equal(await notice.locator(".ft-reddit-notice-copy p").innerText(), catalog.redditFeedGuidance.message);
     assert.equal(await notice.locator(".ft-reddit-notice-mode").count(), 0);
     assert.equal(await notice.locator(".ft-reddit-notice-brand svg").count(), 1);
@@ -96,9 +96,9 @@ async function main() {
     const narrowColumn = await notice.evaluate((element) => ({
       cardFits: element.scrollWidth <= element.clientWidth + 1,
       headingFits: element.querySelector("h2").scrollWidth <= element.querySelector("h2").clientWidth + 1,
-      artHidden: getComputedStyle(element.querySelector(".ft-reddit-notice-visual")).display === "none",
+      plain: !element.querySelector(".ft-reddit-notice-visual") && getComputedStyle(element).backgroundImage === "none",
     }));
-    assert.deepEqual(narrowColumn, { cardFits: true, headingFits: true, artHidden: true }, "narrow desktop feed column uses compact layout");
+    assert.deepEqual(narrowColumn, { cardFits: true, headingFits: true, plain: true }, "narrow desktop feed column fits the plain notice");
     checks++;
     await page.locator("main").evaluate((main) => { main.style.width = ""; });
     await page.setViewportSize({ width: 900, height: 700 });
