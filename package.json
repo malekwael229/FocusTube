@@ -29,6 +29,6 @@
   "devDependencies": {
     "fast-check": "4.10.2",
     "playwright": "1.64.1",
-    "web-ext": "10.7.0"
+    "web-ext": "10.8.0"
   }
 }
