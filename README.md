@@ -60,7 +60,7 @@ The project supports Chromium browsers with a Manifest V3 build and Firefox with
 
 - Built-in focus/break timer.
 - Optional browser notifications when timers complete.
-- Local blocked-count and time-saved estimates.
+- Local blocked count.
 - Popup and options pages for browser-local configuration.
 
 ---
@@ -118,12 +118,12 @@ Click the extension icon to open the popup:
 
 ## Project Impact
 
-Snapshot refreshed September 13, 2026. Store analytics use different activity windows, so the figures below are kept separate rather than summed:
+Store analytics use different activity windows, so the figures below are kept separate rather than summed, and each carries its own date:
 
-- Chrome Web Store: 390 weekly users on September 11; 5.0 from 7 ratings; Featured status.
-- Firefox Add-ons: 298 daily users on September 12; 5.0 from 3 reviews.
-- Microsoft Edge Add-ons: 129 users in the week ending September 6, including 110 enabled and 19 disabled.
-- GitHub: 33 stars and 4 forks.
+- Chrome Web Store: 400 weekly users on October 31; 5.0 from 10 ratings; Featured status.
+- Firefox Add-ons: 398 daily users on November 2; 5.0 from 5 reviews.
+- Microsoft Edge Add-ons: 174 users in the week ending October 25, including 130 enabled and 44 disabled.
+- GitHub: 44 stars and 5 forks on November 2.
 - Published listings: Chrome, Firefox, and Edge.
 
 ---
