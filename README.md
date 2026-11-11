@@ -28,7 +28,7 @@
     <a href="https://www.bestpractices.dev/projects/14395"><img alt="OpenSSF Best Practices Passing" src="https://www.bestpractices.dev/projects/14395/badge" /></a>
     <a href="https://www.bestpractices.dev/projects/14395"><img alt="OpenSSF Best Practices Baseline Level 1" src="https://www.bestpractices.dev/projects/14395/baseline" /></a>
     <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" />
-    <img alt="GitHub release version: 2.5.2" src="https://img.shields.io/badge/version-2.5.2-green.svg" />
+    <img alt="GitHub release version: 2.5.3" src="https://img.shields.io/badge/version-2.5.3-green.svg" />
     <img alt="Firefox compatible" src="https://img.shields.io/badge/firefox-compatible-orange.svg" />
   </p>
 </div>
@@ -69,7 +69,7 @@ The project supports Chromium browsers with a Manifest V3 build and Firefox with
 
 The [FocusTube project website](https://malekwael229.github.io/FocusTube/) includes platform-specific guides and the same official store links used by the extension.
 
-The latest published GitHub release is 2.5.2. Browser-store updates are separate; check the version shown on each listing before treating a store listing as current.
+The latest published GitHub release is 2.5.3. Browser-store updates are separate; check the version shown on each listing before treating a store listing as current.
 
 ### Official Stores
 

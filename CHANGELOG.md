@@ -4,6 +4,11 @@ All notable project-facing changes are documented here.
 
 ## [Unreleased]
 
+## [2.5.3] - 2026-11-11
+
+- **Hide Shorts Shelves** now hides the Shorts shelf on YouTube search results again. YouTube changed how that shelf is built, so only the thumbnails were hidden and the "Shorts" heading, titles and view counts stayed on the page.
+- Refreshed the README stats and removed a leftover mention of the time-saved figure.
+
 ## [2.5.2] - 2026-10-31
 
 - The Reddit feed notice now looks like the other FocusTube screens: the FocusTube icon, "Feed Hidden", a short line on what still works, and the same buttons. **Search Reddit** comes first and **View Anyway** (Warn mode) second.
