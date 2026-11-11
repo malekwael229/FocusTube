@@ -2,7 +2,7 @@
 
 This file tracks evidence and remaining work for external validation. It is not a certification claim.
 
-Last security-tooling review: October 9, 2026. Earlier browser-validation evidence below remains dated separately.
+Last security-tooling review: November 11, 2026. Earlier browser-validation evidence below remains dated separately.
 
 ## Repository Evidence
 
@@ -12,12 +12,12 @@ Last security-tooling review: October 9, 2026. Earlier browser-validation eviden
 - CI runs the full test suite on pushes and pull requests.
 - Release packages are built from an allowlist and checked for reproducibility.
 - Extension pages use a self-only CSP and do not load remote code.
-- Runtime permissions are limited to storage, alarms, notifications, and supported sites.
-- The 2.5.0 release keeps API permissions and extension-page CSP unchanged; its Reddit host access is limited to `reddit.com` and `www.reddit.com`.
-- The full Windows Node 24 gate and Linux Node 20 package-reproducibility check pass; CI runs the full suite on Node 20.
+- Runtime permissions are limited to storage, alarms, notifications, and supported sites, plus `scripting` on Chromium to load the Reddit script.
+- Since 2.5.1, Reddit host access (`reddit.com` and `www.reddit.com`) is optional and requested only when the user turns on Reddit, so updating asks for no new permissions. API permissions and extension-page CSP are otherwise unchanged through 2.5.3.
+- The full Windows Node 24 gate and Linux package-reproducibility check pass; CI runs the full suite on Node 22.
 - Fixture checks and manual/live checks are recorded separately: fixtures establish deterministic behavior, while manual reports are limited observations and do not establish a complete browser matrix.
 - The 2.4.0 localization work packages eight browser-native catalogs with English as the default. It adds no permissions, CSP allowances, network endpoints, or runtime dependencies, and it leaves storage keys and runtime message identities unchanged.
-- On October 9, 2026, the production-only dependency audit reports zero vulnerabilities. The current tooling fixes the `source-map-js` and `shell-quote` advisories, while the full audit still reports the unpatched `node-forge` advisory through `web-ext` → `@devicefarmer/adbkit`. Its vulnerable verification path is Android ADB authentication, outside FocusTube's build/lint commands. No development dependencies are packaged with the extension. See `TESTING.md` for dependency versions and advisory links; the finding remains visible without an ignore rule.
+- On November 11, 2026, the production-only dependency audit reports zero vulnerabilities. `node-forge` 1.4.3 fixes the Forge advisories in the development tooling. The full audit still reports a low-severity `deepmerge` advisory through `web-ext` → `addons-linter`; npm's only offered fix is a breaking downgrade of `web-ext`. No development dependencies are packaged with the extension. See `TESTING.md` for dependency versions and advisory links; the finding remains visible without an ignore rule.
 - On October 1, an issue reporter confirmed Firefox feed blocking, posts, comments, and search in [issue #49](https://github.com/malekwael229/FocusTube/issues/49#issuecomment-5934030951); the browser version and full matrix were not provided.
 
 ## Historical 2.4.0 Localization Evidence
