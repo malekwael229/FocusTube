@@ -375,6 +375,10 @@ const YouTube = {
           const section = shelf.closest("ytd-rich-section-renderer");
           matches.add(section || shelf);
         });
+      // Search results now render the Shorts shelf as a grid shelf with no Shorts attribute.
+      document.querySelectorAll("grid-shelf-view-model").forEach((shelf) => {
+        if (shelf.querySelector('a[href^="/shorts/"]')) matches.add(shelf);
+      });
       document.querySelectorAll('a[href^="/shorts"]').forEach((link) => {
         const richItem = link.closest("ytd-rich-item-renderer");
         if (richItem) matches.add(richItem);

@@ -1003,6 +1003,8 @@ function youtubePlayablesFixtureHtml() {
     <ytd-rich-section-renderer id="playables-header-shelf"><ytd-rich-shelf-renderer><div id="rich-shelf-header"><span id="title">Playables</span></div></ytd-rich-shelf-renderer></ytd-rich-section-renderer>
     <ytd-rich-section-renderer id="localized-playables-shelf"><ytd-rich-shelf-renderer><h2>Jugables</h2><ytd-rich-item-renderer is-mini-game-card-shelf>Game</ytd-rich-item-renderer></ytd-rich-shelf-renderer></ytd-rich-section-renderer>
     <ytd-rich-section-renderer id="shorts-shelf"><ytd-rich-shelf-renderer is-shorts><h2>Shorts</h2></ytd-rich-shelf-renderer></ytd-rich-section-renderer>
+    <grid-shelf-view-model id="search-shorts-grid"><h2>Shorts</h2><div><a href="/shorts/abc123">How to Nail Your College Interview</a><span>11M views</span></div></grid-shelf-view-model>
+    <grid-shelf-view-model id="search-video-grid"><h2>Videos</h2><div><a href="/watch?v=video">Regular video</a></div></grid-shelf-view-model>
     <ytd-rich-section-renderer id="regular-shelf"><h2>Recently uploaded</h2><a href="/watch?v=video">How Playables work</a></ytd-rich-section-renderer>
     <ytd-rich-section-renderer id="game-link-shelf"><h2>Watch later</h2><a href="/playables/example-game">Saved game</a></ytd-rich-section-renderer>
     <ytd-rich-section-renderer id="body-link-shelf"><h2>Recently uploaded</h2><div id="content"><a href="/playables">Playables mentioned in a video</a></div></ytd-rich-section-renderer>
@@ -1037,6 +1039,12 @@ async function verifyYouTubePlayablesRuntime(context, extensionId) {
   for (const id of ["regular-shelf", "game-link-shelf", "body-link-shelf", "direct-body-link-shelf", "rich-body-link-shelf", "review-shelf", "nested-title-shelf"]) {
     assert.notEqual(await page.locator(`#${id}`).evaluate((el) => getComputedStyle(el).display), "none");
   }
+  await page.waitForFunction(() => getComputedStyle(document.getElementById("search-shorts-grid")).display === "none");
+  assert.notEqual(
+    await page.locator("#search-video-grid").evaluate((el) => getComputedStyle(el).display),
+    "none",
+    "grid shelves without Shorts stay visible",
+  );
 
   await setStorage(settingsPage, { focusMode: false });
   await page.waitForFunction(() => getComputedStyle(document.getElementById("playables-shelf")).display !== "none");
