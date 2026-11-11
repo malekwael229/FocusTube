@@ -12,11 +12,11 @@ npm.cmd ci
 npx.cmd playwright install chromium
 ```
 
-The repository requires Node.js 20 or newer. The test dependencies are pinned in `package-lock.json`, including Playwright and `web-ext` 10.7.0.
+The repository requires Node.js 20 or newer. The test dependencies are pinned in `package-lock.json`, including Playwright and `web-ext` 10.8.0.
 
-On October 9, 2026, the production-only audit reports zero vulnerabilities. The full audit still reports the unpatched `node-forge` advisory [GHSA-86w9-cpqp-85rv](https://github.com/advisories/GHSA-86w9-cpqp-85rv), reached through development-only `web-ext` → `@devicefarmer/adbkit`. The affected signature-verification path belongs to Android ADB authentication, not FocusTube's build/lint commands or shipped extension. Keep this finding visible until upstream publishes a fix. Audit output is not suppressed.
+On November 11, 2026, the production-only audit reports zero vulnerabilities. `node-forge` 1.4.3 fixes the Forge advisories reached through development-only `web-ext`. The full audit still reports three low-severity findings from one advisory, [GHSA-gcqx-w48m-w2h4](https://github.com/advisories/GHSA-gcqx-w48m-w2h4) in `deepmerge`, reached through `web-ext` → `addons-linter`. npm's only offered fix downgrades `web-ext` to 3.2.1, a breaking major version, so the finding stays visible until `addons-linter` updates. It is not part of FocusTube's build/lint output or shipped extension. Audit output is not suppressed.
 
-The installed tooling tree fixes [GHSA-68fv-2mgg-jv7q](https://github.com/advisories/GHSA-68fv-2mgg-jv7q) with `source-map-js` 1.2.2 and [GHSA-pqg4-j6r4-53mv](https://github.com/advisories/GHSA-pqg4-j6r4-53mv) with `shell-quote` 1.11.0. A scoped override selects `fx-runner` 1.7.0 under `web-ext` 10.7.0; this upstream runner release updates the dependency without changing its runtime JavaScript. Remove the override when a compatible `web-ext` release includes that runner. The earlier `image-size` 2.0.4 fix remains in place.
+The installed tooling tree fixes [GHSA-68fv-2mgg-jv7q](https://github.com/advisories/GHSA-68fv-2mgg-jv7q) with `source-map-js` 1.2.2 and [GHSA-pqg4-j6r4-53mv](https://github.com/advisories/GHSA-pqg4-j6r4-53mv) with `shell-quote` 1.11.0. A scoped override selects `fx-runner` 1.7.0 under `web-ext` 10.8.0; this upstream runner release updates the dependency without changing its runtime JavaScript. Remove the override when a compatible `web-ext` release includes that runner. The earlier `image-size` 2.0.4 fix remains in place.
 
 ## Automated Commands
 

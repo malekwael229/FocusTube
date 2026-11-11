@@ -8,6 +8,7 @@ All notable project-facing changes are documented here.
 
 - **Hide Shorts Shelves** now hides the Shorts shelf on YouTube search results again. YouTube changed how that shelf is built, so only the thumbnails were hidden and the "Shorts" heading, titles and view counts stayed on the page.
 - Refreshed the README stats and removed a leftover mention of the time-saved figure.
+- Updated `node-forge` in the development tools to 1.4.3 and brought `TESTING.md` and `VALIDATION.md` up to date with the current audit, permissions and CI version. Nothing in the shipped extension changes.
 
 ## [2.5.2] - 2026-10-31
 
