@@ -15,7 +15,7 @@
 
   <p>
     <a href="https://alternativeto.net/software/focustube-distraction-blocker/about/"><img alt="Listed on AlternativeTo" height="48" src="https://cdn.jsdelivr.net/gh/JMcrafter26/badges@main/src/assets/available/alternativeto/cozy.svg" /></a>
-    <a href="https://fmhy.net/misc"><img alt="Listed on FMHY" height="48" src="https://cdn.jsdelivr.net/gh/JMcrafter26/badges@main/src/assets/available/fmhy/cozy.svg" /></a>
+    <a href="https://fmhy.net/misc#productivity-time-tracking"><img alt="Listed on FMHY" height="48" src="https://cdn.jsdelivr.net/gh/JMcrafter26/badges@main/src/assets/available/fmhy/cozy.svg" /></a>
     <a href="https://malekwael229.github.io/FocusTube/"><img alt="Project website" height="48" src="https://cdn.jsdelivr.net/gh/JMcrafter26/badges@main/src/assets/documentation/website/cozy.svg" /></a>
     <a href="#installation"><img alt="Installation guide" height="48" src="https://cdn.jsdelivr.net/gh/JMcrafter26/badges@main/src/assets/documentation/installation/cozy.svg" /></a>
   </p>
