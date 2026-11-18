@@ -8,10 +8,16 @@
   <p><strong>Supports YouTube Shorts, Instagram Reels, TikTok, Facebook Reels, LinkedIn feeds, and current Reddit feeds.</strong></p>
 
   <p>
-    <strong>Install:</strong>
-    <a href="https://chromewebstore.google.com/detail/focustube-distraction-blo/ppdjgkniggbikifojmkindmbhppmoell">Chrome</a> |
-    <a href="https://addons.mozilla.org/en-US/firefox/addon/focus-tube/">Firefox</a> |
-    <a href="https://microsoftedge.microsoft.com/addons/detail/focustube-distraction-bl/emffahlehkfdlknpmpndaabhigchhoog">Edge</a>
+    <a href="https://chromewebstore.google.com/detail/focustube-distraction-blo/ppdjgkniggbikifojmkindmbhppmoell"><img alt="Available on the Chrome Web Store" height="48" src="https://cdn.jsdelivr.net/gh/JMcrafter26/badges@main/src/assets/available/chrome-web-store/cozy.svg" /></a>
+    <a href="https://addons.mozilla.org/en-US/firefox/addon/focus-tube/"><img alt="Available on Firefox Add-ons" height="48" src="https://cdn.jsdelivr.net/gh/JMcrafter26/badges@main/src/assets/available/firefox-addons/cozy.svg" /></a>
+    <a href="https://microsoftedge.microsoft.com/addons/detail/focustube-distraction-bl/emffahlehkfdlknpmpndaabhigchhoog"><img alt="Available on Edge Add-ons" height="48" src="https://cdn.jsdelivr.net/gh/JMcrafter26/badges@main/src/assets/available/edge-addons/cozy.svg" /></a>
+  </p>
+
+  <p>
+    <a href="https://alternativeto.net/software/focustube-distraction-blocker/about/"><img alt="Listed on AlternativeTo" height="48" src="https://cdn.jsdelivr.net/gh/JMcrafter26/badges@main/src/assets/available/alternativeto/cozy.svg" /></a>
+    <a href="https://fmhy.net/misc"><img alt="Listed on FMHY" height="48" src="https://cdn.jsdelivr.net/gh/JMcrafter26/badges@main/src/assets/available/fmhy/cozy.svg" /></a>
+    <a href="https://malekwael229.github.io/FocusTube/"><img alt="Project website" height="48" src="https://cdn.jsdelivr.net/gh/JMcrafter26/badges@main/src/assets/documentation/website/cozy.svg" /></a>
+    <a href="#installation"><img alt="Installation guide" height="48" src="https://cdn.jsdelivr.net/gh/JMcrafter26/badges@main/src/assets/documentation/installation/cozy.svg" /></a>
   </p>
 
   <p>
@@ -29,7 +35,6 @@
     <a href="https://www.bestpractices.dev/projects/14395"><img alt="OpenSSF Best Practices Baseline Level 1" src="https://www.bestpractices.dev/projects/14395/baseline" /></a>
     <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" />
     <img alt="GitHub release version: 2.5.3" src="https://img.shields.io/badge/version-2.5.3-green.svg" />
-    <img alt="Firefox compatible" src="https://img.shields.io/badge/firefox-compatible-orange.svg" />
   </p>
 </div>
 
