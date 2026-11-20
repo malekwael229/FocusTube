@@ -374,31 +374,46 @@ h3 {
   display:inline-flex;
   align-items:center
 }
-.snapshot {
-  width:100%;
-  border-collapse:collapse;
+.trust {
+  align-self:center
+}
+.trust-number {
+  margin:0;
+  font-size:clamp(3.5rem,8vw,5.5rem);
+  font-weight:700;
+  line-height:1;
+  background:linear-gradient(90deg,var(--blue),var(--cyan));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent
+}
+.trust-label {
+  margin:12px 0 0;
+  font-size:1.15rem;
+  color:var(--text)
+}
+.trust-ratings {
+  list-style:none;
+  margin:28px 0 0;
+  padding:0
+}
+.trust-ratings li {
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+  padding:16px 0;
+  border-bottom:1px solid var(--line);
   font-size:1.05rem
 }
-.snapshot th,.snapshot td {
-  padding:19px 0;
-  border-bottom:1px solid var(--line);
-  vertical-align:top;
-  text-align:left
+.trust-ratings li:first-child {
+  border-top:1px solid var(--line)
 }
-.snapshot th {
-  width:40%;
-  font-weight:600;
-  padding-right:20px
+.trust-ratings a {
+  font-weight:600
 }
-.snapshot td {
-  color:var(--muted)
-}
-.snapshot caption {
-  text-align:left;
-  font-size:.92rem;
+.trust-ratings span {
   color:var(--muted);
-  caption-side:bottom;
-  padding-top:18px
+  text-align:right
 }
 .closing {
   text-align:center;
@@ -687,7 +702,7 @@ code {
   .closing {
     padding-block:48px
   }
-  .snapshot {
+  .trust-ratings li {
     font-size:.94rem
   }
 
