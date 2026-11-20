@@ -24,7 +24,6 @@
     <a href="#installation">Installation</a> |
     <a href="#features">Features</a> |
     <a href="#configuration">Configuration</a> |
-    <a href="#project-impact">Project Impact</a> |
     <a href="#technical-highlights">Technical Highlights</a> |
     <a href="#privacy">Privacy</a>
   </p>
@@ -118,18 +117,6 @@ Click the extension icon to open the popup:
 - Configure each supported platform.
 - Start or stop the focus/break timer.
 - Open the options page for timer settings, platform visibility, import/export, and reset controls.
-
----
-
-## Project Impact
-
-Store analytics use different activity windows, so the figures below are kept separate rather than summed, and each carries its own date:
-
-- Chrome Web Store: 422 users on November 20; 5.0 from 10 ratings; Featured status.
-- Firefox Add-ons: 434 daily users on November 20; 4.9 from 7 reviews.
-- Microsoft Edge Add-ons: 204 users on November 20; 5.0 from 3 ratings.
-- GitHub: 46 stars and 5 forks on November 20.
-- Published listings: Chrome, Firefox, and Edge.
 
 ---
 

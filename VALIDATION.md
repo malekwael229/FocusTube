@@ -7,7 +7,7 @@ Last security-tooling review: November 11, 2026. Earlier browser-validation evid
 ## Repository Evidence
 
 - Public MIT-licensed source with tagged releases.
-- `README.md` covers installation, supported sites, privacy, and project impact.
+- `README.md` covers installation, supported sites, and privacy.
 - `CONTRIBUTING.md`, `TESTING.md`, `ARCHITECTURE.md`, and `SECURITY.md` document contribution, testing, architecture, and security practices.
 - CI runs the full test suite on pushes and pull requests.
 - Release packages are built from an allowlist and checked for reproducibility.
