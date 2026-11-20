@@ -125,10 +125,10 @@ Click the extension icon to open the popup:
 
 Store analytics use different activity windows, so the figures below are kept separate rather than summed, and each carries its own date:
 
-- Chrome Web Store: 400 weekly users on October 31; 5.0 from 10 ratings; Featured status.
-- Firefox Add-ons: 398 daily users on November 2; 5.0 from 5 reviews.
-- Microsoft Edge Add-ons: 174 users in the week ending October 25, including 130 enabled and 44 disabled.
-- GitHub: 44 stars and 5 forks on November 2.
+- Chrome Web Store: 422 users on November 20; 5.0 from 10 ratings; Featured status.
+- Firefox Add-ons: 434 daily users on November 20; 4.9 from 7 reviews.
+- Microsoft Edge Add-ons: 204 users on November 20; 5.0 from 3 ratings.
+- GitHub: 46 stars and 5 forks on November 20.
 - Published listings: Chrome, Firefox, and Edge.
 
 ---
