@@ -1670,8 +1670,7 @@ test("Reddit stays on reddit.com and www.reddit.com only", () => {
   const common = read("content-common.js");
   const siteSource = common.slice(common.indexOf("const Site = {"), common.indexOf("};", common.indexOf("const Site = {")) + 2);
   const context = { location: { hostname: "" } };
-  vm.runInNewContext(`${siteSource}
-this.Site = Site;`, context);
+  vm.runInNewContext(`${siteSource}\nthis.Site = Site;`, context);
   for (const [hostname, expected] of [
     ["reddit.com", true], ["www.reddit.com", true], ["m.reddit.com", false],
     ["old.reddit.com", false], ["new.reddit.com", false],
@@ -1685,6 +1684,17 @@ this.Site = Site;`, context);
     assert.deepEqual(origins, ["*://reddit.com/*", "*://www.reddit.com/*"], file);
   }
   assert.ok(read("background.js").includes('const REDDIT_ORIGINS = ["*://reddit.com/*", "*://www.reddit.com/*"];'));
+});
+
+test("popup fits a phone screen without changing the desktop popup", () => {
+  assert.ok(read("popup.html").includes('<meta name="viewport" content="width=device-width, initial-scale=1.0" />'));
+  const css = read("styles.css");
+  const start = css.indexOf("@media (hover: none) and (pointer: coarse) {");
+  assert.ok(start !== -1, "phone styles key on a touch-only pointer, not on width");
+  const block = css.slice(start);
+  assert.match(block, /\.focustube-popup-body \{[^}]*width: auto;[^}]*overflow-y: auto;/);
+  assert.match(block, /\.icon-btn,[\s\S]*?width: 44px;\s*height: 44px;/);
+  assert.match(css, /\.focustube-popup-body \{[\s\S]*?width: 300px;/, "desktop width stays 300px");
 });
 
 test("background avoids APIs Firefox for Android does not provide", () => {
