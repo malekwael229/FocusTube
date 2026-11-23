@@ -1619,6 +1619,80 @@ test("Facebook Stories CSS hides recognized fixtures but leaves unrelated contro
   }
 });
 
+test("event page reloads keep a timer alive and complete it from a cold context", () => {
+  // Firefox runs background.js as an event page, so each wake is a fresh
+  // context that shares only storage and alarms with the one before it.
+  const state = { showNotifications: true };
+  const started = loadBackground(state, { state, now: 1_000_000 });
+  const [response] = started.sendRuntimeMessage({ action: "startTimer", duration: 25, type: "work" });
+  assert.equal(response?.end, 2_500_000);
+  assert.equal(started.activeAlarms.get("focusTubeTimer")?.when, 2_500_000);
+
+  const woken = loadBackground(state, { state, now: 1_200_000 });
+  assert.deepEqual(
+    woken.calls.alarms.filter((call) => call.action === "create"),
+    [{ action: "create", name: "focusTubeTimer", info: { when: 2_500_000 } }],
+    "a wake before the end recreates the primary alarm once",
+  );
+  assert.deepEqual(woken.calls.removes, []);
+  assert.deepEqual(woken.calls.notifications, []);
+
+  const fired = loadBackground(state, { state, now: 2_500_100 });
+  fired.fireAlarm({ name: "focusTubeTimer", scheduledTime: 2_500_000 });
+  assert.equal(fired.calls.notifications.length, 1);
+  assert.equal(fired.calls.runtimeMessages.length, 1);
+  assert.equal(state.ft_timer_type, "break");
+  assert.equal(state.ft_timer_end, 2_500_100 + 5 * 60 * 1000);
+  assert.equal(state.ft_timer_completion_claim, undefined);
+  assert.equal(fired.activeAlarms.get("focusTubeTimer")?.when, state.ft_timer_end);
+
+  const snapshot = { ...state };
+  const late = loadBackground(state, { state, now: state.ft_timer_end + 60_000 });
+  assert.deepEqual(state, snapshot, "a plain wake after the end leaves cleanup to the alarm");
+  assert.deepEqual(late.calls.removes, []);
+  assert.deepEqual(late.calls.notifications, []);
+});
+
+test("Firefox manifest declares Android support and a non-persistent event page", () => {
+  const firefox = readJson("firefox-manifest.json");
+  assert.equal(firefox.background.persistent, false);
+  assert.deepEqual(firefox.background.scripts, ["i18n.js", "background.js"]);
+  assert.equal(firefox.background.service_worker, undefined, "Firefox for Android has no service workers");
+  assert.deepEqual(firefox.browser_specific_settings.gecko_android, {});
+  assert.equal(firefox.browser_specific_settings.gecko.id, "focustube@malekwael.com");
+  assert.equal(firefox.browser_specific_settings.gecko.strict_min_version, "142.0");
+});
+
+test("Reddit stays on reddit.com and www.reddit.com only", () => {
+  // m.reddit.com answers with a 301 to www.reddit.com, and old.reddit.com has
+  // no shreddit-feed for content-rd.js to hide (checked 2026-11-23), so
+  // neither host is requested or matched.
+  const common = read("content-common.js");
+  const siteSource = common.slice(common.indexOf("const Site = {"), common.indexOf("};", common.indexOf("const Site = {")) + 2);
+  const context = { location: { hostname: "" } };
+  vm.runInNewContext(`${siteSource}
+this.Site = Site;`, context);
+  for (const [hostname, expected] of [
+    ["reddit.com", true], ["www.reddit.com", true], ["m.reddit.com", false],
+    ["old.reddit.com", false], ["new.reddit.com", false],
+  ]) {
+    context.location.hostname = hostname;
+    assert.equal(context.Site.isRD(), expected, hostname);
+  }
+  for (const file of ["chrome-manifest.json", "firefox-manifest.json"]) {
+    const manifest = readJson(file);
+    const origins = manifest.optional_host_permissions || manifest.optional_permissions;
+    assert.deepEqual(origins, ["*://reddit.com/*", "*://www.reddit.com/*"], file);
+  }
+  assert.ok(read("background.js").includes('const REDDIT_ORIGINS = ["*://reddit.com/*", "*://www.reddit.com/*"];'));
+});
+
+test("background avoids APIs Firefox for Android does not provide", () => {
+  const source = read("background.js") + read("popup.js") + read("options.js");
+  assert.doesNotMatch(source, /chrome\.(windows|sidebarAction|commands|menus|contextMenus)\b/);
+  assert.doesNotMatch(source, /storage\.managed|connectNative|sendNativeMessage/);
+});
+
 test("manifest and package allowlists remain narrow and internally consistent", () => {
   const chrome = readJson("chrome-manifest.json");
   const firefox = readJson("firefox-manifest.json");
@@ -1628,7 +1702,7 @@ test("manifest and package allowlists remain narrow and internally consistent", 
   assert.deepEqual(firefox.optional_permissions, ["*://reddit.com/*", "*://www.reddit.com/*"]);
   assert.deepEqual(firefox.permissions.sort(), [
     "*://*.facebook.com/*", "*://*.instagram.com/*", "*://*.linkedin.com/*",
-    "*://*.tiktok.com/*", "*://*.youtube.com/*", "alarms", "notifications", "storage",
+    "*://*.tiktok.com/*", "*://*.youtube.com/*", "alarms", "notifications", "scripting", "storage",
   ]);
   assert.deepEqual(runtimeFiles, [
     "background.js", "i18n.js", "content-common.js", "content-fb.js", "content-ig.js", "content-li.js", "content-rd.js",

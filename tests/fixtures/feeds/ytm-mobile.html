@@ -1,0 +1,63 @@
+<!-- Reduced m.youtube.com capture, 2026-11-23, logged out, Firefox for Android user agent at 360px.
+     Search results, a channel page and the bottom bar are merged into one page. Icons, thumbnails
+     and text were trimmed; tag names, classes, tab titles and Shorts links are kept as captured. -->
+<ytm-app class="sticky-player">
+  <ytm-search class="ytmSearchPageHost">
+    <ytm-section-list-renderer class="no-bottom-separator">
+      <lazy-list>
+        <ytm-item-section-renderer class="fullbleed">
+          <lazy-list>
+            <ytm-video-with-context-renderer id="ytm-video" class="item adaptive-feed-item">
+              <ytm-media-item><a href="/watch?v=fixture1">Ordinary video</a>
+                <ytm-thumbnail-overlay-time-status-renderer data-style="DEFAULT">4:12</ytm-thumbnail-overlay-time-status-renderer>
+              </ytm-media-item>
+            </ytm-video-with-context-renderer>
+            <ytm-video-with-context-renderer id="ytm-short-singleton" class="item adaptive-feed-item">
+              <ytm-media-item class="big-shorts-singleton"><a href="/shorts/fixture2">Single Short</a>
+                <ytm-thumbnail-overlay-time-status-renderer data-style="SHORTS">Shorts</ytm-thumbnail-overlay-time-status-renderer>
+              </ytm-media-item>
+            </ytm-video-with-context-renderer>
+            <grid-shelf-view-model id="ytm-grid-shelf" class="ytGridShelfViewModelHost item">
+              <yt-shelf-header-layout><h2>Fixture Shorts shelf</h2></yt-shelf-header-layout>
+              <ytm-shorts-lockup-view-model class="shortsLockupViewModelHost"><a href="/shorts/fixture3">Short</a></ytm-shorts-lockup-view-model>
+              <ytm-shorts-lockup-view-model class="shortsLockupViewModelHost"><a href="/shorts/fixture4">Short</a></ytm-shorts-lockup-view-model>
+            </grid-shelf-view-model>
+          </lazy-list>
+        </ytm-item-section-renderer>
+      </lazy-list>
+    </ytm-section-list-renderer>
+  </ytm-search>
+  <ytm-single-column-browse-results-renderer class="modern-tabs">
+    <yt-tab-group-shape>
+      <yt-tab-shape id="tab-home" role="tab" class="ytTabShapeHost" tab-title="Home"><div class="ytTabShapeTab">Home</div></yt-tab-shape>
+      <yt-tab-shape id="tab-videos" role="tab" class="ytTabShapeHost" tab-title="Videos"><div class="ytTabShapeTab">Videos</div></yt-tab-shape>
+      <yt-tab-shape id="tab-shorts" role="tab" class="ytTabShapeHost" tab-title="Shorts"><div class="ytTabShapeTab">Shorts</div></yt-tab-shape>
+      <yt-tab-shape id="tab-live" role="tab" class="ytTabShapeHost" tab-title="Live"><div class="ytTabShapeTab">Live</div></yt-tab-shape>
+    </yt-tab-group-shape>
+    <ytm-tab-renderer>
+      <ytm-section-list-renderer>
+        <lazy-list>
+          <ytm-item-section-renderer>
+            <lazy-list>
+              <ytm-shelf-renderer id="ytm-video-shelf"><h2>Videos</h2><a href="/watch?v=fixture5">Channel video</a></ytm-shelf-renderer>
+              <ytm-reel-shelf-renderer id="ytm-reel-shelf" class="item"><h2>Shorts</h2>
+                <ytm-shorts-lockup-view-model class="shortsLockupViewModelHost"><a href="/shorts/fixture6">Short</a></ytm-shorts-lockup-view-model>
+              </ytm-reel-shelf-renderer>
+            </lazy-list>
+          </ytm-item-section-renderer>
+        </lazy-list>
+      </ytm-section-list-renderer>
+    </ytm-tab-renderer>
+  </ytm-single-column-browse-results-renderer>
+  <div id="home-feed">
+    <ytm-rich-section-renderer id="ytm-empty-section"><h2>Try searching to get started</h2></ytm-rich-section-renderer>
+    <ytm-rich-section-renderer id="ytm-shorts-section">
+      <ytm-shorts-lockup-view-model class="shortsLockupViewModelHost"><a href="/shorts/fixture7">Short</a></ytm-shorts-lockup-view-model>
+    </ytm-rich-section-renderer>
+  </div>
+  <ytm-pivot-bar-renderer>
+    <ytm-pivot-bar-item-renderer id="pivot-home"><div role="tab" class="pivot-bar-item-tab pivot-w2w" aria-selected="true">Home</div></ytm-pivot-bar-item-renderer>
+    <ytm-pivot-bar-item-renderer id="pivot-shorts"><div role="tab" class="pivot-bar-item-tab pivot-shorts" aria-selected="false">Shorts</div></ytm-pivot-bar-item-renderer>
+    <ytm-pivot-bar-item-renderer id="pivot-you"><div role="tab" class="pivot-bar-item-tab pivot-you" aria-selected="false">You</div></ytm-pivot-bar-item-renderer>
+  </ytm-pivot-bar-renderer>
+</ytm-app>

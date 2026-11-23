@@ -28,7 +28,7 @@ Run the complete local gate:
 npm.cmd run test:all
 ```
 
-The aggregate runner creates fresh `.tmp/test-builds/chromium` and `.tmp/test-builds/firefox` packages, then runs JavaScript syntax checks, localization and website validation, package reproducibility, regression, tooling-security and generated property tests, background timer, live-harness unit, Instagram/LinkedIn feed-filter fixture, Reddit-feed fixture, Chromium UI-state and smoke, and Firefox lint checks. It removes the temporary packages after success or failure. Package reproducibility tests also rebuild generated files in `dist-release-builds` and `dist-test-builds` if those directories exist; keep any release artifacts you need to preserve outside these disposable local build directories.
+The aggregate runner creates fresh `.tmp/test-builds/chromium` and `.tmp/test-builds/firefox` packages, then runs JavaScript syntax checks, localization and website validation, package reproducibility, regression, tooling-security and generated property tests, background timer, live-harness unit, Instagram/LinkedIn feed-filter fixture, Reddit-feed fixture, m.youtube.com Shorts fixture, Chromium UI-state and smoke, and Firefox lint checks. It removes the temporary packages after success or failure. Package reproducibility tests also rebuild generated files in `dist-release-builds` and `dist-test-builds` if those directories exist; keep any release artifacts you need to preserve outside these disposable local build directories.
 
 Run individual checks when narrowing a failure:
 

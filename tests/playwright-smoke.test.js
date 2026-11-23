@@ -129,11 +129,11 @@ function verifyManifests() {
     expectedHosts,
     "Unexpected Chromium host permissions",
   );
-  // Firefox registers the Reddit script through browser.contentScripts, so it
-  // needs no scripting permission.
+  // Firefox registers the Reddit script through scripting too, because its
+  // registrations outlive the event page.
   assertSameMembers(
     firefoxManifest.permissions,
-    [...expectedApiPermissions.filter((permission) => permission !== "scripting"), ...expectedHosts],
+    [...expectedApiPermissions, ...expectedHosts],
     "Unexpected Firefox permissions",
   );
   const redditOrigins = ["*://reddit.com/*", "*://www.reddit.com/*"];

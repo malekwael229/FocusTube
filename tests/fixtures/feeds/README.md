@@ -24,3 +24,10 @@ observer settling, and actual canvas-stream video playback/pause behavior.
 
 Run `npm run test:feeds`. This requires the existing Playwright Chromium install;
 it adds no DOM emulator or new dependency.
+
+`ytm-mobile.html` is a reduced m.youtube.com capture from 2026-11-23, logged out,
+with a Firefox for Android user agent at 360px. It merges search results, a channel
+page and the bottom bar into one page. `tests/youtube-mobile.test.js` checks the
+Shorts rules against it and the in-app `state-navigateend` route change. The home
+feed Shorts section in it is authored from public filter lists, because the logged-out
+home feed was empty at capture time. Run `npm run test:youtube-mobile`.

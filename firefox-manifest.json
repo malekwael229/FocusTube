@@ -10,6 +10,7 @@
     "storage",
     "alarms",
     "notifications",
+    "scripting",
     "*://*.youtube.com/*",
     "*://*.instagram.com/*",
     "*://*.tiktok.com/*",
@@ -25,7 +26,8 @@
     "open_in_tab": true
   },
   "background": {
-    "scripts": ["i18n.js", "background.js"]
+    "scripts": ["i18n.js", "background.js"],
+    "persistent": false
   },
   "content_scripts": [
     {
@@ -73,6 +75,7 @@
       "data_collection_permissions": {
         "required": ["none"]
       }
-    }
+    },
+    "gecko_android": {}
   }
 }

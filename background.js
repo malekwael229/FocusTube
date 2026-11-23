@@ -1142,7 +1142,16 @@ const REDDIT_SCRIPT_ID = "focustube-reddit";
 const REDDIT_SCRIPT_FILES = ["i18n.js", "content-common.js", "content-rd.js"];
 let firefoxRedditRegistration = null;
 
+// The background is an event page on Firefox, so it unloads when idle.
+// scripting registrations persist across that and across restarts, while
+// contentScripts.register ones die with the page that made them. Use
+// contentScripts only where scripting is missing.
+function hasPersistentScripting() {
+  return Boolean(chrome.scripting?.registerContentScripts && chrome.scripting?.getRegisteredContentScripts);
+}
+
 function firefoxContentScripts() {
+  if (hasPersistentScripting()) return null;
   return globalThis.browser?.contentScripts?.register ? globalThis.browser.contentScripts : null;
 }
 
@@ -1156,7 +1165,7 @@ function hasRedditAccess(callback) {
 
 function registerChromeRedditScript() {
   const scripting = chrome.scripting;
-  if (!scripting?.getRegisteredContentScripts) return;
+  if (!hasPersistentScripting()) return;
   scripting.getRegisteredContentScripts({ ids: [REDDIT_SCRIPT_ID] }, (scripts) => {
     consumeRuntimeError();
     if (Array.isArray(scripts) && scripts.length) return;

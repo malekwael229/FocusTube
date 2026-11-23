@@ -1304,7 +1304,7 @@ const checks = [
     "background registers the Reddit script only while optional access is granted",
     () => {
       const source = read("background.js");
-      const load = ({ granted, firefox = false }) => {
+      const load = ({ granted, firefox = false, scripting = true }) => {
         const state = { granted, registered: [], calls: [], listeners: {} };
         const noop = () => {};
         const event = (name) => ({ addListener: (fn) => { state.listeners[name] = fn; } });
@@ -1343,6 +1343,7 @@ const checks = [
             executeScript: (options, cb) => { state.calls.push(["exec", options.files]); cb(); },
           },
         };
+        if (!scripting) delete chrome.scripting;
         const sandbox = { chrome, console: { error: noop, log: noop } };
         if (firefox) {
           sandbox.browser = {
@@ -1382,11 +1383,20 @@ const checks = [
       chromeGranted.listeners.removed({ origins: ["*://reddit.com/*"] });
       assert.ok(chromeGranted.calls.some(([kind]) => kind === "unregister"));
 
+      // Firefox runs an event page, so the persistent scripting registration
+      // must win over contentScripts.register, which dies when the page unloads.
       const firefoxGranted = load({ granted: true, firefox: true });
-      const firefoxRegistrations = firefoxGranted.calls.filter(([kind]) => kind === "firefox-register");
+      assert.equal(firefoxGranted.calls.filter(([kind]) => kind === "register").length, 1);
+      assert.ok(!firefoxGranted.calls.some(([kind]) => kind === "firefox-register"));
+      firefoxGranted.listeners.added({ origins: ["*://reddit.com/*"] });
+      assert.ok(firefoxGranted.calls.some(([kind, value]) => kind === "exec" && JSON.stringify(value) === JSON.stringify(files)));
+      assert.equal(firefoxGranted.calls.filter(([kind]) => kind === "register").length, 1, "wake-up sync does not duplicate");
+
+      const firefoxLegacy = load({ granted: true, firefox: true, scripting: false });
+      const firefoxRegistrations = firefoxLegacy.calls.filter(([kind]) => kind === "firefox-register");
       assert.equal(firefoxRegistrations.length, 1);
       assert.deepEqual(JSON.parse(JSON.stringify(firefoxRegistrations[0][1].js)), files.map((file) => ({ file })));
-      assert.ok(!firefoxGranted.calls.some(([kind]) => kind === "register"));
+      assert.ok(!firefoxLegacy.calls.some(([kind]) => kind === "register"));
     },
   ],
   [
