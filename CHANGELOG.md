@@ -4,6 +4,11 @@ All notable project-facing changes are documented here.
 
 ## [Unreleased]
 
+- Firefox for Android support, starting with YouTube and Reddit. The Firefox build now declares Android in its manifest and runs its background as an event page that can sleep when idle, as Firefox for Android requires. Running timers are restored from storage and alarms when it wakes.
+- On Firefox the Reddit script is now registered with the `scripting` API, so it stays registered while the background sleeps and after a restart. This adds the `scripting` permission to the Firefox build. It shows no install warning.
+- The popup fits a phone screen: it fills the width, scrolls when it is taller than the screen, and has larger buttons. The desktop popup is unchanged.
+- **Hide Shorts Button** and **Hide Shorts Shelves** now cover the mobile YouTube site (m.youtube.com): the Shorts button in the bottom bar, the Shorts tab and shelf on channel pages, Shorts in search results, and Shorts shelves on the home feed. Opening a Short from inside m.youtube.com is now caught in Strict mode.
+
 ## [2.5.3] - 2026-11-11
 
 - **Hide Shorts Shelves** now hides the Shorts shelf on YouTube search results again. YouTube changed how that shelf is built, so only the thumbnails were hidden and the "Shorts" heading, titles and view counts stayed on the page.

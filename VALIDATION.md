@@ -12,7 +12,7 @@ Last security-tooling review: November 11, 2026. Earlier browser-validation evid
 - CI runs the full test suite on pushes and pull requests.
 - Release packages are built from an allowlist and checked for reproducibility.
 - Extension pages use a self-only CSP and do not load remote code.
-- Runtime permissions are limited to storage, alarms, notifications, and supported sites, plus `scripting` on Chromium to load the Reddit script.
+- Runtime permissions are limited to storage, alarms, notifications, and supported sites, plus `scripting` to load the Reddit script.
 - Since 2.5.1, Reddit host access (`reddit.com` and `www.reddit.com`) is optional and requested only when the user turns on Reddit, so updating asks for no new permissions. API permissions and extension-page CSP are otherwise unchanged through 2.5.3.
 - The full Windows Node 24 gate and Linux package-reproducibility check pass; CI runs the full suite on Node 22.
 - Fixture checks and manual/live checks are recorded separately: fixtures establish deterministic behavior, while manual reports are limited observations and do not establish a complete browser matrix.

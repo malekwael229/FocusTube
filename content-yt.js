@@ -26,6 +26,12 @@ const YouTube = {
       this.isRedirecting = false;
       this.runChecks();
     });
+    // m.youtube.com does not fire yt-navigate-finish. Its in-app navigation
+    // ends with state-navigateend on window instead.
+    window.addEventListener("state-navigateend", () => {
+      this.isRedirecting = false;
+      this.runChecks();
+    });
     window.addEventListener("popstate", () => this.runChecks());
     this.ensureObservers();
     chrome.storage.onChanged.addListener((changes) => {
@@ -355,6 +361,12 @@ const YouTube = {
         );
         if (entry) matches.add(entry);
       });
+      // m.youtube.com bottom bar: the Shorts tab is a div, not a link.
+      document
+        .querySelectorAll("ytm-pivot-bar-item-renderer .pivot-shorts")
+        .forEach((tab) => {
+          matches.add(tab.closest("ytm-pivot-bar-item-renderer"));
+        });
       // The search results "Shorts" filter chip has no link, only its label.
       document
         .querySelectorAll("ytd-search-header-renderer yt-chip-cloud-chip-renderer")
@@ -380,9 +392,22 @@ const YouTube = {
         if (shelf.querySelector('a[href^="/shorts/"]')) matches.add(shelf);
       });
       document.querySelectorAll('a[href^="/shorts"]').forEach((link) => {
-        const richItem = link.closest("ytd-rich-item-renderer");
+        const richItem = link.closest(
+          "ytd-rich-item-renderer, ytm-rich-item-renderer, ytm-video-with-context-renderer",
+        );
         if (richItem) matches.add(richItem);
       });
+      // m.youtube.com channel and home Shorts shelves.
+      document.querySelectorAll("ytm-reel-shelf-renderer").forEach((shelf) => {
+        matches.add(shelf);
+      });
+      document
+        .querySelectorAll("ytm-rich-section-renderer")
+        .forEach((section) => {
+          if (section.querySelector('ytm-shorts-lockup-view-model, a[href^="/shorts/"]')) {
+            matches.add(section);
+          }
+        });
       document
         .querySelectorAll(
           'yt-chip-cloud-chip-renderer a[href="/shorts"], yt-chip-cloud-chip-renderer a[href^="/shorts"]',
@@ -399,6 +424,10 @@ const YouTube = {
           const tab = link.closest("yt-tab-shape");
           if (tab) matches.add(tab);
         });
+      // m.youtube.com channel tabs carry no link, only the tab title.
+      document
+        .querySelectorAll('yt-tab-shape[tab-title="Shorts"]')
+        .forEach((tab) => matches.add(tab));
       this.reconcileHidden(this.hiddenFocusElements, matches);
     }
     this.applyMostRelevantShelfHiding();

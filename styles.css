@@ -1950,3 +1950,38 @@ textarea {
     transform: scale(1);
   }
 }
+
+/* Phones. Firefox for Android opens the popup as a full-screen page, so the
+   fixed desktop width and the clipped body would leave controls cut off.
+   The query keys on a touch-only pointer, not on width, because the desktop
+   popup viewport is also about 300px wide. */
+@media (hover: none) and (pointer: coarse) {
+  .focustube-popup-body {
+    width: auto;
+    min-width: 300px;
+    max-width: 560px;
+    min-height: 100vh;
+    margin: 0 auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  .focustube-popup-body .icon-btn,
+  .focustube-popup-body .back-btn,
+  .focustube-popup-body .skip-btn {
+    width: 44px;
+    height: 44px;
+  }
+  .focustube-popup-body .switch::before {
+    content: "";
+    position: absolute;
+    inset: -10px -4px;
+  }
+  .focustube-popup-body .setting-row {
+    height: auto;
+    min-height: 44px;
+  }
+  .focustube-popup-body .card-header,
+  .focustube-popup-body .mode-option {
+    min-height: 48px;
+  }
+}

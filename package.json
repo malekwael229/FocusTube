@@ -15,6 +15,7 @@
     "test:security": "node --test tests/tooling-security.test.js",
     "test:fuzz": "node --test tests/property-security.test.js",
     "test:feeds": "node tests/feed-filters.test.js",
+    "test:youtube-mobile": "node tests/youtube-mobile.test.js",
     "test:syntax": "node scripts/run-test-all.js --syntax",
     "test:live": "node tests/live-browser.test.js",
     "test:live:harness": "node --test tests/live/report.test.js tests/live/site-checks.test.js",

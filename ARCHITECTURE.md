@@ -9,9 +9,9 @@ The repository keeps one manifest per browser family:
 | File | Browser model | Background entry |
 | --- | --- | --- |
 | `chrome-manifest.json` | Chromium Manifest V3 | Event-driven `background.js` service worker |
-| `firefox-manifest.json` | Firefox Manifest V2 | `background.js` background script |
+| `firefox-manifest.json` | Firefox Manifest V2, desktop and Android | Non-persistent `background.js` event page |
 
-Both manifests declare `storage`, `alarms`, and `notifications`; the Chromium manifest also declares `scripting`. They require access only to the YouTube, Instagram, TikTok, Facebook, and LinkedIn host patterns. Access to `reddit.com` and `www.reddit.com` is optional (`optional_host_permissions` on Chromium, `optional_permissions` on Firefox) and is requested only when the user turns on Reddit. Both use extension-page CSP that permits scripts from `self` only. Firefox also declares its extension ID, minimum Firefox version, and no required data collection.
+Both manifests declare `storage`, `alarms`, `notifications`, and `scripting`. `scripting` registers the Reddit script after access is granted; on Firefox it replaced `contentScripts.register`, whose registrations end when the event page unloads. They require access only to the YouTube, Instagram, TikTok, Facebook, and LinkedIn host patterns. Access to `reddit.com` and `www.reddit.com` is optional (`optional_host_permissions` on Chromium, `optional_permissions` on Firefox) and is requested only when the user turns on Reddit. Both use extension-page CSP that permits scripts from `self` only. Firefox also declares its extension ID, minimum Firefox version, no required data collection, and Firefox for Android support (`gecko_android`).
 
 Both manifests set English as `default_locale`. The package includes browser-native message catalogs for English, Arabic, Spanish, Brazilian Portuguese, French, German, Turkish, and Indonesian. Manifest names and descriptions use catalog references, and `i18n.js` loads before the background, popup, options, and content-script code that requests localized text.
 
@@ -39,7 +39,7 @@ The Chromium manifest uses `action`; the Firefox manifest uses `browser_action`.
 - An exact durable completion claim keyed by timer end and type suppresses duplicate notification and message effects across startup, primary-alarm, retry, and fresh background contexts.
 - Automatic work-to-break completion writes the new break identity before creating its primary alarm. A failed break write retries the still-durable work identity; an alarm failure after the break write retries the new break identity. User-initiated break starts use the timer transaction snapshot and restore the prior timer and alarm when the replacement fails.
 
-Listeners register synchronously at the top level before startup reconciliation is queued. This matters for Chromium service-worker startup, where the background context can be suspended and started again.
+Listeners register synchronously at the top level before startup reconciliation is queued. This matters for the Chromium service worker and the Firefox event page, which can both be suspended and started again.
 
 ## Content Scripts
 
