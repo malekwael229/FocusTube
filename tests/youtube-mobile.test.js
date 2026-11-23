@@ -15,13 +15,16 @@ const SHORTS = ["ytm-short-singleton", "ytm-grid-shelf", "tab-shorts", "ytm-reel
 const KEPT = ["ytm-video", "tab-home", "tab-videos", "tab-live", "ytm-video-shelf", "ytm-empty-section", "pivot-home", "pivot-you"];
 let checks = 0;
 
+// Escapes every regular-expression character, backslash included.
+const escapeRegExp = (text) => text.replace(/[\\^$.*+?()[\]{}|/-]/g, "\\$&");
+
 function matchPatternToRegExp(pattern) {
   const [, scheme, host, pathPart] = pattern.match(/^(\*|https?):\/\/([^/]+)(\/.*)$/);
   const schemeRe = scheme === "*" ? "https?" : scheme;
   const hostRe = host.startsWith("*.")
-    ? `([^/]+\\.)?${host.slice(2).replace(/\./g, "\\.")}`
-    : host.replace(/\./g, "\\.");
-  const pathRe = pathPart.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
+    ? `([^/]+\\.)?${escapeRegExp(host.slice(2))}`
+    : escapeRegExp(host);
+  const pathRe = pathPart.split("*").map(escapeRegExp).join(".*");
   return new RegExp(`^${schemeRe}://${hostRe}${pathRe}$`);
 }
 
