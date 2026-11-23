@@ -1689,12 +1689,15 @@ test("Reddit stays on reddit.com and www.reddit.com only", () => {
 test("popup fits a phone screen without changing the desktop popup", () => {
   assert.ok(read("popup.html").includes('<meta name="viewport" content="width=device-width, initial-scale=1.0" />'));
   const css = read("styles.css");
-  const start = css.indexOf("@media (hover: none) and (pointer: coarse) {");
-  assert.ok(start !== -1, "phone styles key on a touch-only pointer, not on width");
+  const start = css.indexOf("@media (hover: none) and (pointer: coarse), (min-height: 620px) and (max-width: 640px) {");
+  assert.ok(start !== -1, "phone styles key on a touch-only pointer or a viewport taller than any desktop popup");
   const block = css.slice(start);
   assert.match(block, /\.focustube-popup-body \{[^}]*width: auto;[^}]*overflow-y: auto;/);
   assert.match(block, /\.icon-btn,[\s\S]*?width: 44px;\s*height: 44px;/);
   assert.match(css, /\.focustube-popup-body \{[\s\S]*?width: 300px;/, "desktop width stays 300px");
+  const popup = read("popup.js");
+  assert.match(popup, /openThenClose\(chrome\.runtime\.openOptionsPage\(\)\)/, "settings closes the full-screen popup");
+  assert.match(popup, /openThenClose\(chrome\.tabs\.create\(/, "GitHub link closes the full-screen popup");
 });
 
 test("background avoids APIs Firefox for Android does not provide", () => {
