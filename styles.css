@@ -1953,9 +1953,11 @@ textarea {
 
 /* Phones. Firefox for Android opens the popup as a full-screen page, so the
    fixed desktop width and the clipped body would leave controls cut off.
-   The query keys on a touch-only pointer, not on width, because the desktop
-   popup viewport is also about 300px wide. */
-@media (hover: none) and (pointer: coarse) {
+   Width alone can't tell them apart, because the desktop popup is also about
+   300px wide. A touch-only pointer usually means a phone. The second condition
+   covers phones that also report a mouse: desktop Firefox caps popups at
+   600px tall, so a narrow viewport taller than that is the Android page. */
+@media (hover: none) and (pointer: coarse), (min-height: 620px) and (max-width: 640px) {
   .focustube-popup-body {
     width: auto;
     min-width: 300px;

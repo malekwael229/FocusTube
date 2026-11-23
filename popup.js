@@ -577,14 +577,19 @@ function setupEventListeners() {
   toggle.addEventListener("change", () => {
     chrome.storage.local.set({ focusMode: toggle.checked });
   });
+  // On Firefox for Android the popup is a full-screen page that stays on top of
+  // new tabs, so close it once the tab is open. Desktop popups close anyway.
+  const openThenClose = (opening) => {
+    Promise.resolve(opening).catch(() => {}).finally(() => window.close());
+  };
   if (githubBtn) {
     githubBtn.addEventListener("click", () => {
-      chrome.tabs.create({ url: "https://github.com/malekwael229/FocusTube" });
+      openThenClose(chrome.tabs.create({ url: "https://github.com/malekwael229/FocusTube" }));
     });
   }
   if (settingsBtn) {
     settingsBtn.addEventListener("click", () => {
-      chrome.runtime.openOptionsPage();
+      openThenClose(chrome.runtime.openOptionsPage());
     });
   }
   if (backBtn) {
